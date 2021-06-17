@@ -65,9 +65,10 @@ The design of the complementary non-owning subdimension class template requires 
 const correctness. This is similar to the behaviour of std::iterator and std::const_iterator. const_subdimension being forbidden from changing the data of the parent
 tensor object, while a const subdimension only restricting its own reassignment to a different range (which is normally possible).
 
-```
+
 const_subdimension will be returned by the operator[] of either 'tensor' or 'subdimension' when called in a const context.
 
+```
 []<typename T, size_t Rank>(const tensor<T, Rank>& my_tensor)
 {
   auto subdim = my_tensor[0];
