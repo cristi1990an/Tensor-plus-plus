@@ -87,11 +87,14 @@ for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
   }
 }
 ```
-
+	
+~~Implementation~~	
+	
 	
 Template parameters
 
-T		-	type of the elements
+T	-	type of the elements
+
 Rank	-	the rank of the tensor, aka the number of dimensions
 
 One specific feature of the tensor class is the ability of having intuitive syntax when stacking calls to the operator[] and being able to interpret nested initializer_list structures like in the examples above.
