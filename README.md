@@ -1,5 +1,6 @@
 # Tensor-plus-plus
 
+##Functionality
 	
 tensor_lib::tensor is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. Having the whole data allocated contiguously is a no-brainer, allowing for fast and easy allocation, accessing, copying, moving etc. 
 
@@ -88,7 +89,7 @@ for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
 }
 ```
 	
-~~Implementation~~	
+##Implementation
 	
 	
 Template parameters
