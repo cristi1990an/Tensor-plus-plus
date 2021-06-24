@@ -53,7 +53,7 @@ tensor<int, 3> three_dim_tensor =
   }
 };
 
-		three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
 ```
   
 Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
