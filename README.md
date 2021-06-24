@@ -37,7 +37,7 @@ Particularly useful being the copy assignment operator working on a per-dimensio
   nested_vec[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
 ```
 
-tensor_lib::tensor offers the same functionality with faster performance.
+tensor_lib::tensor offers the same functionality while being faster to initialize.
 
 ```
 tensor<int, 3> three_dim_tensor =
