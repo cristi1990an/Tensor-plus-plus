@@ -8,8 +8,8 @@ Rational: Open-source alternatives to nested vector already exist, both in the f
 A syntax feature that a nested std::vector structure has and that was necessary to emulate from the get-go was the way it could interpret/initialize/assign from a nested initializer_list structure, having each layer/rank in the structure have a constructor taking an std::initializer_list<T>, creating a perfect match between:
 	
 ```
-std::vector		<std::vector		<std::vector		<T	>>>	and...
-std::initializer_list	<std::initializer_list	<std::initializer_list	<T	>>>
+std::vector		<std::vector		<std::vector		<T>>>	and...
+std::initializer_list	<std::initializer_list	<std::initializer_list	<T>>>
 ```
 	
 ```
