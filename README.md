@@ -61,10 +61,14 @@ three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
   
 Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
 Here we have a tensor with 3 dimension. Each of these dimensions has 4 subdimensions. Each of these subdimension has 5 sub-subdimensions and so on...
+	
+Let's start by explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 6 by 7:
 
 ```
-tensor<int, 5> my_tensor( 3u, 4u, 5u, 6u, 7u ); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 6 by 7
-
+tensor<int, 5> my_tensor( 3u, 4u, 5u, 6u, 7u );
+```
+And then iterate through the whole tensor using nested for-loops: 
+```
 int val = 0;
 
 for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
