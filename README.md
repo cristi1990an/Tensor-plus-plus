@@ -2,7 +2,7 @@
 
 ## Functionality
 	
-tensor_lib::tensor is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. Having the whole data allocated contiguously is a no-brainer, allowing for fast and easy allocation, accessing, copying, moving etc. 
+**tensor_lib::tensor** is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. Having the whole data allocated contiguously is a no-brainer, allowing for fast and easy allocation, accessing, copying, moving etc. 
 
 **Rational:** Open-source alternatives to nested vector already exist, both in the form of 2d matrices and multi-dimensional tensors such as ours. One major caveat they all share and reason why certain developers are still inclined to keep to nested vector structures, even in modern neural-network projects, has always been the "syntactic sugar" such structures provide.
 	
@@ -92,11 +92,11 @@ for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
 ## Implementation
 	
 	
-Template parameters
+**Template parameters**
 
-T	-	type of the elements
+**T**	-	type of the elements
 
-Rank	-	the rank of the tensor, aka the number of dimensions
+**Rank**	-	the rank of the tensor, aka the number of dimensions
 
 One specific feature of the tensor class is the ability of having intuitive syntax when stacking calls to the operator[] and being able to interpret nested initializer_list structures like in the examples above.
 The way it works is that operator[] returns an instance of "subdimension<Rank - 1>", a lightweight instance of an object that referes to the data owned by the parent tensor. It's implemented using a dynamic span of the original data it covers, a static span of the sizes it needs and a static span of the array with precomputed sizes of the submatrices at each dimension, which in turn returns the same and so on. sizeof(subdimension) being always the size of 4 pointers.
