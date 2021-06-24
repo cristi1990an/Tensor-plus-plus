@@ -22,7 +22,7 @@ namespace tensor_lib
         // Stores the size of each individual dimension of the tensor.
         // Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, it means ours is a tensor of 3x4x5 with a total of 120 elements.
         //
-        std::array<size_t, Rank> _order_of_dimension;
+        std::array<size_t, Rank> _order_of_dimension{};
 
         // This is an optimization. Computed when the object is initialized, it contains the equivalent size for each subdimension.
         // Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, 
@@ -31,11 +31,11 @@ namespace tensor_lib
         // This allows methods that rely on the size of our tensor (like "size()") to be O(1) and not have to call std::accumulate() on _order_of_dimension,
         // each time we need the size of a certain dimension.
         //
-        std::array<size_t, Rank> _size_of_subdimension;
+        std::array<size_t, Rank> _size_of_subdimension{};
 
         // Dynamically allocated data buffer.
         //
-		std::unique_ptr<T[]> _data;
+		std::unique_ptr<T[]> _data{};
 
 
         // Computes _size_of_subdimension at initialization. 
@@ -57,6 +57,48 @@ namespace tensor_lib
                 }
 
                 _size_of_subdimension[0] = _size_of_subdimension[1] * _order_of_dimension[0];
+            }
+        }
+
+        template <size_t Rank_index> requires useful_concepts::is_equal_to<size_t, size_t, Rank_index, 1u>
+        constexpr void construct_order_array(const std::initializer_list<T>& data)
+        {
+            const auto data_size = data.size();
+
+            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+            _order_of_dimension[Rank - Rank_index] = data_size;
+        }
+
+        template <size_t Rank_index> requires useful_concepts::is_equal_to<size_t, size_t, Rank_index, 2u>
+        constexpr void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data)
+        {
+            const auto data_size = data.size();
+
+            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+            _order_of_dimension[Rank - Rank_index] = data_size;
+
+
+            for (const auto& init_list : data)
+            {
+                construct_order_array<Rank_index - 1>(init_list);
+            }
+        }
+
+        template <size_t Rank_index> requires useful_concepts::is_greater_than<size_t, size_t, Rank_index, 2u>
+        constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data)
+        {
+            const auto data_size = data.size();
+
+            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+            _order_of_dimension[Rank - Rank_index] = data_size;
+
+
+            for (const auto& init_list : data)
+            {
+                construct_order_array<Rank_index - 1>(init_list);
             }
         }
 
@@ -382,51 +424,43 @@ namespace tensor_lib
         // the sizes of each dimension, be it as an array or initializer_list.
         //
 
-		constexpr tensor(const std::array<size_t, Rank>& sizes)
-		{
-			for (const auto& value : sizes)
-				if (value == 0)
-					throw std::runtime_error("Can't initialize tensor with a dimension of size zero!");
+        constexpr tensor() noexcept
+        {
+            std::fill(_order_of_dimension.begin(), _order_of_dimension.end(), 1u);
+            std::fill(_size_of_subdimension.begin(), _size_of_subdimension.end(), 1u);
+            _data.reset(new T[1]);
+        }
 
-            _order_of_dimension = sizes;
-
-            construct_size_of_subdimension_array();
-
-            _data.reset(new T[_size_of_subdimension[0]]);
-		}
-
-        constexpr tensor(const std::initializer_list<size_t>& sizes) 
-		{
-			if (sizes.size() != Rank)
-				throw std::runtime_error("The number of sizes given doesn't match the number of Rank of the tensor!");
-			for (const auto& value : sizes)
-				if (value == 0)
-					throw std::runtime_error("Can't initialize tensor with a dimension of size zero!");
-
-			std::copy(sizes.begin(), sizes.end(), _order_of_dimension.begin());
-
-            construct_size_of_subdimension_array();
-
-            _data.reset(new T[_size_of_subdimension[0]]);
-		}
-
-        template<typename... Sizes> requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
-        constexpr tensor(Sizes ... sizes) : _order_of_dimension{ sizes... }
+        template<typename... Sizes>
+        requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
+            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+            constexpr tensor(Sizes ... sizes) : _order_of_dimension{ sizes... }
         {
             construct_size_of_subdimension_array();
             _data.reset(new T[_size_of_subdimension[0]]);
         }
 
-        constexpr tensor(tensor&& other) noexcept
+        constexpr tensor(tensor&& other) noexcept 
+            : _order_of_dimension   (std::move(other._order_of_dimension))
+            , _size_of_subdimension (std::move(other._size_of_subdimension))
+            , _data                 (std::move(other._data))
         {
-            std::copy(other._order_of_dimension.begin(), other._order_of_dimension.end(), _order_of_dimension.begin());
-            std::copy(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), _size_of_subdimension.begin());
-
-            _data = std::move(other._data);
-            _data.reset(new T[_size_of_subdimension[0]]);
+            std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
+            std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+            other._data = std::make_unique<T[]>(1);
         }
 
-        constexpr tensor(const tensor& other)
+        constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+        {
+            construct_order_array<Rank>(data);
+            construct_size_of_subdimension_array();
+
+            _data.reset(new T[_size_of_subdimension[0]]);
+
+            *this = data;
+        }
+
+        constexpr tensor(const tensor& other) noexcept
         {
             std::copy(other._order_of_dimension.begin(), other._order_of_dimension.end(), _order_of_dimension.begin());
             std::copy(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), _size_of_subdimension.begin());
@@ -439,7 +473,7 @@ namespace tensor_lib
             }
         }
 
-        constexpr tensor(const subdimension<T, Rank>& subdimension)
+        constexpr tensor(const subdimension<T, Rank>& subdimension) noexcept
         {
             std::copy(subdimension._order_of_dimension.begin(), subdimension._order_of_dimension.end(), _order_of_dimension.begin());
             std::copy(subdimension._size_of_subdimension.begin(), subdimension._size_of_subdimension.end(), _size_of_subdimension.begin());
@@ -452,7 +486,7 @@ namespace tensor_lib
             }
         }
 
-        constexpr auto operator = (const tensor& other)
+        constexpr auto operator = (const tensor& other) noexcept
         {
             auto* ptr = _data.release(); 
             _data.get_deleter() (ptr);
@@ -472,16 +506,13 @@ namespace tensor_lib
 
         constexpr auto operator = (tensor&& other) noexcept
         {
-            auto* ptr = _data.release();
-            _data.get_deleter() (ptr);
+            std::copy(other._order_of_dimension.cbegin(), other._order_of_dimension.cend(), this->_order_of_dimension.begin());
+            std::copy(other._size_of_subdimension.cbegin(), other._size_of_subdimension.cend(), this->_size_of_subdimension.begin());
+            _data = move(other._data);
 
-            _order_of_dimension = other._order_of_dimension;
-            _size_of_subdimension = other._size_of_subdimension;
-
-            _data = std::move(other._data);
-            other._data = std::make_unique<T[]>(other._size_of_subdimension[0]);
-
-            return (*this);
+            std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
+            std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+            other._data = std::make_unique<T[]>(1);
         }
 
         constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
@@ -659,11 +690,9 @@ namespace tensor_lib
             return const_iterator(&_data[size_of_current_tensor()]);
         }
 
-        constexpr auto get_sizes() const noexcept
+        constexpr const std::array<std::size_t, Rank>& get_sizes() const noexcept
         {
-            std::span<const size_t> dims_sizes{ _order_of_dimension.begin(), _order_of_dimension.end() };
-
-            return dims_sizes;
+            return _order_of_dimension;
         }
 
         constexpr const size_t& order_of_dimension(const size_t& index) const noexcept
@@ -804,7 +833,7 @@ namespace tensor_lib
         }
     };
 
-    template <typename T, size_t Rank>
+    template <typename T, std::size_t Rank>
     class subdimension
     {
         using SourceSizeOfDimensionArraySpan        = std::span<size_t, Rank>;
@@ -819,6 +848,9 @@ namespace tensor_lib
     public:
         friend class const_subdimension<T, Rank>;
         friend class tensor<T, Rank>;
+        friend class tensor<T, Rank + 1>;
+        friend class subdimension<T, Rank + 1>;
+        friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
 
         constexpr subdimension() = delete;
         constexpr subdimension(subdimension&&) noexcept = delete;

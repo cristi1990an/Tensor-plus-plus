@@ -27,5 +27,10 @@ namespace useful_specializations
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    
+    consteval std::size_t no_zero(const size_t val) noexcept
+    {
+        if (val)
+            return val;
+        return 1u;
+    }
 }

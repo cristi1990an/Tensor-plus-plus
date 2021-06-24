@@ -71,8 +71,7 @@ namespace useful_concepts
     };
 
     template <typename T, typename U>
-    concept divisible_with =
-        requires (T t, U u)
+    concept divisible_with = requires (T t, U u)
     {
         t / u;
     };
@@ -83,24 +82,37 @@ namespace useful_concepts
         divisible_with<U, T>;
 
     template <typename... T, size_t SUM>
-    concept size_of_parameter_pack_equals =
-        requires ()
+    concept size_of_parameter_pack_equals = requires ()
     {
         requires(sizeof...(T) == SUM);
     };
 
     template <typename T, size_t VAL>
-    concept size_equals =
-        requires ()
+    concept size_equals = requires ()
     {
         requires(sizeof(T) == VAL);
     };
 
     template <typename T, typename... U>
-    concept common_type_convertible_to =
-        requires (U... values)
+    concept constructable_from_common_type = requires ()
     {
-        requires(std::is_convertible<typename std::common_type<U...>::type, T>::value == true);
+        requires(std::is_constructible_v<T, typename std::common_type_t<U...>> == true);
+    };
+
+    template <typename... U, typename T>
+    concept common_type_convertible_to = 
+        std::convertible_to<typename std::common_type<U...>::type, T>;
+
+    template <typename T, typename... U>
+    concept same_as_common_type = requires ()
+    {
+        requires(std::is_same_v<typename std::common_type_t<U...>, T> == true);
+    };
+
+    template <typename T, typename... U>
+    concept not_same_as_common_type = requires ()
+    {
+        requires(std::is_same_v<typename std::common_type_t<U...>, T> == false);
     };
 
     template <typename T, typename U>
