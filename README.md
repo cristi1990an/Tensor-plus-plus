@@ -6,8 +6,11 @@ tensor_lib::tensor is a class template that describes a mathematical tensor, imp
 Rational: Open-source alternatives to nested vector already exist, both in the form of 2d matrices and multi-dimensional tensors such as ours. One major caveat they all share and reason why certain developers are still inclined to keep to nested vector structures, even in modern neural-network projects, has always been the "syntactic sugar" such structures provide.
 	
 A syntax feature that a nested std::vector structure has and that was necessary to emulate from the get-go was the way it could interpret/initialize/assign from a nested initializer_list structure, having each layer/rank in the structure have a constructor taking an std::initializer_list<T>, creating a perfect match between:
-						std::vector				    <	std::vector				    <	std::vector				    <	int		>	>	>			and...
-						std::initializer_list	<	std::initializer_list	<	std::initializer_list	<	int		>	>	>
+	
+```
+std::vector		<std::vector		<std::vector		<int	>>>	and...
+std::initializer_list	<std::initializer_list	<std::initializer_list	<int	>>>
+```
 	
 ```
 std::vector <std::vector <std::vector<int>>> nested_vec =
