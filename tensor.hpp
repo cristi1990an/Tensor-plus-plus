@@ -60,18 +60,10 @@ namespace tensor_lib
             }
         }
 
-        template <size_t Rank_index> requires useful_concepts::is_equal_to<size_t, size_t, Rank_index, 1u>
-        constexpr void construct_order_array(const std::initializer_list<T>& data)
-        {
-            const auto data_size = data.size();
+       
 
-            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
-                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
-            _order_of_dimension[Rank - Rank_index] = data_size;
-        }
-
-        template <size_t Rank_index> requires useful_concepts::is_equal_to<size_t, size_t, Rank_index, 2u>
-        constexpr void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data)
+        template <size_t Rank_index> 
+        constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data)
         {
             const auto data_size = data.size();
 
@@ -86,19 +78,29 @@ namespace tensor_lib
             }
         }
 
-        template <size_t Rank_index> requires useful_concepts::is_greater_than<size_t, size_t, Rank_index, 2u>
-        constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data)
+         template <>
+        constexpr void construct_order_array<1u>(const std::initializer_list<T>& data)
         {
             const auto data_size = data.size();
 
-            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+            if (_order_of_dimension[Rank - 1u] != 0 && _order_of_dimension[Rank - 1u] != data_size)
                 throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
-            _order_of_dimension[Rank - Rank_index] = data_size;
+            _order_of_dimension[Rank - 1u] = data_size;
+        }
+
+        template <>
+        constexpr void construct_order_array<2u>(const std::initializer_list<std::initializer_list<T>>& data)
+        {
+            const auto data_size = data.size();
+
+            if (_order_of_dimension[Rank - 2u] != 0 && _order_of_dimension[Rank - 2u] != data_size)
+                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+            _order_of_dimension[Rank - 2u] = data_size;
 
 
             for (const auto& init_list : data)
             {
-                construct_order_array<Rank_index - 1>(init_list);
+                construct_order_array<1u>(init_list);
             }
         }
 
@@ -1008,27 +1010,30 @@ namespace tensor_lib
         }
     };
 
-    template <typename T>
-    using tensor_1d = tensor<T, 1>;
+    namespace specializations
+    {
+        template <typename T>
+        using tensor_1d = tensor<T, 1>;
 
-    template <typename T>
-    using tensor_line = tensor<T, 1>;
+        template <typename T>
+        using tensor_line = tensor<T, 1>;
 
-    template <typename T>
-    using tensor_2d = tensor<T, 2>;
+        template <typename T>
+        using tensor_2d = tensor<T, 2>;
 
-    template <typename T>
-    using matrix = tensor<T, 2>;
+        template <typename T>
+        using matrix = tensor<T, 2>;
 
-    template <typename T>
-    using tensor_3d = tensor<T, 3>;
+        template <typename T>
+        using tensor_3d = tensor<T, 3>;
 
-    template <typename T>
-    using cube = tensor<T, 3>;
+        template <typename T>
+        using cube = tensor<T, 3>;
 
-    template <typename T>
-    using tensor_4d = tensor<T, 4>;
-    
-    template <typename T>
-    using tensor_5d = tensor<T, 5>;
+        template <typename T>
+        using tensor_4d = tensor<T, 4>;
+
+        template <typename T>
+        using tensor_5d = tensor<T, 5>;
+    }
 }
