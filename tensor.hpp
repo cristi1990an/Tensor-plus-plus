@@ -514,12 +514,12 @@ namespace tensor_lib
 
         constexpr auto operator = (tensor&& other) noexcept
         {
-            std::copy(other._order_of_dimension.cbegin(), other._order_of_dimension.cend(), this->_order_of_dimension.begin());
+            std::copy(other._order_of_dimension.cbegin(),   other._order_of_dimension.cend(),   this->_order_of_dimension.begin());
             std::copy(other._size_of_subdimension.cbegin(), other._size_of_subdimension.cend(), this->_size_of_subdimension.begin());
             _data = move(other._data);
 
-            std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
-            std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+            std::fill(other._order_of_dimension.begin(),    other._order_of_dimension.end(),    1u);
+            std::fill(other._size_of_subdimension.begin(),  other._size_of_subdimension.end(),  1u);
             other._data.reset(new T[1]);
         }
 
@@ -604,7 +604,6 @@ namespace tensor_lib
 
             auto current_size = _size_of_subdimension[0];
 
-            //_order_of_dimension = new_sizes;
             std::copy(new_sizes.begin(), new_sizes.end(), _order_of_dimension.begin());
             construct_size_of_subdimension_array();
 
@@ -653,9 +652,11 @@ namespace tensor_lib
         {
             return subdimension<T, Rank - 1>
                 (
-                    std::span<size_t, Rank - 1>(_order_of_dimension.begin() + 1, _order_of_dimension.begin() + Rank),
-                    std::span<size_t, Rank - 1>(_size_of_subdimension.begin() + 1, _size_of_subdimension.begin() + Rank),
-                    std::span<T>(begin() + index * _size_of_subdimension[1], begin() + index * _size_of_subdimension[1] + _size_of_subdimension[1])
+                    _order_of_dimension.begin() + 1,              
+                    _order_of_dimension.end(),
+                    _size_of_subdimension.begin() + 1,           
+                    _size_of_subdimension.end(),
+                    begin() + index * _size_of_subdimension[1],   begin() + index * _size_of_subdimension[1] + _size_of_subdimension[1]
                 );
         }
 
@@ -663,9 +664,12 @@ namespace tensor_lib
         {
             return const_subdimension<T, Rank - 1>
                 (
-                    std::span<const size_t, Rank - 1> (_order_of_dimension.cbegin() + 1, _order_of_dimension.cbegin() + Rank),
-                    std::span<const size_t, Rank - 1> (_size_of_subdimension.cbegin() + 1, _size_of_subdimension.cbegin() + Rank),
-                    std::span<const T>(cbegin() + index * _size_of_subdimension[1], cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1])
+                    _order_of_dimension.begin() + 1,              
+                    _order_of_dimension.end(),
+                    _size_of_subdimension.begin() + 1,            
+                    _size_of_subdimension.end(),
+                    cbegin() + index * _size_of_subdimension[1],  
+                    cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1]
                 );
         }
 
@@ -769,10 +773,20 @@ namespace tensor_lib
 
         }
 
-        constexpr const_subdimension(const ConstSourceSizeOfDimensionArraySpan& size_of_dimension_span, const ConstSourceSizeOfSubdimensionArraySpan& size_of_subdimension_span, const ConstSourceDataSpan& data_span) noexcept :
-            _order_of_dimension{ size_of_dimension_span },
-            _size_of_subdimension{ size_of_subdimension_span },
-            _data{ data_span }
+        template<typename T1, typename T2, typename T3>
+        constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+            : _order_of_dimension   ( std::forward<T1>(param_1) )
+            , _size_of_subdimension ( std::forward<T2>(param_2) )
+            , _data                 ( std::forward<T3>(param_3) )
+        {
+
+        }
+
+        template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+        constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+            : _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
+            , _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
+            , _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
         {
 
         }
@@ -789,9 +803,12 @@ namespace tensor_lib
         {
             return const_subdimension<T, Rank - 1>
                 (
-                    _order_of_dimension.subspan<1, Rank - 1>(),
-                    _size_of_subdimension.subspan<1, Rank - 1>(),
-                    _data.subspan(index * _size_of_subdimension[1], _size_of_subdimension[1])
+                    _order_of_dimension.begin() + 1,              
+                    _order_of_dimension.end(),
+                    _size_of_subdimension.begin() + 1,            
+                    _size_of_subdimension.end(),
+                    cbegin() + index * _size_of_subdimension[1],  
+                    cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1] 
                 );
         }
 
@@ -876,18 +893,28 @@ namespace tensor_lib
         constexpr subdimension(const subdimension&) noexcept = default;
         constexpr subdimension(const const_subdimension<T, Rank>&) noexcept = delete;
 
-        constexpr subdimension(const SourceSizeOfDimensionArraySpan& size_of_dimension_span, const SourceSizeOfSubdimensionArraySpan& size_of_subdimension_span, const SourceDataSpan& data_span) noexcept :
-            _order_of_dimension{ size_of_dimension_span },
-            _size_of_subdimension{ size_of_subdimension_span },
-            _data{ data_span }
+        template<typename T1, typename T2, typename T3>
+        constexpr subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+            : _order_of_dimension   { std::forward<T1>(param_1) }
+            , _size_of_subdimension { std::forward<T2>(param_2) }
+            , _data                 { std::forward<T3>(param_3) }
         {
 
         }
 
-        constexpr subdimension(tensor<T, Rank>& mat) noexcept :
-            _order_of_dimension{ mat._order_of_dimension.begin(), mat._order_of_dimension.end() },
-            _size_of_subdimension{ mat._size_of_subdimension.begin(), mat._size_of_subdimension.end() },
-            _data { mat.begin(), mat.end() }
+        template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+        constexpr subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+            : _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
+            , _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
+            , _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
+        {
+
+        }
+
+        constexpr subdimension(tensor<T, Rank>& mat) noexcept 
+            : _order_of_dimension   { mat._order_of_dimension.begin(),      mat._order_of_dimension.end() }
+            , _size_of_subdimension { mat._size_of_subdimension.begin(),    mat._size_of_subdimension.end() }
+            , _data                 { mat.begin(), mat.end() }
         {
 
         }
@@ -941,10 +968,12 @@ namespace tensor_lib
         {
             return subdimension<T, Rank - 1>
                 (
-                    
-                    _order_of_dimension.subspan<1, Rank - 1>(),
-                    _size_of_subdimension.subspan<1, Rank - 1>(),
-                    _data.subspan(index * _size_of_subdimension[1], _size_of_subdimension[1])
+                    _order_of_dimension.begin() + 1,
+                    _order_of_dimension.end() ,
+                    _size_of_subdimension.begin() + 1,            
+                    _size_of_subdimension.end() ,
+                    begin() + index * _size_of_subdimension[1],   
+                    begin() + index * _size_of_subdimension[1] + _size_of_subdimension[1] 
                 );
         }
 
@@ -952,9 +981,12 @@ namespace tensor_lib
         {
             return const_subdimension<T, Rank - 1>
                 (
-                    std::span<const size_t, Rank - 1> (_order_of_dimension.begin() + 1, _order_of_dimension.begin() + Rank),
-                    std::span<const size_t, Rank - 1> (_size_of_subdimension.begin() + 1, _size_of_subdimension.begin() + Rank),
-                    std::span<const T>(begin() + index * _size_of_subdimension[1], begin() + index * _size_of_subdimension[1] + _size_of_subdimension[1])
+                    _order_of_dimension.begin() + 1,               
+                    _order_of_dimension.end(),
+                    _size_of_subdimension.begin() + 1,             
+                    _size_of_subdimension.end(),
+                    cbegin() + index * _size_of_subdimension[1],   
+                    cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1]
                 );
         }
 
