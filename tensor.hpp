@@ -9,6 +9,14 @@
 
 namespace tensor_lib
 {
+    #ifdef _DEBUG
+    constexpr static auto TENSORLIB_DEBUGGING = true;
+    #else
+    constexpr static auto TENSORLIB_DEBUGGING = false;
+    #endif // _DEBUG
+
+    #define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(!TENSORLIB_DEBUGGING)
+
     template <typename T, size_t Rank>
     class subdimension;
 
@@ -60,17 +68,16 @@ namespace tensor_lib
             }
         }
 
-       
-
         template <size_t Rank_index> 
-        constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data)
+        constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
 
-            if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
-                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
-            _order_of_dimension[Rank - Rank_index] = data_size;
+            if constexpr(TENSORLIB_DEBUGGING)
+                if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
 
+            _order_of_dimension[Rank - Rank_index] = data_size;
 
             for (const auto& init_list : data)
             {
@@ -78,25 +85,28 @@ namespace tensor_lib
             }
         }
 
-         template <>
-        constexpr void construct_order_array<1u>(const std::initializer_list<T>& data)
+        template <>
+        constexpr void construct_order_array<1u>(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
 
-            if (_order_of_dimension[Rank - 1u] != 0 && _order_of_dimension[Rank - 1u] != data_size)
-                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (_order_of_dimension[Rank - 1u] != 0 && _order_of_dimension[Rank - 1u] != data_size)
+                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+
             _order_of_dimension[Rank - 1u] = data_size;
         }
 
         template <>
-        constexpr void construct_order_array<2u>(const std::initializer_list<std::initializer_list<T>>& data)
+        constexpr void construct_order_array<2u>(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
 
-            if (_order_of_dimension[Rank - 2u] != 0 && _order_of_dimension[Rank - 2u] != data_size)
-                throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
-            _order_of_dimension[Rank - 2u] = data_size;
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (_order_of_dimension[Rank - 2u] != 0 && _order_of_dimension[Rank - 2u] != data_size)
+                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
 
+            _order_of_dimension[Rank - 2u] = data_size;
 
             for (const auto& init_list : data)
             {
@@ -427,16 +437,17 @@ namespace tensor_lib
         //
 
         constexpr tensor() noexcept
+            : _data(new T[1])
         {
             std::fill(_order_of_dimension.begin(), _order_of_dimension.end(), 1u);
             std::fill(_size_of_subdimension.begin(), _size_of_subdimension.end(), 1u);
-            _data.reset(new T[1]);
         }
 
         template<typename... Sizes>
-        requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
+            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
             && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
-            constexpr tensor(Sizes ... sizes) : _order_of_dimension{ sizes... }
+        constexpr tensor(Sizes ... sizes) noexcept 
+            : _order_of_dimension{ sizes... }
         {
             construct_size_of_subdimension_array();
             _data.reset(new T[_size_of_subdimension[0]]);
@@ -452,7 +463,8 @@ namespace tensor_lib
             other._data = std::make_unique<T[]>(1);
         }
 
-        constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+        constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+            requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
         {
             construct_order_array<Rank>(data);
             construct_size_of_subdimension_array();
@@ -462,25 +474,22 @@ namespace tensor_lib
             *this = data;
         }
 
-        constexpr tensor(const tensor& other) noexcept
+        constexpr tensor(const tensor& other) noexcept 
+            : _order_of_dimension   (other._order_of_dimension)
+            , _size_of_subdimension (other._size_of_subdimension)
+            , _data                 (new T[other._size_of_subdimension[0]])
         {
-            std::copy(other._order_of_dimension.begin(), other._order_of_dimension.end(), _order_of_dimension.begin());
-            std::copy(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), _size_of_subdimension.begin());
-
-            _data.reset(new T[_size_of_subdimension[0]]);
-            
-            for (size_t i = 0; i < _size_of_subdimension[0]; i++)
+            for (std::size_t i = 0; i < _size_of_subdimension[0]; ++i)
             {
                 _data[i] = other._data[i];
             }
         }
 
         constexpr tensor(const subdimension<T, Rank>& subdimension) noexcept
+            : _data(new T[subdimension._size_of_subdimension[0]])
         {
             std::copy(subdimension._order_of_dimension.begin(), subdimension._order_of_dimension.end(), _order_of_dimension.begin());
             std::copy(subdimension._size_of_subdimension.begin(), subdimension._size_of_subdimension.end(), _size_of_subdimension.begin());
-
-            _data.reset(new T[_size_of_subdimension[0]]);
 
             for (size_t i = 0; i < _size_of_subdimension[0]; i++)
             {
@@ -490,13 +499,10 @@ namespace tensor_lib
 
         constexpr auto operator = (const tensor& other) noexcept
         {
-            auto* ptr = _data.release(); 
-            _data.get_deleter() (ptr);
-
             _order_of_dimension = other._order_of_dimension;
             _size_of_subdimension = other._size_of_subdimension;
 
-            _data = std::make_unique<T[]>(_size_of_subdimension[0]);
+            _data.reset(_size_of_subdimension[0]);
 
             for (size_t i = 0; i < _size_of_subdimension[0]; i++)
             {
@@ -514,13 +520,15 @@ namespace tensor_lib
 
             std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
             std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
-            other._data = std::make_unique<T[]>(1);
+            other._data.reset(new T[1]);
         }
 
-        constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+        constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+            requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
         {
-            if (order_of_current_dimension() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (order_of_current_dimension() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
 
             auto it = data.begin();
 
@@ -532,10 +540,12 @@ namespace tensor_lib
             return (*this);
         }
 
-        constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+        constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+            requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
         {
-            if (order_of_current_dimension() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (order_of_current_dimension() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
 
             auto it = data.begin();
 
@@ -547,20 +557,21 @@ namespace tensor_lib
             return (*this);
         }
 
-        constexpr auto& operator=(const std::initializer_list<T>& data)
+        constexpr auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
-            if (size_of_current_tensor() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (size_of_current_tensor() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
 
             std::copy(data.begin(), data.end(), begin());
 
             return (*this);
         }
 
-        constexpr void resize(const std::array<size_t, Rank>& new_sizes)
+        constexpr void resize(const std::array<size_t, Rank>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
-            for (const auto& val : new_sizes)
-                if (val == 0)
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (std::find(new_sizes.cbegin(), new_sizes.cend(), 0u) != new_sizes.back())
                     throw std::runtime_error("Can't have a zero-sized dimension!");
 
             auto current_size = _size_of_subdimension[0];
@@ -580,13 +591,16 @@ namespace tensor_lib
             _data = std::move(new_data);
         }
 
-        constexpr void resize(const std::span<const size_t>& new_sizes) 
+        constexpr void resize(const std::span<const size_t>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
-            if (new_sizes.size() != Rank)
-                throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
-            for (const auto& val : new_sizes)
-                if (val == 0)
-                    throw std::runtime_error("Can't have a zero-sized dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+            {
+                if (new_sizes.size() != Rank)
+                    throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
+                for (const auto& val : new_sizes)
+                    if (val == 0)
+                        throw std::runtime_error("Can't have a zero-sized dimension!");
+            }
 
             auto current_size = _size_of_subdimension[0];
 
@@ -606,13 +620,16 @@ namespace tensor_lib
             _data = std::move(new_data);
         }
 
-        constexpr void resize(const std::initializer_list<size_t>& new_sizes)
+        constexpr void resize(const std::initializer_list<size_t>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
-            if (new_sizes.size() != Rank)
-                throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
-            for (const auto& val : new_sizes)
-                if (val == 0)
-                    throw std::runtime_error("Can't have a zero-sized dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+            {
+                if (new_sizes.size() != Rank)
+                    throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
+                for (const auto& val : new_sizes)
+                    if (val == 0)
+                        throw std::runtime_error("Can't have a zero-sized dimension!");
+            }
 
             auto current_size = _size_of_subdimension[0];
 
@@ -875,10 +892,12 @@ namespace tensor_lib
 
         }
 
-        constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+        constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+            requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2> 
         {
-            if (order_of_current_dimension() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (order_of_current_dimension() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
 
             auto it = data.begin();
 
@@ -890,10 +909,12 @@ namespace tensor_lib
             return (*this);
         }
 
-        constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+        constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+            requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
         {
-            if (order_of_current_dimension() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (order_of_current_dimension() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
 
             auto it = data.begin();
 
@@ -905,10 +926,11 @@ namespace tensor_lib
             return (*this);
         }
 
-        constexpr auto& operator=(const std::initializer_list<T>& data) 
+        constexpr auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
-            if (size_of_current_tensor() != data.size())
-                throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (size_of_current_tensor() != data.size())
+                    throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
 
             std::copy(data.begin(), data.end(), begin());
 

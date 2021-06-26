@@ -151,6 +151,8 @@ namespace tensor_initialization_testing_suit
 		tsor = { {1, 2, 3, 4, 5}, {7, 7, 7, 7, 7} };
 
 		tensor real_copy(tsor[0]);
+
+
 		subdimension reference(tsor[0]);
 
 		if (not std::equal(real_copy.cbegin(), real_copy.cend(), reference.cbegin()))
