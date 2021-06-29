@@ -93,6 +93,12 @@ namespace useful_concepts
         requires(sizeof(T) == VAL);
     };
 
+    template <typename T, typename U>
+    concept constructable_from = requires()
+    {
+        requires(std::is_constructible_v<T, U> == true);
+    };
+
     template <typename T, typename... U>
     concept constructable_from_common_type = requires ()
     {

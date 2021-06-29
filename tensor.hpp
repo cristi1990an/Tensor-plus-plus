@@ -136,8 +136,8 @@ namespace tensor_lib
         template<typename... Sizes>
             requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
             && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
-        constexpr tensor(Sizes ... sizes) noexcept 
-            : _order_of_dimension{ sizes... }
+        constexpr tensor(const Sizes ... sizes) noexcept
+            : _order_of_dimension{ static_cast<std::size_t>(sizes)... }
         {
             construct_size_of_subdimension_array();
             _data.reset(new T[_size_of_subdimension[0]]);
@@ -199,18 +199,22 @@ namespace tensor_lib
                 _data[i] = other._data[i];
             }
 
-            return (*this);
+            return *this;
         }
 
         constexpr auto operator = (tensor&& other) noexcept
         {
-            std::copy(other._order_of_dimension.cbegin(),   other._order_of_dimension.cend(),   this->_order_of_dimension.begin());
-            std::copy(other._size_of_subdimension.cbegin(), other._size_of_subdimension.cend(), this->_size_of_subdimension.begin());
-            _data = move(other._data);
+            if (this != std::addressof(other))
+            {
+                std::copy(other._order_of_dimension.cbegin(), other._order_of_dimension.cend(), this->_order_of_dimension.begin());
+                std::copy(other._size_of_subdimension.cbegin(), other._size_of_subdimension.cend(), this->_size_of_subdimension.begin());
+                _data = move(other._data);
 
-            std::fill(other._order_of_dimension.begin(),    other._order_of_dimension.end(),    1u);
-            std::fill(other._size_of_subdimension.begin(),  other._size_of_subdimension.end(),  1u);
-            other._data.reset(new T[1]);
+                std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
+                std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+                other._data.reset(new T[1]);
+            }
+            return *this;
         }
 
         constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -258,84 +262,91 @@ namespace tensor_lib
             return (*this);
         }
 
-        constexpr void resize(const std::array<size_t, Rank>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
+    private:
+
+        constexpr void resize_helper(const std::size_t Last)
         {
+            constexpr std::size_t Index = Rank - 1;
             if constexpr (TENSORLIB_DEBUGGING)
-                if (std::find(new_sizes.cbegin(), new_sizes.cend(), 0u) != new_sizes.back())
-                    throw std::runtime_error("Can't have a zero-sized dimension!");
+                if (Last == 0)
+                    throw std::runtime_error("Size of dimension can't be changed to zero!");
+            _order_of_dimension[Index] = Last;
 
-            auto current_size = _size_of_subdimension[0];
+            auto old_size = size_of_current_tensor();
 
-            std::copy(new_sizes.begin(), new_sizes.end(), _order_of_dimension.begin());
             construct_size_of_subdimension_array();
 
-            std::unique_ptr<T[]> new_data = std::make_unique<T[]>(_size_of_subdimension[0]);
+            std::unique_ptr<T[]> aux(new T[size_of_current_tensor()]);
 
-            auto min = std::min(current_size, _size_of_subdimension[0]);
-
-            for (size_t i = 0; i < min; i++)
-                new_data[i] = _data[i];
-
-            delete[] _data;
-
-            _data = std::move(new_data);
-        }
-
-        constexpr void resize(const std::span<const size_t>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
-        {
-            if constexpr (TENSORLIB_DEBUGGING)
+            for (std::size_t i = 0; i < std::min(old_size, size_of_current_tensor()); i++)
             {
-                if (new_sizes.size() != Rank)
-                    throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
-                for (const auto& val : new_sizes)
-                    if (val == 0)
-                        throw std::runtime_error("Can't have a zero-sized dimension!");
+                aux[i] = _data[i];
             }
 
-            auto current_size = _size_of_subdimension[0];
-
-            std::copy(new_sizes.begin(), new_sizes.end(), _order_of_dimension.begin());
-            construct_size_of_subdimension_array();
-
-            std::unique_ptr<T[]> new_data = std::make_unique<T[]>(_size_of_subdimension[0]);
-
-            auto min = std::min(current_size, _size_of_subdimension[0]);
-
-            for (size_t i = 0; i < min; i++)
-                new_data[i] = _data[i];
-
-            delete[] _data;
-
-            _data = std::move(new_data);
+            std::swap(aux, _data);
         }
 
-        constexpr void resize(const std::initializer_list<size_t>& new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
+        constexpr void resize_helper(const std::size_t First, const std::size_t Last)
+        {
+            constexpr std::size_t Index = Rank - 2;
+
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (First == 0)
+                    throw std::runtime_error("Size of dimension can't be changed to zero!");
+
+            _order_of_dimension[Rank - 2] = First;
+
+            resize_helper(Last);
+        }
+
+        template <typename... Sizes>
+            requires useful_concepts::is_greater_than<std::size_t, std::size_t, sizeof...(Sizes), 1>
+            && useful_concepts::same_as_common_type<std::size_t, Sizes...>
+        constexpr void resize_helper(const std::size_t First, const Sizes... others)
+        {
+            constexpr std::size_t Index = Rank - sizeof...(Sizes) - 1;
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (First == 0)
+                    throw std::runtime_error("Size of dimension can't be changed to zero!");
+
+            _order_of_dimension[Index] = First;
+
+            resize_helper(others...);
+        }
+
+    public:
+
+        template<typename... Sizes>
+            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
+            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+            && useful_concepts::is_greater_than<std::size_t, std::size_t, Rank, 1>
+        constexpr void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
+        {
+            resize_helper(static_cast<std::size_t>(new_sizes)...);
+        }
+
+        template<typename U>
+            requires useful_concepts::constructable_from<std::size_t, U>
+            && useful_concepts::is_equal_to<std::size_t, std::size_t, Rank, 1>
+        constexpr void resize(const U first_size) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             if constexpr (TENSORLIB_DEBUGGING)
+                if (first_size == 0)
+                    throw std::runtime_error("Size of dimension can't be changed to zero!");
+
+            std::size_t old_size = _size_of_subdimension[0];
+
+            _order_of_dimension[0] = first_size;
+            _size_of_subdimension[0] = first_size;
+
+            std::unique_ptr<T[]> aux(new T[first_size]);
+
+            for (std::size_t i = 0; i < std::min(old_size, static_cast<std::size_t>(first_size)); i++)
             {
-                if (new_sizes.size() != Rank)
-                    throw std::runtime_error("Number of Rank given doesn't match the number of Rank of the tensor!");
-                for (const auto& val : new_sizes)
-                    if (val == 0)
-                        throw std::runtime_error("Can't have a zero-sized dimension!");
+                aux[i] = _data[i];
             }
 
-            auto current_size = _size_of_subdimension[0];
-
-            //_order_of_dimension = new_sizes;
-            std::copy(new_sizes.begin(), new_sizes.end(), _order_of_dimension.begin());
-            construct_size_of_subdimension_array();
-
-            std::unique_ptr<T[]> new_data = std::make_unique<T[]>(_size_of_subdimension[0]);
-
-            auto min = std::min(current_size, _size_of_subdimension[0]);
-
-            for (size_t i = 0; i < min; i++)
-                new_data[i] = _data[i];
-
-            delete[] _data;
-
-            _data = std::move(new_data);
+            std::swap(aux, _data);
         }
 
         constexpr auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
@@ -405,6 +416,11 @@ namespace tensor_lib
         }
 
         constexpr const std::array<std::size_t, Rank>& get_sizes() const noexcept
+        {
+            return _size_of_subdimension;
+        }
+
+        constexpr const std::array<std::size_t, Rank>& get_ranks() const noexcept
         {
             return _order_of_dimension;
         }

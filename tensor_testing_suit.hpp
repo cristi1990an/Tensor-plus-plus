@@ -5,6 +5,7 @@
 #include "tensor_const_testing_suit.hpp"
 #include "tensor_initialization_testing_suit.hpp"
 #include "tensor_move_semantics_testing_suit.hpp"
+#include "tensor_resize_testing_suit.hpp"
 
 namespace tensor_testing_suit
 {
@@ -15,5 +16,6 @@ namespace tensor_testing_suit
 		tensor_initialization_testing_suit::RUN_ALL();
 		tensor_const_testing_suit::RUN_ALL();
 		tensor_move_semantics_testing_suit::RUN_ALL();
+		tensor_resize_testing_suit::RUN_ALL();
 	}
 }

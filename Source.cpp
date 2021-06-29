@@ -74,7 +74,7 @@ int main()
 		Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
 		Here we have a tensor with 3 dimension. Each of these dimensions has 4 subdimensions. Each of these subdimension has 5 sub-subdimensions and so on...
 	*/
-		tensor<int, 5> my_tensor( 3u, 4u, 5u, 6u, 7u ); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 6 by 7
+		tensor<int, 5> my_tensor( 3, 4, 5, 6, 7 ); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 6 by 7
 
 		int val = 0;
 
@@ -180,6 +180,6 @@ int main()
 
 
 		tensor_testing_suit::RUN_ALL_TESTS();
-		// benchmark::RUN_ALL();
+		benchmark::RUN_ALL();
 
 }

@@ -11,7 +11,7 @@ namespace tensor_move_semantics_testing_suit
 
 	void TEST_1()
 	{
-		tensor<int, 5> tsor(4u, 5u, 6u, 7u, 8u);
+		tensor<int, 5> tsor(4, 5, 6, 7, 8);
 
 		tensor result (std::move(tsor));
 
@@ -23,7 +23,7 @@ namespace tensor_move_semantics_testing_suit
 
 		for (size_t i = 0; i < 5; ++i)
 		{
-			if (result.get_sizes()[i] != i + 4)
+			if (result.get_ranks()[i] != i + 4)
 				throw std::exception("TEST_1 in 'tensor_move_semantics_testing_suit' failed!\n");
 		}
 
@@ -32,7 +32,7 @@ namespace tensor_move_semantics_testing_suit
 
 	void TEST_2()
 	{
-		tensor<int, 5> tsor(4u, 5u, 6u, 7u, 8u), result;
+		tensor<int, 5> tsor(4, 5, 6, 7, 8), result;
 
 		result = std::move(tsor);
 
@@ -44,7 +44,7 @@ namespace tensor_move_semantics_testing_suit
 
 		for (size_t i = 0; i < 5; ++i)
 		{
-			if (result.get_sizes()[i] != i + 4)
+			if (result.get_ranks()[i] != i + 4)
 				throw std::exception("TEST_2 in 'tensor_move_semantics_testing_suit' failed!\n");
 		}
 

@@ -24,7 +24,7 @@ namespace benchmark
 
 			start = std::chrono::high_resolution_clock::now();
 
-			tensor<int, 4> tsor( 5u, 4u, 3u, 2u );
+			tensor<int, 4> tsor( 5, 4, 3, 2 );
 			tsor = nested_initializer_list;
 
 			stop = std::chrono::high_resolution_clock::now();
@@ -109,7 +109,7 @@ namespace benchmark
 
 			start = std::chrono::high_resolution_clock::now();
 
-			tensor<int, 1> tsor( 100000u );
+			tensor<int, 1> tsor( 100000 );
 
 			stop = std::chrono::high_resolution_clock::now();
 
@@ -146,7 +146,7 @@ namespace benchmark
 	{
 		unsigned long long tensor_average_time = 0;
 		unsigned long long vector_average_time = 0;
-		tensor<int, 4> tsor( 5u, 4u, 3u, 2u );
+		tensor<int, 4> tsor( 5, 4, 3, 2 );
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -188,7 +188,7 @@ namespace benchmark
 	{
 		unsigned long long tensor_average_time = 0;
 		unsigned long long vector_average_time = 0;
-		tensor<int, 4> tsor(5u, 4u, 3u, 2u);
+		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -242,7 +242,7 @@ namespace benchmark
 	{
 		unsigned long long tensor_average_time = 0;
 		unsigned long long vector_average_time = 0;
-		tensor<int, 4> tsor(5u, 4u, 3u, 2u);
+		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -287,7 +287,7 @@ namespace benchmark
 	{
 		unsigned long long tensor_average_time = 0;
 		unsigned long long vector_average_time = 0;
-		tensor<int, 1> tsor( 1000u );
+		tensor<int, 1> tsor( 1000 );
 		std::vector<int> vec;
 		vec.reserve(1000);
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -325,7 +325,7 @@ namespace benchmark
 	{
 		unsigned long long tensor_average_time = 0;
 		unsigned long long vector_average_time = 0;
-		tensor<int, 4> tsor(5u, 4u, 3u, 2u), destination_tsor(5u, 4u, 3u, 2u);
+		tensor<int, 4> tsor(5, 4, 3, 2), destination_tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		destination_tsor = empty_nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;

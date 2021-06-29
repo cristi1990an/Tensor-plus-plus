@@ -13,7 +13,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_1()
 	{
-		tensor<int, 4> tsor_1( 5u, 4u, 3u, 2u ), tsor_2(5u, 4u, 3u, 2u);
+		tensor<int, 4> tsor_1( 5, 4, 3, 2 ), tsor_2(5, 4, 3, 2);
 		int val = 10;
 
 		tsor_1 = nested_initializer_list;
@@ -35,7 +35,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_2()
 	{
-		tensor<int, 2> tsor_1( 2u, 20u ), tsor_2( 2u, 20u );
+		tensor<int, 2> tsor_1( 2, 20 ), tsor_2( 2, 20 );
 		
 		std::fill(tsor_1.begin(), tsor_1.end(), 5);
 		std::fill(tsor_1[1].begin(), tsor_1[1].end(), 7);
@@ -60,7 +60,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_3()
 	{
-		tensor<int, 3> tsor_1(2u, 2u, 2u), tsor_2(2u, 2u, 2u);
+		tensor<int, 3> tsor_1(2, 2, 2), tsor_2(2, 2, 2);
 		int val = 0;
 
 		for (auto& value : tsor_1)
@@ -80,7 +80,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_4()
 	{
-		tensor<int, 3> tsor_1(2u, 2u, 2u), tsor_2(2u, 2u, 2u);
+		tensor<int, 3> tsor_1(2, 2, 2), tsor_2(2, 2, 2);
 		
 		tsor_1[0][0] = { 0, 0 };
 		tsor_1[0][1] = { 0, 0 };
@@ -100,7 +100,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_5()
 	{
-		tensor<int, 3> tsor_1(2u, 2u, 2u), tsor_2(2u, 2u, 2u);
+		tensor<int, 3> tsor_1(2, 2, 2), tsor_2(2, 2, 2);
 		subdimension sub_1(tsor_1), sub_2(tsor_2);
 
 		sub_1 = { 1, 2, 3, 4, 5, 6, 7, 8 };
@@ -126,10 +126,10 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_6()
 	{
-		tensor<int, 2> tsor_1( 2u, 5u );
+		tensor<int, 2> tsor_1( 2, 5 );
 		subdimension<int, 1> sub_1(tsor_1[1]);
 
-		tensor<int, 1> tsor_2( 5u );
+		tensor<int, 1> tsor_2( 5 );
 
 		tsor_2 = { 1, 2, 3, 4, 5 };
 
@@ -146,7 +146,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_7()
 	{
-		tensor<int, 2> tsor(2u, 5u);
+		tensor<int, 2> tsor(2, 5);
 
 		tsor = { {1, 2, 3, 4, 5}, {7, 7, 7, 7, 7} };
 
@@ -165,7 +165,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_8()
 	{
-		tensor<int, 3> tsor_1( 10u, 10u, 10u ), tsor_2(10u, 10u, 10u);
+		tensor<int, 3> tsor_1( 10, 10, 10 ), tsor_2(10, 10, 10);
 		int val = 0;
 
 		for (size_t i = 0; i < tsor_1.order_of_dimension(0); i++)
@@ -189,7 +189,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_9()
 	{
-		tensor<int, 5> tsor( 3u, 3u, 3u, 3u, 3u ); 
+		tensor<int, 5> tsor( 3, 3, 3, 3, 3 );
 
 		std::fill(tsor.begin(), tsor.end(), 3);
 
@@ -203,9 +203,9 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_10()
 	{
-		tensor<int, 5> tsor( 1u, 2u, 3u, 4u, 5u );
+		tensor<int, 5> tsor( 1, 2, 3, 4, 5 );
 		
-		auto sizes = tsor.get_sizes();
+		auto sizes = tsor.get_ranks();
 		auto expected = { 1, 2, 3, 4, 5 };
 
 		if (!std::equal(sizes.begin(), sizes.end(), expected.begin()))
@@ -239,7 +239,7 @@ namespace tensor_initialization_testing_suit
 		};
 
 		tensor<int, 3> three_dim_tensor = nested_init_list;
-		tensor<int, 3> explicit_dim_tensor(4u, 3u, 3u);
+		tensor<int, 3> explicit_dim_tensor(4, 3, 3);
 		explicit_dim_tensor = nested_init_list;
 
 		if (!std::equal(three_dim_tensor.cbegin(), three_dim_tensor.cend(), explicit_dim_tensor.cbegin()))

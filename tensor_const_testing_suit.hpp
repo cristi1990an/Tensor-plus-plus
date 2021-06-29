@@ -9,7 +9,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_1()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 
 		[](const tensor<int, 3>& tsor)
 		{
@@ -24,7 +24,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_2()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 
 		[](tensor<int, 3>& tsor)
 		{
@@ -39,7 +39,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_3()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 
 		[](const subdimension<int, 2>& subdim)
 		{
@@ -54,7 +54,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_4()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 		auto subdim = tsor[0];
 
 		[](subdimension<int, 2>& subdim)
@@ -70,7 +70,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_5()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 		const_subdimension<int, 3> subdim(tsor);
 
 		[](const const_subdimension<int, 3>& subdim)
@@ -86,7 +86,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_6()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 		
 		[](const tensor<int, 3>& tsor)
 		{
@@ -101,7 +101,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_7()
 	{
-		tensor<int, 3> tsor( 2u, 2u, 2u );
+		tensor<int, 3> tsor( 2, 2, 2 );
 		subdimension<int, 3> subdim(tsor);
 
 		[](const subdimension<int, 3>& subdim)
@@ -117,7 +117,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_8()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 		const_subdimension<int, 3> subdim(tsor);
 
 		[](const const_subdimension<int, 3>& subdim)
@@ -133,7 +133,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_9()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](tensor<int, 3>& tsor)
 		{
@@ -148,7 +148,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_10()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 		subdimension<int, 3> subdim(tsor);
 
 		[](subdimension<int, 3>& subdim)
@@ -164,7 +164,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_11()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](tensor<int, 3>& tsor)
 		{
@@ -181,7 +181,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_12()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](const tensor<int, 3>& tsor)
 		{
@@ -198,7 +198,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_13()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](tensor<int, 3>& tsor)
 		{
@@ -215,7 +215,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_14()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](const tensor<int, 3>& tsor)
 		{
@@ -232,7 +232,7 @@ namespace tensor_const_testing_suit
 
 	void TEST_15()
 	{
-		tensor<int, 3> tsor(2u, 2u, 2u);
+		tensor<int, 3> tsor(2, 2, 2);
 
 		[](tensor<int, 3>& tsor)
 		{
