@@ -105,8 +105,8 @@ namespace useful_concepts
         requires(std::is_constructible_v<T, typename std::common_type_t<U...>> == true);
     };
 
-    template <typename... U, typename T>
-    concept common_type_convertible_to = 
+    template <typename T, typename... U>
+    concept convertible_to_common_type =
         std::convertible_to<typename std::common_type<U...>::type, T>;
 
     template <typename T, typename... U>

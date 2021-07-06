@@ -40,8 +40,8 @@ namespace tensor_resize_testing_suit
 		tensor<int, 5> tsor(7, 7, 7, 7, 7);
 
 		tsor.resize(1, 2, 3, 4, 5);
-		std::array expected_sizes{ 120,120,60,20,5 };
-		std::array expected_ranks{ 1,2,3,4,5 };
+		std::array expected_sizes{ 120, 120, 60, 20, 5 };
+		std::array expected_ranks{ 1, 2, 3, 4, 5 };
 
 		/*std::cout << "Ranks: ";
 		for (const auto& val : tsor.get_ranks())
@@ -77,10 +77,10 @@ namespace tensor_resize_testing_suit
 
 		if constexpr (TENSORLIB_DEBUGGING)
 		{
-			iterations = 50;
+			iterations = 10;
 		}
 		else
-			iterations = 1000;
+			iterations = 100;
 
 		for (unsigned long long i = 0; i < iterations; ++i) // check for memory leaks
 		{

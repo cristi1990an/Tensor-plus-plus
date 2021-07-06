@@ -2,6 +2,7 @@
 
 #include <type_traits>
 #include <initializer_list>
+#include "useful_concepts.hpp"
 
 namespace useful_specializations
 {
@@ -32,5 +33,19 @@ namespace useful_specializations
         if (val)
             return val;
         return 1u;
+    }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    template<typename T> requires std::convertible_to<T, std::size_t>
+    constexpr std::size_t multiply_all(const T val) noexcept
+    {
+        return val;
+    }
+
+    template<typename ... Sizes> requires useful_concepts::convertible_to_common_type<std::size_t, Sizes...>
+    constexpr std::size_t multiply_all(const std::size_t first, const Sizes ... sizes) noexcept
+    {
+        return first * multiply_all(sizes...);
     }
 }
