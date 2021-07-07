@@ -473,22 +473,22 @@ namespace tensor_lib
 
         constexpr const auto begin() const noexcept
         {
-            return _data.begin();
+            return const_iterator(_data.data());
         }
 
         constexpr const auto end() const noexcept
         {
-            return _data.end();
+            return const_iterator(_data.data() + size_of_current_tensor());
         }
 
         constexpr const auto cbegin() const noexcept
         {
-            return _data.begin();
+            return const_iterator(_data.data());
         }
 
         constexpr const auto cend() const noexcept
         {
-            return _data.end();
+            return const_iterator(_data.data() + size_of_current_tensor());
         }
 
         constexpr auto get_Rank() const noexcept
@@ -659,32 +659,32 @@ namespace tensor_lib
 
         constexpr auto begin() noexcept
         {
-            return _data.begin();
+            return iterator(_data.data());
         }
 
         constexpr const auto begin() const noexcept
         {
-            return std::span<const T>(_data).begin();
+            return const_iterator(_data.data());
         }
 
         constexpr const auto cbegin() const noexcept
         {
-            return std::span<const T>(_data).begin();
+            return const_iterator(_data.data());
         }
 
         constexpr auto end() noexcept
         {
-            return _data.end();
+            return iterator(_data.data() + size_of_current_tensor());
         }
 
         constexpr const auto end() const noexcept
         {
-            return std::span<const T>(_data).end();
+            return const_iterator(_data.data() + size_of_current_tensor());
         }
 
         constexpr const auto cend() const noexcept
         {
-            return std::span<const T>(_data).end();
+            return const_iterator(_data.data() + size_of_current_tensor());
         }
 
         constexpr auto get_Rank() const noexcept

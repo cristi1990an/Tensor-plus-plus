@@ -204,7 +204,7 @@ namespace tensor_const_testing_suit
 		{
 			auto it = tsor[0].begin();
 
-			if (not std::is_same_v<decltype(it), std::span<int>::iterator>)
+			if (not std::is_same_v<decltype(it), tensor<int, 3>::iterator>)
 			{
 				throw std::exception("TEST_13 in 'tensor_const_testing_suit' failed!\n");
 			}
@@ -221,7 +221,7 @@ namespace tensor_const_testing_suit
 		{
 			auto it = tsor[0].begin();
 
-			if (not std::is_same_v<decltype(it), std::span<const int>::iterator>)
+			if (not std::is_same_v<decltype(it), tensor<int, 3>::const_iterator>)
 			{
 				throw std::exception("TEST_14 in 'tensor_const_testing_suit' failed!\n");
 			}
@@ -236,14 +236,31 @@ namespace tensor_const_testing_suit
 
 		[](tensor<int, 3>& tsor)
 		{
-			auto it = tsor.cbegin();
+			auto it = tsor.begin();
 
-			if (not std::is_same_v<decltype(it), tensor<int, 3>::const_iterator>)
+			if (not std::is_same_v<decltype(it), tensor<int, 3>::iterator>)
 			{
 				throw std::exception("TEST_15 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 15 PASSED.\n";
+		}(tsor);
+	}
+
+	void TEST_16()
+	{
+		tensor<int, 3> tsor(2, 2, 2);
+
+		[](tensor<int, 3>& tsor)
+		{
+			auto it = tsor.cbegin();
+
+			if (not std::is_same_v<decltype(it), tensor<int, 3>::const_iterator>)
+			{
+				throw std::exception("TEST_16 in 'tensor_const_testing_suit' failed!\n");
+			}
+			else
+				std::cout << "\tTEST 16 PASSED.\n";
 		}(tsor);
 	}
 
@@ -266,6 +283,7 @@ namespace tensor_const_testing_suit
 		TEST_13();
 		TEST_14();
 		TEST_15();
+		TEST_16();
 
 		std::cout << "\n";
 	}
