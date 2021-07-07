@@ -521,6 +521,16 @@ namespace tensor_lib
             auto it = _data.begin();
             return reinterpret_cast<const T*>(&it);
         }
+
+        consteval const bool is_matrix() const noexcept
+        {
+            return (Rank == 2);
+        }
+
+        constexpr const bool is_square_matrix() const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+        {
+            return (_size_of_subdimension[0] == _size_of_subdimension[1]);
+        }
     };
 
     template <typename T, std::size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
@@ -718,6 +728,36 @@ namespace tensor_lib
         {
             auto it = _data.begin();
             return reinterpret_cast<T*>(&it);
+        }
+
+        friend constexpr void swap(subdimension& left, subdimension& right) TENSORLIB_NOEXCEPT_IN_RELEASE
+        {
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
+                    throw std::runtime_error("Can't swap subdimensions of different sizes!");
+
+            const auto size = left.size_of_current_tensor();
+
+            std::unique_ptr<T[]> aux(new T[size]);
+
+            std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
+            std::memcpy(left._data.data(), right._data.data(), sizeof(T) * size);
+            std::memcpy(right._data.data(), aux.get(), sizeof(T) * size);
+        }
+
+        friend constexpr void swap(subdimension left, subdimension right) TENSORLIB_NOEXCEPT_IN_RELEASE
+        {
+            if constexpr (TENSORLIB_DEBUGGING)
+                if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
+                    throw std::runtime_error("Can't swap subdimensions of different sizes!");
+
+            const auto size = left.size_of_current_tensor();
+
+            std::unique_ptr<T[]> aux(new T[size]);
+
+            std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
+            std::memcpy(left._data.data(), right._data.data(), sizeof(T) * size);
+            std::memcpy(right._data.data(), aux.get(), sizeof(T) * size);
         }
     };
 
@@ -1036,30 +1076,32 @@ namespace tensor_lib
         pointer ptr;
     };
 
+    
+
     namespace specializations
     {
         template <typename T>
-        using tensor_1d = tensor<T, 1>;
+        using tensor_1d     = tensor<T, 1>;
 
         template <typename T>
-        using tensor_line = tensor<T, 1>;
+        using tensor_line   = tensor<T, 1>;
 
         template <typename T>
-        using tensor_2d = tensor<T, 2>;
+        using tensor_2d     = tensor<T, 2>;
 
         template <typename T>
-        using matrix = tensor<T, 2>;
+        using matrix        = tensor<T, 2>;
 
         template <typename T>
-        using tensor_3d = tensor<T, 3>;
+        using tensor_3d     = tensor<T, 3>;
 
         template <typename T>
-        using cube = tensor<T, 3>;
+        using cube          = tensor<T, 3>;
 
         template <typename T>
-        using tensor_4d = tensor<T, 4>;
-
+        using tensor_4d     = tensor<T, 4>;
+        
         template <typename T> 
-        using tensor_5d = tensor<T, 5>;
+        using tensor_5d     = tensor<T, 5>;
     }
 }

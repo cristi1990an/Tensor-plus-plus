@@ -192,6 +192,14 @@ namespace useful_concepts
     };
 
     template <typename T, typename U, T t, U u>
+    concept is_not_equal_to =
+        std::equality_comparable_with<T, U> &&
+        requires()
+    {
+        requires(t != u);
+    };
+
+    template <typename T, typename U, T t, U u>
     concept is_equal_or_greater_than =
         std::three_way_comparable_with<T, U> &&
         requires()

@@ -98,12 +98,76 @@ namespace tensor_iteration_testing_suit
 		std::cout << "\tTEST 2 PASSED.\n";
 	}
 
+	void TEST_3()
+	{
+		tensor<int, 3> tsor(2, 3, 4);
+		tsor =
+		{
+			{
+				{
+					10, 11, 12, 13
+				},
+				{
+					14, 15, 16, 17
+				},
+				{
+					18, 19, 20, 21
+				},
+			},
+			{
+				{
+					22, 23, 24, 25
+				},
+				{
+					26, 27, 28, 29
+				},
+				{
+					30, 31, 32, 33
+				},
+			}
+		};
+		tensor<int, 3> expected(2, 3, 4);
+		expected =
+		{
+			{
+				{
+					22, 23, 24, 25
+				},
+				{
+					26, 27, 28, 29
+				},
+				{
+					30, 31, 32, 33
+				},
+			},
+			{
+				{
+					10, 11, 12, 13
+				},
+				{
+					14, 15, 16, 17
+				},
+				{
+					18, 19, 20, 21
+				},
+			}
+		};
+
+		swap(tsor[0], tsor[1]);
+
+		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
+			throw std::exception("TEST_3 in 'tensor_iteration_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 3 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor iteration tests...\n\n";
 
 		TEST_1();
 		TEST_2();
+		TEST_3();
 
 
 		std::cout << "\n";
