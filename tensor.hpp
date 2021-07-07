@@ -776,18 +776,7 @@ namespace tensor_lib
         constexpr iterator(const iterator&) noexcept = default;
         constexpr iterator(iterator&&) noexcept = default;
         constexpr iterator(pointer other) noexcept : ptr{ other } {}
-
         constexpr iterator(bool) = delete;
-
-        constexpr reference get() noexcept
-        {
-            return *ptr;
-        }
-
-        constexpr const reference get() const noexcept
-        {
-            return *ptr;
-        }
 
         constexpr explicit operator reference() const noexcept
         {
@@ -840,80 +829,65 @@ namespace tensor_lib
             return iterator(aux);
         }
 
-        constexpr iterator& operator+=(const size_t& offset) noexcept
+        constexpr iterator& operator+=(const ptrdiff_t offset) noexcept
         {
             ptr += offset;
             return *this;
         }
 
-        constexpr iterator& operator-=(const size_t& offset) noexcept
+        constexpr iterator& operator-=(const ptrdiff_t offset) noexcept
         {
             ptr -= offset;
             return *this;
         }
 
-        constexpr reference operator[](const size_t& offset) const noexcept
+        constexpr reference operator[](const size_t offset) const noexcept
         {
             return *(ptr + offset);
         }
 
-        friend constexpr bool operator==(const iterator& it_a, const iterator& it_b) noexcept
+        friend constexpr bool operator==(const iterator it_a, const iterator it_b) noexcept
         {
             return it_a.ptr == it_b.ptr;
         }
 
-        friend constexpr bool operator==(const iterator& it, const pointer adr) noexcept
-        {
-            return it.ptr == adr;
-        }
-
-        friend constexpr bool operator!=(const iterator& it_a, const iterator& it_b) noexcept
+        friend constexpr bool operator!=(const iterator it_a, const iterator it_b) noexcept
         {
             return it_a.ptr != it_b.ptr;
         }
 
-        friend constexpr bool operator!=(const iterator& it, const pointer adr) noexcept
-        {
-            return it.ptr != adr;
-        }
-
-        friend constexpr iterator operator+(const iterator& it, const size_t& offset) noexcept
+        friend constexpr iterator operator+(const iterator it, const ptrdiff_t offset) noexcept
         {
             T* result = it.ptr + offset;
             return iterator(result);
         }
 
-        friend constexpr iterator operator+(const int& offset, const iterator& it) noexcept
+        friend constexpr iterator operator+(const ptrdiff_t offset, const iterator& it) noexcept
         {
             auto aux = offset + it.ptr;
             return iterator(aux);
         }
 
-        friend constexpr iterator operator-(const iterator& it, const size_t& offset) noexcept
+        friend constexpr iterator operator-(const iterator it, const ptrdiff_t offset) noexcept
         {
             T* aux = it.ptr - offset;
             return iterator(aux);
         }
 
-        friend constexpr iterator operator-(const int& offset, const iterator& it) noexcept
+        friend constexpr iterator operator-(const ptrdiff_t offset, const iterator it) noexcept
         {
             auto aux = offset - it.ptr;
             return iterator(aux);
         }
 
-        friend constexpr difference_type operator-(const iterator& a, const iterator& b) noexcept
+        friend constexpr difference_type operator-(const iterator a, const iterator b) noexcept
         {
             return a.ptr - b.ptr;
         }
 
-        friend constexpr auto operator<=>(const iterator& a, const iterator& b) noexcept
+        friend constexpr auto operator<=>(const iterator a, const iterator b) noexcept
         {
             return a.ptr <=> b.ptr;
-        }
-
-        friend constexpr auto operator<=>(const iterator& it, const pointer pt) noexcept
-        {
-            return it.ptr <=> pt;
         }
 
     private:
@@ -938,12 +912,7 @@ namespace tensor_lib
 
         constexpr const_iterator(bool) = delete;
 
-        constexpr const_iterator(const iterator& other) noexcept : ptr{ other.ptr } {}
-
-        constexpr reference get() const noexcept
-        {
-            return *ptr;
-        }
+        constexpr const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
 
         constexpr explicit operator const reference() const noexcept
         {
@@ -996,80 +965,71 @@ namespace tensor_lib
             return const_iterator(aux);
         }
 
-        constexpr const_iterator& operator+=(const size_t& offset) noexcept
+        constexpr const_iterator& operator+=(const size_t offset) noexcept
         {
             ptr += offset;
             return *this;
         }
 
-        constexpr const_iterator& operator-=(const size_t& offset) noexcept
+        constexpr const_iterator& operator-=(const size_t offset) noexcept
         {
             ptr -= offset;
             return *this;
         }
 
-        constexpr reference operator[](const size_t& offset) const noexcept
+        constexpr reference operator[](const size_t offset) const noexcept
         {
             return *(ptr + offset);
         }
 
-        friend constexpr bool operator==(const const_iterator& it_a, const const_iterator& it_b) noexcept
+        friend constexpr bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
         {
             return it_a.ptr == it_b.ptr;
         }
 
-        friend constexpr bool operator==(const const_iterator& it, const pointer adr) noexcept
+        friend constexpr bool operator==(const const_iterator it, const pointer adr) noexcept
         {
             return it.ptr == adr;
         }
 
-        friend constexpr bool operator!=(const const_iterator& it_a, const const_iterator& it_b) noexcept
+        friend constexpr bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
         {
             return it_a.ptr != it_b.ptr;
         }
 
-        friend constexpr bool operator!=(const const_iterator& it, const pointer adr) noexcept
+        friend constexpr bool operator!=(const const_iterator it, const pointer adr) noexcept
         {
             return it.ptr != adr;
         }
 
-        friend constexpr const_iterator operator+(const const_iterator& it, const size_t& offset) noexcept
+        friend constexpr const_iterator operator+(const const_iterator& it, const ptrdiff_t offset) noexcept
         {
-            pointer result = it.ptr + offset;
-            return const_iterator(result);
+            return const_iterator(it.ptr + offset);
         }
 
-        friend constexpr const_iterator operator+(const int& offset, const const_iterator& it) noexcept
+        friend constexpr const_iterator operator+(const ptrdiff_t offset, const const_iterator it) noexcept
         {
-            auto aux = offset + it.ptr;
-            return const_iterator(aux);
+            return const_iterator(offset + it.ptr);
         }
 
-        friend constexpr const_iterator operator-(const const_iterator& it, const size_t& offset) noexcept
+        friend constexpr const_iterator operator-(const const_iterator it, const ptrdiff_t offset) noexcept
         {
-            T* aux = it.ptr - offset;
-            return const_iterator(aux);
+            return const_iterator(it.ptr - offset);
         }
 
         friend constexpr const_iterator operator-(const int& offset, const const_iterator& it) noexcept
         {
-            auto aux = offset - it.ptr;
-            return const_iterator(aux);
+            return const_iterator(offset - it.ptr);
         }
 
-        friend constexpr difference_type operator-(const const_iterator& a, const const_iterator& b) noexcept
+        friend constexpr difference_type operator-(const const_iterator a, const const_iterator b) noexcept
         {
             return a.ptr - b.ptr;
         }
 
-        friend constexpr auto operator<=>(const const_iterator& a, const const_iterator& b) noexcept
+        friend constexpr auto operator<=>(const const_iterator a, const const_iterator b) noexcept
         {
             return a.ptr <=> b.ptr;
-        }
-
-        friend constexpr auto operator<=>(const const_iterator& it, const pointer pt) noexcept
-        {
-            return it.ptr <=> pt;
         }
 
     private:
