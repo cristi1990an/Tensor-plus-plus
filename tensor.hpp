@@ -3,6 +3,7 @@
 #include <array>
 #include <numeric>
 #include <utility>
+#include <memory>
 #include <span>
 #include "useful_concepts.hpp"
 #include "useful_specializations.hpp"
@@ -478,7 +479,7 @@ namespace tensor_lib
 
         constexpr const auto end() const noexcept
         {
-            return const_iterator(_data.data() + size_of_current_tensor());
+            return const_iterator(std::to_address(_data.end()));
         }
 
         constexpr const auto cbegin() const noexcept
@@ -488,7 +489,7 @@ namespace tensor_lib
 
         constexpr const auto cend() const noexcept
         {
-            return const_iterator(_data.data() + size_of_current_tensor());
+            return const_iterator(std::to_address(_data.end()));
         }
 
         constexpr auto get_Rank() const noexcept
@@ -684,17 +685,17 @@ namespace tensor_lib
 
         constexpr auto end() noexcept
         {
-            return iterator(_data.data() + size_of_current_tensor());
+            return iterator(std::to_address(_data.end()));
         }
 
         constexpr const auto end() const noexcept
         {
-            return const_iterator(_data.data() + size_of_current_tensor());
+            return const_iterator(std::to_address(_data.end()));
         }
 
         constexpr const auto cend() const noexcept
         {
-            return const_iterator(_data.data() + size_of_current_tensor());
+            return const_iterator(std::to_address(_data.end()));
         }
 
         constexpr auto get_Rank() const noexcept

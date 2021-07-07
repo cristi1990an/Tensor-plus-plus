@@ -180,5 +180,5 @@ int main()
 
 
 		tensor_testing_suit::RUN_ALL_TESTS();
-		// benchmark::RUN_ALL();
+		benchmark::RUN_ALL();
 }
