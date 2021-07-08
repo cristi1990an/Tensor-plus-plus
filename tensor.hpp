@@ -1039,7 +1039,7 @@ namespace tensor_lib
 
     
 
-    namespace specializations
+    namespace aliases
     {
         template <typename T>
         using tensor_1d     = tensor<T, 1>;
