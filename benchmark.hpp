@@ -198,10 +198,10 @@ namespace benchmark
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
-			i = std::rand() % 5;
-			j = std::rand() % 4;
-			k = std::rand() % 3;
-			l = std::rand() % 2;
+			i = (size_t)std::rand() % 5;
+			j = (size_t)std::rand() % 4;
+			k = (size_t)std::rand() % 3;
+			l = (size_t)std::rand() % 2;
 			val = std::rand() % std::_Max_possible_v<int>;
 
 			start = std::chrono::high_resolution_clock::now();

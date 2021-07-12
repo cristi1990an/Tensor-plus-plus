@@ -121,9 +121,9 @@ int main()
 		In the example below we're iterating through the whole first subdimension of the second rank of the tensor, setting each value to zero.
 	*/
 
-		for (auto& val : my_tensor[0][0]) 
+		for (auto& vals : my_tensor[0][0]) 
 		{
-			val = 0;
+			vals = 0;
 		}
 
 	/*

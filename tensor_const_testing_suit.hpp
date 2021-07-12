@@ -11,7 +11,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor( 2, 2, 2 );
 
-		[](const tensor<int, 3>& tsor)
+		[]([[maybe_unused]] const tensor<int, 3>& tsor)
 		{
 			if (! std::is_same_v<decltype(tsor[0]), const const_subdimension<int, 2>>)
 			{
@@ -26,7 +26,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor( 2, 2, 2 );
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			if (! std::is_same_v<decltype(tsor[0]), subdimension<int, 2>>)
 			{
@@ -41,7 +41,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor( 2, 2, 2 );
 
-		[](const subdimension<int, 2>& subdim)
+		[]([[maybe_unused]] const subdimension<int, 2>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 1>>)
 			{
@@ -57,7 +57,7 @@ namespace tensor_const_testing_suit
 		tensor<int, 3> tsor( 2, 2, 2 );
 		auto subdim = tsor[0];
 
-		[](subdimension<int, 2>& subdim)
+		[]([[maybe_unused]] subdimension<int, 2>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0]), subdimension<int, 1>>)
 			{
@@ -73,7 +73,7 @@ namespace tensor_const_testing_suit
 		tensor<int, 3> tsor( 2, 2, 2 );
 		const_subdimension<int, 3> subdim(tsor);
 
-		[](const const_subdimension<int, 3>& subdim)
+		[]([[maybe_unused]] const const_subdimension<int, 3>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 2>>)
 			{
@@ -88,7 +88,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor( 2, 2, 2 );
 		
-		[](const tensor<int, 3>& tsor)
+		[]([[maybe_unused]] const tensor<int, 3>& tsor)
 		{
 			if (! std::is_same_v<decltype(tsor[0][0][0]), const int &>)
 			{
@@ -104,7 +104,7 @@ namespace tensor_const_testing_suit
 		tensor<int, 3> tsor( 2, 2, 2 );
 		subdimension<int, 3> subdim(tsor);
 
-		[](const subdimension<int, 3>& subdim)
+		[]([[maybe_unused]] const subdimension<int, 3>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), const int&>)
 			{
@@ -120,7 +120,7 @@ namespace tensor_const_testing_suit
 		tensor<int, 3> tsor(2, 2, 2);
 		const_subdimension<int, 3> subdim(tsor);
 
-		[](const const_subdimension<int, 3>& subdim)
+		[]([[maybe_unused]] const const_subdimension<int, 3>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), const int&>)
 			{
@@ -135,7 +135,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			if (! std::is_same_v<decltype(tsor[0][0][0]), int&>)
 			{
@@ -151,7 +151,7 @@ namespace tensor_const_testing_suit
 		tensor<int, 3> tsor(2, 2, 2);
 		subdimension<int, 3> subdim(tsor);
 
-		[](subdimension<int, 3>& subdim)
+		[]([[maybe_unused]] subdimension<int, 3>& subdim)
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), int&>)
 			{
@@ -166,7 +166,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			auto it = tsor.begin();
 
@@ -183,7 +183,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](const tensor<int, 3>& tsor)
+		[]([[maybe_unused]] const tensor<int, 3>& tsor)
 		{
 			auto it = tsor.begin();
 
@@ -200,7 +200,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			auto it = tsor[0].begin();
 
@@ -217,7 +217,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](const tensor<int, 3>& tsor)
+		[]([[maybe_unused]] const tensor<int, 3>& tsor)
 		{
 			auto it = tsor[0].begin();
 
@@ -234,7 +234,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			auto it = tsor.begin();
 
@@ -251,7 +251,7 @@ namespace tensor_const_testing_suit
 	{
 		tensor<int, 3> tsor(2, 2, 2);
 
-		[](tensor<int, 3>& tsor)
+		[]([[maybe_unused]] tensor<int, 3>& tsor)
 		{
 			auto it = tsor.cbegin();
 

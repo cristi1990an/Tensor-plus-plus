@@ -290,7 +290,7 @@ namespace tensor_lib
             _order_of_dimension = { static_cast<std::size_t>(new_sizes)... };
             
             if constexpr (TENSORLIB_DEBUGGING)
-                if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0) != _order_of_dimension.cend())
+                if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0u) != _order_of_dimension.cend())
                     throw std::runtime_error("Size of dimension can't be changed to zero!");
             
             construct_size_of_subdimension_array();
@@ -458,6 +458,15 @@ namespace tensor_lib
 
         }
 
+        constexpr auto& operator=(const const_subdimension& other) noexcept
+        {
+            _order_of_dimension = other._order_of_dimension;
+            _size_of_subdimension = other._size_of_subdimension;
+            _data = other._data;
+
+            return *this;
+        }
+
         constexpr const auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
         {
             return const_subdimension<T, Rank - 1>
@@ -593,6 +602,15 @@ namespace tensor_lib
 
         }
 
+        constexpr auto& operator=(const subdimension& other) noexcept
+        {
+            _order_of_dimension     = other._order_of_dimension;
+            _size_of_subdimension   = other._size_of_subdimension;
+            _data                   = other._data;
+
+            return *this;
+        }
+
         constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
             requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2> 
         {
@@ -694,12 +712,12 @@ namespace tensor_lib
             return iterator(std::to_address(_data.end()));
         }
 
-        constexpr const auto end() const noexcept
+        constexpr auto end() const noexcept
         {
             return const_iterator(std::to_address(_data.end()));
         }
 
-        constexpr const auto cend() const noexcept
+        constexpr auto cend() const noexcept
         {
             return const_iterator(std::to_address(_data.end()));
         }
@@ -860,6 +878,30 @@ namespace tensor_lib
             return iterator(aux);
         }
 
+        friend constexpr iterator operator+(const iterator it, const size_t offset) noexcept
+        {
+            T* result = it.ptr + offset;
+            return iterator(result);
+        }
+
+        friend constexpr iterator operator+(const size_t offset, const iterator& it) noexcept
+        {
+            auto aux = offset + it.ptr;
+            return iterator(aux);
+        }
+
+        friend constexpr iterator operator-(const iterator it, const size_t offset) noexcept
+        {
+            T* aux = it.ptr - offset;
+            return iterator(aux);
+        }
+
+        friend constexpr iterator operator-(const size_t offset, const iterator it) noexcept
+        {
+            auto aux = offset - it.ptr;
+            return iterator(aux);
+        }
+
         friend constexpr difference_type operator-(const iterator a, const iterator b) noexcept
         {
             return a.ptr - b.ptr;
@@ -997,7 +1039,27 @@ namespace tensor_lib
             return const_iterator(it.ptr - offset);
         }
 
-        friend constexpr const_iterator operator-(const int& offset, const const_iterator& it) noexcept
+        friend constexpr const_iterator operator-(const ptrdiff_t offset, const const_iterator& it) noexcept
+        {
+            return const_iterator(offset - it.ptr);
+        }
+
+        friend constexpr const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
+        {
+            return const_iterator(it.ptr + offset);
+        }
+
+        friend constexpr const_iterator operator+(const size_t offset, const const_iterator it) noexcept
+        {
+            return const_iterator(offset + it.ptr);
+        }
+
+        friend constexpr const_iterator operator-(const const_iterator it, const size_t offset) noexcept
+        {
+            return const_iterator(it.ptr - offset);
+        }
+
+        friend constexpr const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
         {
             return const_iterator(offset - it.ptr);
         }

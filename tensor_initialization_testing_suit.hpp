@@ -206,7 +206,7 @@ namespace tensor_initialization_testing_suit
 		tensor<int, 5> tsor( 1, 2, 3, 4, 5 );
 		
 		auto sizes = tsor.get_ranks();
-		auto expected = { 1, 2, 3, 4, 5 };
+		std::array<size_t, 5> expected = { 1, 2, 3, 4, 5 };
 
 		if (!std::equal(sizes.begin(), sizes.end(), expected.begin()))
 		{
