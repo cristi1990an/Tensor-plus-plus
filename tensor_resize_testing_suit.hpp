@@ -25,11 +25,11 @@ namespace tensor_resize_testing_suit
 
 		if (tsor.order_of_current_dimension() != 10)
 		{
-			throw std::exception("TEST_2 in 'tensor_resize_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_2 in 'tensor_resize_testing_suit' failed!\n");
 		}
 		if (tsor.size_of_current_tensor() != 10)
 		{
-			throw std::exception("TEST_2 in 'tensor_resize_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_2 in 'tensor_resize_testing_suit' failed!\n");
 		}
 
 		std::cout << "\tTEST 2 PASSED.\n";
@@ -59,11 +59,11 @@ namespace tensor_resize_testing_suit
 
 		if (!std::equal(tsor.get_sizes().cbegin(), tsor.get_sizes().cend(), expected_sizes.cbegin()))
 		{
-			throw std::exception("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
 		}
 		if (!std::equal(tsor.get_ranks().cbegin(), tsor.get_ranks().cend(), expected_ranks.cbegin()))
 		{
-			throw std::exception("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
 		}
 
 		std::cout << "\tTEST 3 PASSED.\n";

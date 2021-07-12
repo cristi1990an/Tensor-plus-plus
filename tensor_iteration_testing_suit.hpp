@@ -29,7 +29,7 @@ namespace tensor_iteration_testing_suit
 		std::copy(tsor[0].cbegin() + 2, tsor.cend(), result.begin());
 
 		if(!std::equal(result.cbegin(), result.cend(), expected.cbegin()))
-			throw std::exception("TEST_1 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_1 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 1 PASSED.\n";
 	}
@@ -93,7 +93,7 @@ namespace tensor_iteration_testing_suit
 		std::fill(tsor[1][1].begin(),		tsor[1][2].begin() + 1, 0);
 
 		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
-			throw std::exception("TEST_2 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_2 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 2 PASSED.\n";
 	}
@@ -156,7 +156,7 @@ namespace tensor_iteration_testing_suit
 		swap(tsor[0], tsor[1]); // specialization of swap()
 
 		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
-			throw std::exception("TEST_3 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_3 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 3 PASSED.\n";
 	}
@@ -219,7 +219,7 @@ namespace tensor_iteration_testing_suit
 		std::sort(tsor[0][2].begin() + 2, tsor[1][1].begin() + 2);
 
 		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
-			throw std::exception("TEST_4 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_4 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 4 PASSED.\n";
 	}
@@ -337,10 +337,10 @@ namespace tensor_iteration_testing_suit
 		swap(tsor_1[0], tsor_2[1]); // specialization of swap()
 
 		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), expected_1.cbegin()))
-			throw std::exception("TEST_5 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_5 in 'tensor_iteration_testing_suit' failed!\n");
 
 		if (!std::equal(tsor_2.cbegin(), tsor_2.cend(), expected_2.cbegin()))
-			throw std::exception("TEST_5 in 'tensor_iteration_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_5 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 5 PASSED.\n";
 	}

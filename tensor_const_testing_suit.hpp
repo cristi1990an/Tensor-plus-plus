@@ -15,7 +15,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(tsor[0]), const const_subdimension<int, 2>>)
 			{
-				throw std::exception("TEST_1 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_1 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 1 PASSED.\n";
@@ -30,7 +30,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(tsor[0]), subdimension<int, 2>>)
 			{
-				throw std::exception("TEST_2 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_2 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 2 PASSED.\n";
@@ -45,7 +45,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 1>>)
 			{
-				throw std::exception("TEST_3 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_3 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 3 PASSED.\n";
@@ -61,7 +61,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0]), subdimension<int, 1>>)
 			{
-				throw std::exception("TEST_4 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_4 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 4 PASSED.\n";
@@ -77,7 +77,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 2>>)
 			{
-				throw std::exception("TEST_5 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_5 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 5 PASSED.\n";
@@ -92,7 +92,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(tsor[0][0][0]), const int &>)
 			{
-				throw std::exception("TEST_6 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_6 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 6 PASSED.\n";
@@ -108,7 +108,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), const int&>)
 			{
-				throw std::exception("TEST_7 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_7 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 7 PASSED.\n";
@@ -124,7 +124,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), const int&>)
 			{
-				throw std::exception("TEST_8 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_8 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 8 PASSED.\n";
@@ -139,7 +139,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(tsor[0][0][0]), int&>)
 			{
-				throw std::exception("TEST_9 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_9 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 9 PASSED.\n";
@@ -155,7 +155,7 @@ namespace tensor_const_testing_suit
 		{
 			if (! std::is_same_v<decltype(subdim[0][0][0]), int&>)
 			{
-				throw std::exception("TEST_10 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_10 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 10 PASSED.\n";
@@ -172,7 +172,7 @@ namespace tensor_const_testing_suit
 
 			if (! std::is_same_v<decltype(it), _tensor_common<int>::iterator>)
 			{
-				throw std::exception("TEST_11 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_11 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 11 PASSED.\n";
@@ -189,7 +189,7 @@ namespace tensor_const_testing_suit
 
 			if (not std::is_same_v<decltype(it), _tensor_common<int>::const_iterator>)
 			{
-				throw std::exception("TEST_12 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_12 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 12 PASSED.\n";
@@ -206,7 +206,7 @@ namespace tensor_const_testing_suit
 
 			if (! std::is_same_v<decltype(it), _tensor_common<int>::iterator>)
 			{
-				throw std::exception("TEST_13 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_13 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 13 PASSED.\n";
@@ -223,7 +223,7 @@ namespace tensor_const_testing_suit
 
 			if (! std::is_same_v<decltype(it), _tensor_common<int>::const_iterator>)
 			{
-				throw std::exception("TEST_14 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_14 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 14 PASSED.\n";
@@ -240,7 +240,7 @@ namespace tensor_const_testing_suit
 
 			if (! std::is_same_v<decltype(it), _tensor_common<int>::iterator>)
 			{
-				throw std::exception("TEST_15 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_15 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 15 PASSED.\n";
@@ -257,7 +257,7 @@ namespace tensor_const_testing_suit
 
 			if (! std::is_same_v<decltype(it), _tensor_common<int>::const_iterator>)
 			{
-				throw std::exception("TEST_16 in 'tensor_const_testing_suit' failed!\n");
+				throw std::runtime_error("TEST_16 in 'tensor_const_testing_suit' failed!\n");
 			}
 			else
 				std::cout << "\tTEST 16 PASSED.\n";

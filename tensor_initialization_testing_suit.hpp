@@ -27,7 +27,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_1 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_1 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 1 PASSED.\n";
@@ -52,7 +52,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_2 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_2 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 2 PASSED.\n";
@@ -72,7 +72,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_3 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_3 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 3 PASSED.\n";
@@ -92,7 +92,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_4 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_4 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 4 PASSED.\n";
@@ -118,7 +118,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_5 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_5 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 5 PASSED.\n";
@@ -138,7 +138,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1[0].cbegin(), tsor_1[0].cend(), tsor_2.cbegin()) or not std::equal(tsor_1[1].cbegin(), tsor_1[1].cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_6 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_6 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 6 PASSED.\n";
@@ -157,7 +157,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(real_copy.cbegin(), real_copy.cend(), reference.cbegin()))
 		{
-			throw std::exception("TEST_7 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_7 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 7 PASSED.\n";
@@ -181,7 +181,7 @@ namespace tensor_initialization_testing_suit
 
 		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
-			throw std::exception("TEST_8 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_8 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 8 PASSED.\n";
@@ -195,7 +195,7 @@ namespace tensor_initialization_testing_suit
 
 		if (std::pow(3, 6) != std::accumulate(tsor.cbegin(), tsor.cend(), 0))
 		{
-			throw std::exception("TEST_9 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_9 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 9 PASSED.\n";
@@ -214,7 +214,7 @@ namespace tensor_initialization_testing_suit
 			{
 				std::cout << val << ' ';
 			}
-			throw std::exception("TEST_10 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_10 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 		else
 			std::cout << "\tTEST 10 PASSED.\n";
@@ -244,7 +244,7 @@ namespace tensor_initialization_testing_suit
 
 		if (!std::equal(three_dim_tensor.cbegin(), three_dim_tensor.cend(), explicit_dim_tensor.cbegin()))
 		{
-			throw std::exception("TEST_11 in 'tensor_initialization_testing_suit' failed!\n");
+			throw std::runtime_error("TEST_11 in 'tensor_initialization_testing_suit' failed!\n");
 		}
 
 		std::cout << "\tTEST 11 PASSED.\n";

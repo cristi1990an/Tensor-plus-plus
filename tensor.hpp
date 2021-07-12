@@ -89,7 +89,7 @@ namespace tensor_lib
 
             if constexpr(TENSORLIB_DEBUGGING)
                 if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
-                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+                    throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
 
             _order_of_dimension[Rank - Rank_index] = data_size;
 
@@ -106,7 +106,7 @@ namespace tensor_lib
 
             if constexpr (TENSORLIB_DEBUGGING)
                 if (_order_of_dimension[Rank - 1u] != 0 && _order_of_dimension[Rank - 1u] != data_size)
-                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+                    throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
 
             _order_of_dimension[Rank - 1u] = data_size;
         }
@@ -118,7 +118,7 @@ namespace tensor_lib
 
             if constexpr (TENSORLIB_DEBUGGING)
                 if (_order_of_dimension[Rank - 2u] != 0 && _order_of_dimension[Rank - 2u] != data_size)
-                    throw std::exception("Initializer list constains uneven number of values for dimensions of equal rank!");
+                    throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
 
             _order_of_dimension[Rank - 2u] = data_size;
 
