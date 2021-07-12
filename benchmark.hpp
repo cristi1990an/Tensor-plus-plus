@@ -202,7 +202,7 @@ namespace benchmark
 			j = (size_t)std::rand() % 4;
 			k = (size_t)std::rand() % 3;
 			l = (size_t)std::rand() % 2;
-			val = std::rand() % std::_Max_possible_v<int>;
+			val = std::rand() % std::numeric_limits<int>::max();
 
 			start = std::chrono::high_resolution_clock::now();
 
@@ -240,7 +240,7 @@ namespace benchmark
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
-			std::generate(data.begin(), data.end(), []() {return std::rand() % std::_Max_possible_v<int>; });
+			std::generate(data.begin(), data.end(), []() {return std::rand() % std::numeric_limits<int>::max(); });
 			arr_it = 0;
 
 			start = std::chrono::high_resolution_clock::now();
@@ -294,7 +294,7 @@ namespace benchmark
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
-			std::generate(data.begin(), data.end(), []() {return std::rand() % std::_Max_possible_v<int>; });
+			std::generate(data.begin(), data.end(), []() {return std::rand() % std::numeric_limits<int>::max(); });
 			
 			start = std::chrono::high_resolution_clock::now();
 			std::copy(data.cbegin(), data.cend(), tsor.begin());
@@ -339,7 +339,7 @@ namespace benchmark
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
-			std::generate(data.begin(), data.end(), []() {return std::rand() % std::_Max_possible_v<int>; });
+			std::generate(data.begin(), data.end(), []() {return std::rand() % std::numeric_limits<int>::max(); });
 			start = std::chrono::high_resolution_clock::now();
 			for (i = 0; i < 1000; i++)
 				tsor[i] = data[i++];
