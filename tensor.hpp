@@ -486,7 +486,7 @@ namespace tensor_lib
                 );
         }
 
-        constexpr T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+        constexpr const T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
         {
             return _data[index];
         }
@@ -686,7 +686,7 @@ namespace tensor_lib
                 );
         }
 
-        constexpr T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+        constexpr const T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
         {
             return _data[index];
         }
