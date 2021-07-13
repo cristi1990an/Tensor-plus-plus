@@ -11,11 +11,15 @@
 
 namespace tensor_lib
 {
-    #ifdef _DEBUG
-    constexpr static auto TENSORLIB_DEBUGGING = true;
+    #ifdef _MSC_VER
+        #ifdef _DEBUG
+        constexpr static auto TENSORLIB_DEBUGGING = true;
+        #else
+        constexpr static auto TENSORLIB_DEBUGGING = false;
+        #endif // _DEBUG
     #else
-    constexpr static auto TENSORLIB_DEBUGGING = false;
-    #endif // _DEBUG
+        constexpr static auto TENSORLIB_DEBUGGING = true;
+    #endif
 
     #define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(!TENSORLIB_DEBUGGING)
 
@@ -27,17 +31,17 @@ namespace tensor_lib
         struct const_iterator;
     };
 
-    template <typename T, size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
+    template <typename T, size_t Rank> requires useful_concepts::is_not_zero<size_t, Rank>
     class subdimension;
 
-    template <typename T, size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
+    template <typename T, size_t Rank> requires useful_concepts::is_not_zero<size_t, Rank>
     class const_subdimension;
 
     template <typename T, typename U, std::size_t Rank>
         requires std::convertible_to<T, U> && std::convertible_to<U, T>
     constexpr void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
 
-	template <typename T, size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
+	template <typename T, size_t Rank> requires useful_concepts::is_not_zero<size_t, Rank>
 	class tensor : private _tensor_common<T>
     {
 	private:
@@ -82,7 +86,7 @@ namespace tensor_lib
             }
         }
 
-        template <size_t Rank_index> 
+        template <std::size_t Rank_index> requires useful_concepts::is_greater_than<std::size_t, std::size_t, Rank_index, 2u>
         constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
@@ -99,32 +103,32 @@ namespace tensor_lib
             }
         }
 
-        template <>
-        constexpr void construct_order_array<1u>(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+        template <std::size_t Rank_index> requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 1u>
+        constexpr void construct_order_array (const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
 
             if constexpr (TENSORLIB_DEBUGGING)
-                if (_order_of_dimension[Rank - 1u] != 0 && _order_of_dimension[Rank - 1u] != data_size)
+                if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
                     throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
 
-            _order_of_dimension[Rank - 1u] = data_size;
+            _order_of_dimension[Rank - Rank_index] = data_size;
         }
 
-        template <>
-        constexpr void construct_order_array<2u>(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+        template <std::size_t Rank_index> requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 2u>
+        constexpr void construct_order_array (const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             const auto data_size = data.size();
 
             if constexpr (TENSORLIB_DEBUGGING)
-                if (_order_of_dimension[Rank - 2u] != 0 && _order_of_dimension[Rank - 2u] != data_size)
+                if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
                     throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
 
-            _order_of_dimension[Rank - 2u] = data_size;
+            _order_of_dimension[Rank - Rank_index] = data_size;
 
             for (const auto& init_list : data)
             {
-                construct_order_array<1u>(init_list);
+                construct_order_array<Rank_index - 1>(init_list);
             }
         }
 
@@ -400,7 +404,7 @@ namespace tensor_lib
         }
 	};
 
-    template <typename T, size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
+    template <typename T, size_t Rank> requires useful_concepts::is_not_zero<size_t, Rank>
     class const_subdimension : private _tensor_common<T>
     {
         using ConstSourceSizeOfDimensionArraySpan        = std::span<const size_t, Rank>;
@@ -547,7 +551,7 @@ namespace tensor_lib
         }
     };
 
-    template <typename T, std::size_t Rank> requires useful_concepts::is_greater_than<size_t, size_t, Rank, 0>
+    template <typename T, std::size_t Rank> requires useful_concepts::is_not_zero<size_t, Rank>
     class subdimension : private _tensor_common<T>
     {
         using SourceSizeOfDimensionArraySpan        = std::span<size_t, Rank>;
@@ -854,30 +858,6 @@ namespace tensor_lib
             return it_a.ptr != it_b.ptr;
         }
 
-        friend constexpr iterator operator+(const iterator it, const ptrdiff_t offset) noexcept
-        {
-            T* result = it.ptr + offset;
-            return iterator(result);
-        }
-
-        friend constexpr iterator operator+(const ptrdiff_t offset, const iterator& it) noexcept
-        {
-            auto aux = offset + it.ptr;
-            return iterator(aux);
-        }
-
-        friend constexpr iterator operator-(const iterator it, const ptrdiff_t offset) noexcept
-        {
-            T* aux = it.ptr - offset;
-            return iterator(aux);
-        }
-
-        friend constexpr iterator operator-(const ptrdiff_t offset, const iterator it) noexcept
-        {
-            auto aux = offset - it.ptr;
-            return iterator(aux);
-        }
-
         friend constexpr iterator operator+(const iterator it, const size_t offset) noexcept
         {
             T* result = it.ptr + offset;
@@ -1022,26 +1002,6 @@ namespace tensor_lib
         friend constexpr bool operator!=(const const_iterator it, const pointer adr) noexcept
         {
             return it.ptr != adr;
-        }
-
-        friend constexpr const_iterator operator+(const const_iterator& it, const ptrdiff_t offset) noexcept
-        {
-            return const_iterator(it.ptr + offset);
-        }
-
-        friend constexpr const_iterator operator+(const ptrdiff_t offset, const const_iterator it) noexcept
-        {
-            return const_iterator(offset + it.ptr);
-        }
-
-        friend constexpr const_iterator operator-(const const_iterator it, const ptrdiff_t offset) noexcept
-        {
-            return const_iterator(it.ptr - offset);
-        }
-
-        friend constexpr const_iterator operator-(const ptrdiff_t offset, const const_iterator& it) noexcept
-        {
-            return const_iterator(offset - it.ptr);
         }
 
         friend constexpr const_iterator operator+(const const_iterator& it, const size_t offset) noexcept

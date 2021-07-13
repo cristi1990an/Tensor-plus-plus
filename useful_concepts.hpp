@@ -183,6 +183,22 @@ namespace useful_concepts
         requires(t > u);
     };
 
+    template <typename T, T value>
+    concept is_not_zero =
+        has_zero<T> &&
+        requires()
+    {
+        requires(value != static_cast<T>(0));
+    };
+
+    template <typename T, T value>
+    concept is_zero =
+        has_zero<T> &&
+        requires()
+    {
+        requires(value == static_cast<T>(0));
+    };
+
     template <typename T, typename U, T t, U u>
     concept is_equal_to =
         std::equality_comparable_with<T, U> &&
