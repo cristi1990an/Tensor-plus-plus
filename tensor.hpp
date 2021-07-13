@@ -154,8 +154,8 @@ namespace tensor_lib
         }
 
         template<typename... Sizes>
-            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
-            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+        requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> &&
+          useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
         constexpr tensor(const Sizes ... sizes) noexcept
             : _order_of_dimension{ static_cast<std::size_t>(sizes)... }
         {
@@ -289,8 +289,8 @@ namespace tensor_lib
         }
 
         template<typename... Sizes>
-            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
-            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+        requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> &&
+          useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
         constexpr void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             _order_of_dimension = { static_cast<std::size_t>(new_sizes)... };
@@ -761,9 +761,9 @@ namespace tensor_lib
             return reinterpret_cast<T*>(&it);
         }
 
-        template <typename TT, typename U, std::size_t Rank>
+        template <typename TT, typename U, std::size_t RankS>
             requires std::convertible_to<TT, U> && std::convertible_to<U, TT>
-        friend constexpr void swap (subdimension<TT, Rank>&& left, subdimension<U, Rank>&& right);
+        friend constexpr void swap (subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
     };
 
     template <typename T>
