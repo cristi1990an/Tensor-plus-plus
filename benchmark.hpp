@@ -343,14 +343,14 @@ namespace benchmark
 			std::generate(data.begin(), data.end(), []() {return std::rand() % std::numeric_limits<int>::max(); });
 			start = std::chrono::high_resolution_clock::now();
 			for (i = 0; i < 1000; i++)
-				tsor[i] = data[i++];
+				tsor[i] = data[i];
 			stop = std::chrono::high_resolution_clock::now();
 
 			tensor_average_time += (stop - start).count();
 
 			start = std::chrono::high_resolution_clock::now();
 			for (i = 0; i < 1000; i++)
-				vec[i] = data[i++];
+				vec[i] = data[i];
 			stop = std::chrono::high_resolution_clock::now();
 
 			vector_average_time += (stop - start).count();
