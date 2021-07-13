@@ -1,7 +1,8 @@
 #pragma once
 
-#include <vector>
 #include "tensor.hpp"
+
+#include <vector>
 
 template<typename T, size_t Size>
 void display(const std::array<T, Size>& arr)

@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default Config",
+      "description": "Default build using Ninja generator and gcc/clang warnings",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build_ninja",
+      "cacheVariables": {
+        "CMAKE_CXX_FLAGS": "-Wall -Wextra -Werror=return-type -Wold-style-cast -Weffc++ -pedantic-errors -Wswitch-enum -Werror=write-strings -Wconversion -Wsign-conversion -fdiagnostics-color=always -Werror",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": {
+          "type": "BOOL",
+          "value": "TRUE"
+        }
+      }
+    }
+  ]
+}

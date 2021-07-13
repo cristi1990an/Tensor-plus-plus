@@ -1,10 +1,11 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
 #include "tensor.hpp"
 #include "helpers.hpp"
 #include "tensor_testing_suit.hpp"
 #include "benchmark.hpp"
+
+#include <algorithm>
+#include <iostream>
+#include <vector>
 
 using namespace tensor_lib;
 
