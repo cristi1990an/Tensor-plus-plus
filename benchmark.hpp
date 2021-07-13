@@ -199,10 +199,10 @@ namespace benchmark
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
-			i = (size_t)std::rand() % 5;
-			j = (size_t)std::rand() % 4;
-			k = (size_t)std::rand() % 3;
-			l = (size_t)std::rand() % 2;
+			i = static_cast<std::size_t>(std::rand() % 5);
+			j = static_cast<std::size_t>(std::rand() % 4);
+			k = static_cast<std::size_t>(std::rand() % 3);
+			l = static_cast<std::size_t>(std::rand() % 2);
 			val = std::rand() % std::numeric_limits<int>::max();
 
 			start = std::chrono::high_resolution_clock::now();
