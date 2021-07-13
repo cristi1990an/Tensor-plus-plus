@@ -1,9 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <algorithm>
 #include "helpers.hpp"
 #include "tensor.hpp"
+
+#include <algorithm>
+#include <cmath>
+#include <iostream>
 
 namespace tensor_initialization_testing_suit
 {

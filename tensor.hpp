@@ -1,13 +1,15 @@
 #pragma once
 
-#include <array>
-#include <numeric>
-#include <utility>
-#include <memory>
-#include <span>
 #include "useful_concepts.hpp"
 #include "useful_specializations.hpp"
+
+#include <array>
 #include <chrono>
+#include <cstring>
+#include <memory>
+#include <numeric>
+#include <span>
+#include <utility>
 
 namespace tensor_lib
 {

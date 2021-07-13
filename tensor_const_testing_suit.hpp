@@ -1,7 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include "tensor.hpp"
+
+#include <iostream>
 
 namespace tensor_const_testing_suit
 {

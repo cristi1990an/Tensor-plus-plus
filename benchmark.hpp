@@ -1,9 +1,10 @@
 #pragma once
 
+#include "tensor.hpp"
+
+#include <chrono>
 #include <iostream>
 #include <vector>
-#include <chrono>
-#include "tensor.hpp"
 
 namespace benchmark
 {

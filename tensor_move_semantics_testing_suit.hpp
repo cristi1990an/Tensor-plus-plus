@@ -1,9 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <algorithm>
 #include "helpers.hpp"
 #include "tensor.hpp"
+
+#include <algorithm>
+#include <iostream>
 
 namespace tensor_move_semantics_testing_suit
 {

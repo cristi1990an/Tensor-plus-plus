@@ -1,8 +1,8 @@
 #pragma once
 
-#include <type_traits>
 #include <concepts>
 #include <iostream>
+#include <type_traits>
 
 namespace useful_concepts
 {
