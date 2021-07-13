@@ -157,7 +157,7 @@ TODO:
 
 ~ implement...
 - make container allocator-aware (after learning how to do that) 
-- bug fixes in iterator returned by 'subdimension'
-- bug fixes in resize()
-- benchmarks for move/resize
+- ~~bug fixes in iterator returned by 'subdimension'~~
+- ~~bug fixes in resize()~~
+- ~~benchmarks for move/resize~~
 - more benchmarks in general
