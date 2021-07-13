@@ -14,7 +14,7 @@ namespace tensor_move_semantics_testing_suit
 	{
 		tensor<int, 5> tsor(4, 5, 6, 7, 8);
 
-		tensor result (std::move(tsor));
+		tensor result(std::move(tsor));
 
 		for (const auto& val : tsor.get_sizes())
 		{

@@ -11,11 +11,11 @@ namespace tensor_initialization_testing_suit
 {
 	using namespace tensor_lib;
 
-	#define nested_initializer_list {{{{ 10, 11 },{ 12, 13 },{ 14, 15 },},{ { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, } }, { { { 34, 35 }, { 36, 37 }, { 38, 39 }, }, { { 40, 41 }, { 42, 43 }, { 44, 45 }, }, { { 46, 47 }, { 48, 49 }, { 50, 51 }, }, { { 52, 53 }, { 54, 55 }, { 56, 57 }, } }, { { { 58, 59 }, { 60, 61 }, { 62, 63 }, }, { { 64, 65 }, { 66, 67 }, { 68, 69 }, }, { { 70, 71 }, { 72, 73 }, { 74, 75 }, }, { { 76, 77 }, { 78, 79 }, { 80, 81 }, } }, { { { 82, 83 }, { 84, 85 }, { 86, 87 }, }, { { 88, 89 }, { 90, 91 }, { 92, 93 }, }, { { 94, 95 }, { 96, 97 }, { 98, 99 }, }, { { 10, 11 }, { 12, 13 }, { 14, 15 }, } }, { { { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, }, { { 34, 35 }, { 36, 37 }, { 38, 39 }, } } }
+#define nested_initializer_list {{{{ 10, 11 },{ 12, 13 },{ 14, 15 },},{ { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, } }, { { { 34, 35 }, { 36, 37 }, { 38, 39 }, }, { { 40, 41 }, { 42, 43 }, { 44, 45 }, }, { { 46, 47 }, { 48, 49 }, { 50, 51 }, }, { { 52, 53 }, { 54, 55 }, { 56, 57 }, } }, { { { 58, 59 }, { 60, 61 }, { 62, 63 }, }, { { 64, 65 }, { 66, 67 }, { 68, 69 }, }, { { 70, 71 }, { 72, 73 }, { 74, 75 }, }, { { 76, 77 }, { 78, 79 }, { 80, 81 }, } }, { { { 82, 83 }, { 84, 85 }, { 86, 87 }, }, { { 88, 89 }, { 90, 91 }, { 92, 93 }, }, { { 94, 95 }, { 96, 97 }, { 98, 99 }, }, { { 10, 11 }, { 12, 13 }, { 14, 15 }, } }, { { { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, }, { { 34, 35 }, { 36, 37 }, { 38, 39 }, } } }
 
 	void TEST_1()
 	{
-		tensor<int, 4> tsor_1( 5, 4, 3, 2 ), tsor_2(5, 4, 3, 2);
+		tensor<int, 4> tsor_1(5, 4, 3, 2), tsor_2(5, 4, 3, 2);
 		int val = 10;
 
 		tsor_1 = nested_initializer_list;
@@ -37,8 +37,8 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_2()
 	{
-		tensor<int, 2> tsor_1( 2, 20 ), tsor_2( 2, 20 );
-		
+		tensor<int, 2> tsor_1(2, 20), tsor_2(2, 20);
+
 		std::fill(tsor_1.begin(), tsor_1.end(), 5);
 		std::fill(tsor_1[1].begin(), tsor_1[1].end(), 7);
 
@@ -83,7 +83,7 @@ namespace tensor_initialization_testing_suit
 	void TEST_4()
 	{
 		tensor<int, 3> tsor_1(2, 2, 2), tsor_2(2, 2, 2);
-		
+
 		tsor_1[0][0] = { 0, 0 };
 		tsor_1[0][1] = { 0, 0 };
 		tsor_1[1][0] = { 4, 5 };
@@ -128,10 +128,10 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_6()
 	{
-		tensor<int, 2> tsor_1( 2, 5 );
+		tensor<int, 2> tsor_1(2, 5);
 		subdimension<int, 1> sub_1(tsor_1[1]);
 
-		tensor<int, 1> tsor_2( 5 );
+		tensor<int, 1> tsor_2(5);
 
 		tsor_2 = { 1, 2, 3, 4, 5 };
 
@@ -167,7 +167,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_8()
 	{
-		tensor<int, 3> tsor_1( 10, 10, 10 ), tsor_2(10, 10, 10);
+		tensor<int, 3> tsor_1(10, 10, 10), tsor_2(10, 10, 10);
 		int val = 0;
 
 		for (size_t i = 0; i < tsor_1.order_of_dimension(0); i++)
@@ -191,7 +191,7 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_9()
 	{
-		tensor<int, 5> tsor( 3, 3, 3, 3, 3 );
+		tensor<int, 5> tsor(3, 3, 3, 3, 3);
 
 		std::fill(tsor.begin(), tsor.end(), 3);
 
@@ -205,8 +205,8 @@ namespace tensor_initialization_testing_suit
 
 	void TEST_10()
 	{
-		tensor<int, 5> tsor( 1, 2, 3, 4, 5 );
-		
+		tensor<int, 5> tsor(1, 2, 3, 4, 5);
+
 		auto sizes = tsor.get_ranks();
 		std::array<size_t, 5> expected = { 1, 2, 3, 4, 5 };
 
