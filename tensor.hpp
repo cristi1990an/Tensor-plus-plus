@@ -916,7 +916,7 @@ namespace tensor_lib
 
         constexpr const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
 
-        constexpr explicit operator const reference() const noexcept
+        constexpr explicit operator reference() const noexcept
         {
             return *ptr;
         }
