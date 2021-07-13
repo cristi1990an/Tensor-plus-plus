@@ -317,7 +317,7 @@ namespace tensor_lib
                 );
         }
 
-        constexpr const auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+        constexpr auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
         {
             return const_subdimension<T, Rank - 1>
                 (
@@ -335,7 +335,7 @@ namespace tensor_lib
             return _data[index];
         }
 
-        constexpr const auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+        constexpr auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
         {
             return _data[index];
         }
@@ -370,37 +370,37 @@ namespace tensor_lib
             return const_iterator(&_data[size_of_current_tensor()]);
         }
 
-        constexpr const std::array<std::size_t, Rank>& get_sizes() const noexcept
+        constexpr std::array<std::size_t, Rank>& get_sizes() const noexcept
         {
             return _size_of_subdimension;
         }
 
-        constexpr const std::array<std::size_t, Rank>& get_ranks() const noexcept
+        constexpr std::array<std::size_t, Rank>& get_ranks() const noexcept
         {
             return _order_of_dimension;
         }
 
-        constexpr const size_t order_of_dimension(const size_t& index) const noexcept
+        constexpr size_t order_of_dimension(const size_t& index) const noexcept
         {
             return _order_of_dimension[index];
         }
 
-        constexpr const size_t size_of_subdimension(const size_t& index) const noexcept
+        constexpr size_t size_of_subdimension(const size_t& index) const noexcept
         {
             return _size_of_subdimension[index];
         }
 
-        constexpr const size_t order_of_current_dimension() const noexcept
+        constexpr size_t order_of_current_dimension() const noexcept
         {
             return _order_of_dimension[0];
         }
 
-        constexpr const size_t size_of_current_tensor() const noexcept
+        constexpr size_t size_of_current_tensor() const noexcept
         {
             return _size_of_subdimension[0];
         }
 
-        constexpr const T* data() noexcept
+        constexpr T* data() const noexcept
         {
             return _data.get();
         }
@@ -473,7 +473,7 @@ namespace tensor_lib
             return *this;
         }
 
-        constexpr const auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+        constexpr auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
         {
             return const_subdimension<T, Rank - 1>
                 (
@@ -486,27 +486,27 @@ namespace tensor_lib
                 );
         }
 
-        constexpr const T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+        constexpr T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
         {
             return _data[index];
         }
 
-        constexpr const auto begin() const noexcept
+        constexpr auto begin() const noexcept
         {
             return const_iterator(_data.data());
         }
 
-        constexpr const auto end() const noexcept
+        constexpr auto end() const noexcept
         {
             return const_iterator(std::to_address(_data.end()));
         }
 
-        constexpr const auto cbegin() const noexcept
+        constexpr auto cbegin() const noexcept
         {
             return const_iterator(_data.data());
         }
 
-        constexpr const auto cend() const noexcept
+        constexpr auto cend() const noexcept
         {
             return const_iterator(std::to_address(_data.end()));
         }
@@ -516,27 +516,27 @@ namespace tensor_lib
             return _order_of_dimension;
         }
 
-        constexpr const size_t& order_of_dimension(const size_t& index) const noexcept
+        constexpr size_t& order_of_dimension(const size_t& index) const noexcept
         {
             return _order_of_dimension[index];
         }
 
-        constexpr const size_t& size_of_subdimension(const size_t& index) const noexcept
+        constexpr size_t& size_of_subdimension(const size_t& index) const noexcept
         {
             return _size_of_subdimension[index];
         }
 
-        constexpr const size_t& order_of_current_dimension() const noexcept
+        constexpr size_t& order_of_current_dimension() const noexcept
         {
             return _order_of_dimension[0];
         }
 
-        constexpr const size_t& size_of_current_tensor() const noexcept
+        constexpr size_t& size_of_current_tensor() const noexcept
         {
             return _size_of_subdimension[0];
         }
 
-        constexpr const T* data() const noexcept
+        constexpr T* data() const noexcept
         {
             auto it = _data.begin();
             return reinterpret_cast<const T*>(&it);
@@ -547,7 +547,7 @@ namespace tensor_lib
             return (Rank == 2);
         }
 
-        constexpr const bool is_square_matrix() const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+        constexpr bool is_square_matrix() const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
         {
             return (_size_of_subdimension[0] == _size_of_subdimension[1]);
         }
@@ -673,7 +673,7 @@ namespace tensor_lib
                 );
         }
 
-        constexpr const auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+        constexpr auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
         {
             return const_subdimension<T, Rank - 1>
                 (
@@ -686,7 +686,7 @@ namespace tensor_lib
                 );
         }
 
-        constexpr const T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+        constexpr T& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
         {
             return _data[index];
         }
@@ -701,12 +701,12 @@ namespace tensor_lib
             return iterator(_data.data());
         }
 
-        constexpr const auto begin() const noexcept
+        constexpr auto begin() const noexcept
         {
             return const_iterator(_data.data());
         }
 
-        constexpr const auto cbegin() const noexcept
+        constexpr auto cbegin() const noexcept
         {
             return const_iterator(_data.data());
         }
@@ -733,22 +733,22 @@ namespace tensor_lib
             return dims_sizes;
         }
 
-        constexpr const size_t& order_of_dimension(const size_t& index) const noexcept
+        constexpr size_t& order_of_dimension(const size_t& index) const noexcept
         {
             return _order_of_dimension[index];
         }
 
-        constexpr const size_t& size_of_subdimension(const size_t& index) const noexcept
+        constexpr size_t& size_of_subdimension(const size_t& index) const noexcept
         {
             return _size_of_subdimension[index];
         }
 
-        constexpr const size_t& order_of_current_dimension() const noexcept
+        constexpr size_t& order_of_current_dimension() const noexcept
         {
             return _order_of_dimension[0];
         }
 
-        constexpr const size_t& size_of_current_tensor() const noexcept
+        constexpr size_t& size_of_current_tensor() const noexcept
         {
             return _size_of_subdimension[0];
         }
