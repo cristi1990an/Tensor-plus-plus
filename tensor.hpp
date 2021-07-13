@@ -139,8 +139,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank>;
         friend class const_subdimension<T, Rank>;
 
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         // All tensor() constructors take a series of unsigned, non-zero, integeres that reprezent
         // the sizes of each dimension, be it as an array or initializer_list.
@@ -423,8 +423,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank>;
         friend class tensor<T, Rank>;
 
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         constexpr const_subdimension() = delete;
         constexpr const_subdimension(const_subdimension&&) noexcept = delete;
@@ -572,10 +572,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank + 1>;
         friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
 
-        
-
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         constexpr subdimension() = delete;
         constexpr subdimension(subdimension&&) noexcept = delete;
