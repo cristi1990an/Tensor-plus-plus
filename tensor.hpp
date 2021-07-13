@@ -370,12 +370,12 @@ namespace tensor_lib
             return const_iterator(&_data[size_of_current_tensor()]);
         }
 
-        constexpr std::array<std::size_t, Rank>& get_sizes() const noexcept
+        constexpr const std::array<std::size_t, Rank>& get_sizes() const noexcept
         {
             return _size_of_subdimension;
         }
 
-        constexpr std::array<std::size_t, Rank>& get_ranks() const noexcept
+        constexpr const std::array<std::size_t, Rank>& get_ranks() const noexcept
         {
             return _order_of_dimension;
         }
