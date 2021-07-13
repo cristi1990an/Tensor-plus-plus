@@ -7,7 +7,7 @@ project(
   LANGUAGES CXX)
 
 add_executable(main)
-target_sources(main PRIVATE Source.cpp)
+target_sources(main PRIVATE introduction.cpp)
 target_compile_features(main PRIVATE cxx_std_20)
 
 add_executable(all_test)
