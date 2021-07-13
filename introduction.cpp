@@ -146,7 +146,8 @@ int main()
 		[]<typename T, size_t Rank>(const tensor<T, Rank>& my_tensor)
 		{
 			auto subdim = my_tensor[0];
-			std::cout << typeid(subdim).name() << '\n\n';
+
+			std::cout << typeid(subdim).name() << "\n\n";
 
 			// subdim[0][0][0][0] = 5;' won't work since it's a constant variable
 

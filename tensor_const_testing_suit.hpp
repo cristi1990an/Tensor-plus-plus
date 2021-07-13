@@ -14,7 +14,7 @@ namespace tensor_const_testing_suit
 
 		[]([[maybe_unused]] const tensor<int, 3>& tsor)
 		{
-			if (! std::is_same_v<decltype(tsor[0]), const const_subdimension<int, 2>>)
+			if (! std::is_same_v<decltype(tsor[0]), const_subdimension<int, 2>>)
 			{
 				throw std::runtime_error("TEST_1 in 'tensor_const_testing_suit' failed!\n");
 			}
@@ -44,7 +44,7 @@ namespace tensor_const_testing_suit
 
 		[]([[maybe_unused]] const subdimension<int, 2>& subdim)
 		{
-			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 1>>)
+			if (! std::is_same_v<decltype(subdim[0]), const_subdimension<int, 1>>)
 			{
 				throw std::runtime_error("TEST_3 in 'tensor_const_testing_suit' failed!\n");
 			}
@@ -76,7 +76,7 @@ namespace tensor_const_testing_suit
 
 		[]([[maybe_unused]] const const_subdimension<int, 3>& subdim)
 		{
-			if (! std::is_same_v<decltype(subdim[0]), const const_subdimension<int, 2>>)
+			if (! std::is_same_v<decltype(subdim[0]), const_subdimension<int, 2>>)
 			{
 				throw std::runtime_error("TEST_5 in 'tensor_const_testing_suit' failed!\n");
 			}
