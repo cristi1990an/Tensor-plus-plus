@@ -216,7 +216,7 @@ namespace tensor_lib
             std::copy_n(subdimension._data.begin(),                     _size_of_subdimension[0],   _data.get());
         }
 
-        constexpr auto operator = (const tensor& other) noexcept
+        constexpr auto& operator = (const tensor& other) noexcept
         {
             _order_of_dimension = other._order_of_dimension;
             _size_of_subdimension = other._size_of_subdimension;
@@ -228,7 +228,7 @@ namespace tensor_lib
             return *this;
         }
 
-        constexpr auto operator = (tensor&& other) noexcept
+        constexpr auto& operator = (tensor&& other) noexcept
         {
             if (this != std::addressof(other))
             {
