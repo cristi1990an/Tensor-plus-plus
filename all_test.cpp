@@ -2,5 +2,5 @@
 
 int main()
 {
-  tensor_testing_suit::RUN_ALL_TESTS();
+	tensor_testing_suit::RUN_ALL_TESTS();
 }

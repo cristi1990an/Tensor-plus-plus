@@ -9,23 +9,23 @@
 namespace benchmark
 {
 	using namespace tensor_lib;
-	#define nested_initializer_list {{{{ 10, 11 },{ 12, 13 },{ 14, 15 },},{ { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, } }, { { { 34, 35 }, { 36, 37 }, { 38, 39 }, }, { { 40, 41 }, { 42, 43 }, { 44, 45 }, }, { { 46, 47 }, { 48, 49 }, { 50, 51 }, }, { { 52, 53 }, { 54, 55 }, { 56, 57 }, } }, { { { 58, 59 }, { 60, 61 }, { 62, 63 }, }, { { 64, 65 }, { 66, 67 }, { 68, 69 }, }, { { 70, 71 }, { 72, 73 }, { 74, 75 }, }, { { 76, 77 }, { 78, 79 }, { 80, 81 }, } }, { { { 82, 83 }, { 84, 85 }, { 86, 87 }, }, { { 88, 89 }, { 90, 91 }, { 92, 93 }, }, { { 94, 95 }, { 96, 97 }, { 98, 99 }, }, { { 10, 11 }, { 12, 13 }, { 14, 15 }, } }, { { { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, }, { { 34, 35 }, { 36, 37 }, { 38, 39 }, } } }
-	#define empty_nested_initializer_list {{{{ 0, 0 },{ 0, 0 },{ 0, 0 },},{ { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } } }
-	#define one_dimensional_initializer_list { 1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9 }
+#define nested_initializer_list {{{{ 10, 11 },{ 12, 13 },{ 14, 15 },},{ { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, } }, { { { 34, 35 }, { 36, 37 }, { 38, 39 }, }, { { 40, 41 }, { 42, 43 }, { 44, 45 }, }, { { 46, 47 }, { 48, 49 }, { 50, 51 }, }, { { 52, 53 }, { 54, 55 }, { 56, 57 }, } }, { { { 58, 59 }, { 60, 61 }, { 62, 63 }, }, { { 64, 65 }, { 66, 67 }, { 68, 69 }, }, { { 70, 71 }, { 72, 73 }, { 74, 75 }, }, { { 76, 77 }, { 78, 79 }, { 80, 81 }, } }, { { { 82, 83 }, { 84, 85 }, { 86, 87 }, }, { { 88, 89 }, { 90, 91 }, { 92, 93 }, }, { { 94, 95 }, { 96, 97 }, { 98, 99 }, }, { { 10, 11 }, { 12, 13 }, { 14, 15 }, } }, { { { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, }, { { 34, 35 }, { 36, 37 }, { 38, 39 }, } } }
+#define empty_nested_initializer_list {{{{ 0, 0 },{ 0, 0 },{ 0, 0 },},{ { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } } }
+#define one_dimensional_initializer_list { 1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9 }
 
-	#define ITERATIONS 200000
+#define ITERATIONS 200000
 
 	void BENCHMARK_ALLOCATION_FROM_NESTED_INITIALIZER_LIST_WITH_EXPLICIT_SIZES()
 	{
 		long average_time = 0;
-		
+
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
 			std::chrono::high_resolution_clock::time_point start, stop;
 
 			start = std::chrono::high_resolution_clock::now();
 
-			tensor<int, 4> tsor( 5, 4, 3, 2 );
+			tensor<int, 4> tsor(5, 4, 3, 2);
 			tsor = nested_initializer_list;
 
 			stop = std::chrono::high_resolution_clock::now();
@@ -152,7 +152,7 @@ namespace benchmark
 
 			start = std::chrono::high_resolution_clock::now();
 
-			tensor<int, 1> tsor( 100000 );
+			tensor<int, 1> tsor(100000);
 
 			stop = std::chrono::high_resolution_clock::now();
 
@@ -189,7 +189,7 @@ namespace benchmark
 	{
 		long tensor_average_time = 0;
 		long vector_average_time = 0;
-		tensor<int, 4> tsor( 5, 4, 3, 2 );
+		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -270,7 +270,7 @@ namespace benchmark
 			vector_average_time += (stop - start).count();
 
 			arr_it++;
-						
+
 		}
 
 		tensor_average_time /= ITERATIONS;
@@ -296,7 +296,7 @@ namespace benchmark
 		for (unsigned int it = 0; it < ITERATIONS; it++)
 		{
 			std::generate(data.begin(), data.end(), []() {return std::rand() % std::numeric_limits<int>::max(); });
-			
+
 			start = std::chrono::high_resolution_clock::now();
 			std::copy(data.cbegin(), data.cend(), tsor.begin());
 			stop = std::chrono::high_resolution_clock::now();
@@ -330,7 +330,7 @@ namespace benchmark
 	{
 		long tensor_average_time = 0;
 		long vector_average_time = 0;
-		tensor<int, 1> tsor( 1000 );
+		tensor<int, 1> tsor(1000);
 		std::vector<int> vec;
 		vec.reserve(1000);
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -422,7 +422,7 @@ namespace benchmark
 			stop = std::chrono::high_resolution_clock::now();
 
 			vector_average_time += (stop - start).count();
-	
+
 			vec.resize(1);
 			vec.shrink_to_fit();
 			tsor.resize(1, 1, 1, 1);

@@ -14,7 +14,7 @@ namespace tensor_iteration_testing_suit
 	void TEST_1()
 	{
 		tensor<int, 2> tsor(2, 4);
-		tsor = 
+		tsor =
 		{
 			{
 				1, 2, 3, 4
@@ -29,7 +29,7 @@ namespace tensor_iteration_testing_suit
 
 		std::copy(tsor[0].cbegin() + 2, tsor.cend(), result.begin());
 
-		if(!std::equal(result.cbegin(), result.cend(), expected.cbegin()))
+		if (!std::equal(result.cbegin(), result.cend(), expected.cbegin()))
 			throw std::runtime_error("TEST_1 in 'tensor_iteration_testing_suit' failed!\n");
 
 		std::cout << "\tTEST 1 PASSED.\n";
@@ -64,7 +64,7 @@ namespace tensor_iteration_testing_suit
 			}
 		};
 		tensor<int, 3> expected(2, 3, 4);
-		expected = 
+		expected =
 		{
 			{
 				{
@@ -90,8 +90,8 @@ namespace tensor_iteration_testing_suit
 			}
 		};
 
-		std::fill(tsor[0][1].begin() + 2,	tsor[0].end(),			0);
-		std::fill(tsor[1][1].begin(),		tsor[1][2].begin() + 1, 0);
+		std::fill(tsor[0][1].begin() + 2, tsor[0].end(), 0);
+		std::fill(tsor[1][1].begin(), tsor[1][2].begin() + 1, 0);
 
 		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
 			throw std::runtime_error("TEST_2 in 'tensor_iteration_testing_suit' failed!\n");
@@ -200,7 +200,7 @@ namespace tensor_iteration_testing_suit
 				{
 					14, 11, 29, 32
 				},
-				{ 
+				{
 					18, 15, 12, 13
 				},
 			},	//					 = > 12, 13, 16, 19, 22, 23, 25, 30
