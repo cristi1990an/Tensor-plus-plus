@@ -1,13 +1,15 @@
 #pragma once
 
-#include <array>
-#include <numeric>
-#include <utility>
-#include <memory>
-#include <span>
 #include "useful_concepts.hpp"
 #include "useful_specializations.hpp"
+
+#include <array>
 #include <chrono>
+#include <cstring>
+#include <memory>
+#include <numeric>
+#include <span>
+#include <utility>
 
 namespace tensor_lib
 {
@@ -137,8 +139,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank>;
         friend class const_subdimension<T, Rank>;
 
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         // All tensor() constructors take a series of unsigned, non-zero, integeres that reprezent
         // the sizes of each dimension, be it as an array or initializer_list.
@@ -152,8 +154,8 @@ namespace tensor_lib
         }
 
         template<typename... Sizes>
-            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
-            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+        requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> &&
+          useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
         constexpr tensor(const Sizes ... sizes) noexcept
             : _order_of_dimension{ static_cast<std::size_t>(sizes)... }
         {
@@ -287,8 +289,8 @@ namespace tensor_lib
         }
 
         template<typename... Sizes>
-            requires useful_concepts::size_of_parameter_pack_equals<Sizes..., Rank>
-            && useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+        requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> &&
+          useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
         constexpr void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
         {
             _order_of_dimension = { static_cast<std::size_t>(new_sizes)... };
@@ -421,8 +423,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank>;
         friend class tensor<T, Rank>;
 
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         constexpr const_subdimension() = delete;
         constexpr const_subdimension(const_subdimension&&) noexcept = delete;
@@ -570,10 +572,8 @@ namespace tensor_lib
         friend class subdimension<T, Rank + 1>;
         friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
 
-        
-
-        using iterator = _tensor_common<T>::iterator;
-        using const_iterator = _tensor_common<T>::const_iterator;
+        using iterator = typename _tensor_common<T>::iterator;
+        using const_iterator = typename _tensor_common<T>::const_iterator;
 
         constexpr subdimension() = delete;
         constexpr subdimension(subdimension&&) noexcept = delete;
@@ -759,9 +759,9 @@ namespace tensor_lib
             return reinterpret_cast<T*>(&it);
         }
 
-        template <typename TT, typename U, std::size_t Rank>
+        template <typename TT, typename U, std::size_t RankS>
             requires std::convertible_to<TT, U> && std::convertible_to<U, TT>
-        friend constexpr void swap (subdimension<TT, Rank>&& left, subdimension<U, Rank>&& right);
+        friend constexpr void swap (subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
     };
 
     template <typename T>

@@ -1,10 +1,11 @@
 #pragma once
 
-#include <iostream>
-#include <algorithm>
-#include <array>
 #include "helpers.hpp"
 #include "tensor.hpp"
+
+#include <algorithm>
+#include <array>
+#include <iostream>
 
 namespace tensor_iteration_testing_suit
 {

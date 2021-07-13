@@ -1,8 +1,8 @@
 #pragma once
 
-#include <type_traits>
 #include <concepts>
 #include <iostream>
+#include <type_traits>
 
 namespace useful_concepts
 {
@@ -81,8 +81,8 @@ namespace useful_concepts
         divisible_with<T, U> &&
         divisible_with<U, T>;
 
-    template <typename... T, size_t SUM>
-    concept size_of_parameter_pack_equals = requires ()
+    template <size_t SUM, typename... T>
+    concept size_of_parameter_pack_equals = requires()
     {
         requires(sizeof...(T) == SUM);
     };
