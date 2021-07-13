@@ -89,7 +89,8 @@ for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
 }
 ```
 	
-TODO: talk about all the other cool things you can do
+TODO: talk about all the other cool things you can do...
+	
 	
 ## Implementation
 	
