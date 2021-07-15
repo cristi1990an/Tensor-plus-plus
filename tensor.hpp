@@ -47,7 +47,7 @@ namespace tensor_lib
 
 	template <typename T, size_t Rank>
 	requires useful_concepts::is_not_zero<size_t, Rank>
-		class tensor : private _tensor_common<T>
+		class tensor : public _tensor_common<T>
 	{
 	private:
 		// Stores the size of each individual dimension of the tensor.
@@ -249,6 +249,48 @@ namespace tensor_lib
 			return *this;
 		}
 
+		constexpr auto& replace(const tensor& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		constexpr auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
 		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
 		{
@@ -414,7 +456,7 @@ namespace tensor_lib
 
 	template <typename T, size_t Rank>
 	requires useful_concepts::is_not_zero<size_t, Rank>
-		class const_subdimension : private _tensor_common<T>
+		class const_subdimension : public _tensor_common<T>
 	{
 		using ConstSourceSizeOfDimensionArraySpan = std::span<const size_t, Rank>;
 		using ConstSourceSizeOfSubdimensionArraySpan = std::span<const size_t, Rank>;
@@ -564,7 +606,7 @@ namespace tensor_lib
 
 	template <typename T, std::size_t Rank>
 	requires useful_concepts::is_not_zero<size_t, Rank>
-		class subdimension : private _tensor_common<T>
+		class subdimension : public _tensor_common<T>
 	{
 		using SourceSizeOfDimensionArraySpan = std::span<size_t, Rank>;
 		using SourceSizeOfSubdimensionArraySpan = std::span<size_t, Rank>;
@@ -621,6 +663,48 @@ namespace tensor_lib
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
 			_data = other._data;
+
+			return *this;
+		}
+
+		constexpr auto& replace(const tensor<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		constexpr auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
 
 			return *this;
 		}
@@ -1061,17 +1145,33 @@ namespace tensor_lib
 			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
 				throw std::runtime_error("Can't swap subdimensions of different sizes!");
 
+		if constexpr (std::is_same_v<T, U> == true)
+			if (std::addressof(left) == std::addressof(right))
+				return;
+
 		const auto size = left.size_of_current_tensor();
 
 		std::unique_ptr<T[]> aux(new T[size]);
 
 		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
 
-		std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-		for (std::size_t i = 0; i < size; i++)
+		if constexpr (std::is_same_v<T, U> != true)
 		{
-			right._data.data()[i] = static_cast<U>(aux[i]);
+			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
+
+			for (std::size_t i = 0; i < size; i++)
+			{
+				right._data.data()[i] = static_cast<U>(aux[i]);
+			}
+		}
+		else
+		{
+			std::copy(right._data.begin(), right._data.end(), left._data.begin());
+
+			for (std::size_t i = 0; i < size; i++)
+			{
+				right._data.data()[i] = aux[i];
+			}
 		}
 	}
 

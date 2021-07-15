@@ -78,7 +78,7 @@ int main()
 		Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
 		Here we have a tensor with 3 dimension. Each of these dimensions has 4 subdimensions. Each of these subdimension has 5 sub-subdimensions and so on...
 	*/
-	tensor<int, 5> my_tensor(3, 4, 5, 6, 7); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 6 by 7
+	tensor<int, 5> my_tensor(3, 4, 5, 2, 2); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 2 by 2
 
 	int val = 0;
 
@@ -97,6 +97,34 @@ int main()
 			}
 		}
 	}
+
+	/*
+		tensor_lib::tensor also supports a number of ways to manipulate subdimensions. For example, we can easily delimit a subdimension, no matter the rank, and change its value
+		explicitly to something else. In the case below, we delimitate the first of the "deepest" 2x2 subdimensions in our 'my_tensor' variable and change their value to something else.
+
+		We can do this through a nested initializer_list that reflects its structure:
+	*/
+
+	my_tensor[0][0][0] =
+	{
+		{ 1, 2 },
+		{ 3, 4 }
+	};
+
+	/*
+		A simple initializer_list if we only want to focus on the values themselves:
+	*/
+
+	my_tensor[0][0][0] = { 1, 2, 3, 4 };
+
+	/*
+		Through iterators:
+	*/
+
+	int aux = 1;
+
+	for (auto& val : my_tensor[0][0][0])
+		val = aux++;
 
 	/*
 		Template parameters
@@ -120,16 +148,8 @@ int main()
 		subdimension. On the bright side, we're providing standard iteration capabilities, not only through the whole tensor, but through each subdimension at any of the ranks.
 		A tensor's memory is contiguous in memory and we can take advantage of far greater performance when iterating through our data this way. Preferably, users can
 		use the square paranthesis operator to calculate the value range representing their desired subdimension and then access its value like a normal array.
-		In the example below we're iterating through the whole first subdimension of the second rank of the tensor, setting each value to zero.
-	*/
 
-	for (auto& vals : my_tensor[0][0])
-	{
-		vals = 0;
-	}
-
-	/*
-		Tensor is also compatible with standard algorithms.
+		Tensor is also compatible with standard algorithms:
 	*/
 
 	std::fill(my_tensor[2][1].begin(), my_tensor[2][1].end(), 0);

@@ -56,6 +56,9 @@
     <ClInclude Include="tensor_iteration_testing_suit.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="tensor_replace_testing_suit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

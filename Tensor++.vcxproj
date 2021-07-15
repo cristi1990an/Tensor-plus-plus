@@ -184,6 +184,7 @@
     <ClInclude Include="tensor_initialization_testing_suit.hpp" />
     <ClInclude Include="tensor_iteration_testing_suit.hpp" />
     <ClInclude Include="tensor_move_semantics_testing_suit.hpp" />
+    <ClInclude Include="tensor_replace_testing_suit.hpp" />
     <ClInclude Include="tensor_resize_testing_suit.hpp" />
     <ClInclude Include="tensor_testing_suit.hpp" />
     <ClInclude Include="useful_concepts.hpp" />
