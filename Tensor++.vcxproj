@@ -173,6 +173,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="all_test.cpp" />
     <ClCompile Include="introduction.cpp" />
   </ItemGroup>
   <ItemGroup>
