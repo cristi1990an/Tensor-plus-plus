@@ -277,6 +277,20 @@ namespace tensor_lib
 			return *this;
 		}
 
+		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
 		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
 		{
@@ -668,6 +682,20 @@ namespace tensor_lib
 		}
 
 		constexpr auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+
+			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			{
+				_data[i] = other._data[i];
+			}
+
+			return *this;
+		}
+
+		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))

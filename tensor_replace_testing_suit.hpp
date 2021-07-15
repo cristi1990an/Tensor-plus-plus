@@ -135,6 +135,71 @@ namespace tensor_replace_testing_suit
 		std::cout << "\tTEST 4 PASSED.\n";
 	}
 
+	void TEST_5()
+	{
+		tensor<int, 3> tsor(3, 2, 2);
+		const_subdimension<int, 3> source(tsor);
+		tensor<int, 3> result(3, 2, 2);
+		std::array<int, 3 * 2 * 2> expected;
+
+		int aux = 1;
+		for (auto& val : tsor)
+		{
+			val = aux++;
+		}
+
+		aux = 1;
+		for (auto& val : expected)
+		{
+			val = aux++;
+		}
+
+		std::fill(result.begin(), result.end(), 0);
+
+		result.replace(source);
+
+		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
+			throw std::runtime_error("TEST_5 in 'tensor_replace_testing_suit' failed!\n");
+
+		if (!std::equal(result.cbegin(), result.cend(), expected.cbegin()))
+			throw std::runtime_error("TEST_5 in 'tensor_replace_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 5 PASSED.\n";
+	}
+
+	void TEST_6()
+	{
+		tensor<int, 3> tsor(3, 2, 2);
+		const_subdimension<int, 3> source(tsor);
+		tensor<int, 3> result(3, 2, 2);
+		subdimension<int, 3> destination(result);
+		std::array<int, 3 * 2 * 2> expected;
+
+		int aux = 1;
+		for (auto& val : tsor)
+		{
+			val = aux++;
+		}
+
+		aux = 1;
+		for (auto& val : expected)
+		{
+			val = aux++;
+		}
+
+		std::fill(result.begin(), result.end(), 0);
+
+		destination.replace(source);
+
+		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.cbegin()))
+			throw std::runtime_error("TEST_6 in 'tensor_replace_testing_suit' failed!\n");
+
+		if (!std::equal(result.cbegin(), result.cend(), expected.cbegin()))
+			throw std::runtime_error("TEST_6 in 'tensor_replace_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 6 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor replace tests...\n\n";
@@ -143,6 +208,8 @@ namespace tensor_replace_testing_suit
 		TEST_2();
 		TEST_3();
 		TEST_4();
+		TEST_5();
+		TEST_6();
 
 		std::cout << "\n";
 	}
