@@ -346,6 +346,127 @@ namespace tensor_iteration_testing_suit
 		std::cout << "\tTEST 5 PASSED.\n";
 	}
 
+	void TEST_6()
+	{
+		tensor<int, 3> tsor_1(2, 3, 4);
+		tsor_1 =
+		{
+			{
+				{
+					10, 11, 12, 13
+				},
+				{
+					14, 15, 16, 17
+				},
+				{
+					18, 19, 20, 21
+				},
+			},
+			{
+				{
+					22, 23, 24, 25
+				},
+				{
+					26, 27, 28, 29
+				},
+				{
+					30, 31, 32, 33
+				},
+			}
+		};
+
+		tensor<float, 3> tsor_2(2, 3, 4);
+		tsor_2 =
+		{
+			{
+				{
+					10.8f, 11.8f, 12.8f, 13.8f
+				},
+				{
+					14.8f, 15.8f, 16.8f, 17.8f
+				},
+				{
+					18.8f, 19.8f, 20.8f, 21.8f
+				},
+			},
+			{
+				{
+					22.8f, 23.8f, 24.8f, 25.8f
+				},
+				{
+					26.8f, 27.8f, 28.8f, 29.8f
+				},
+				{
+					30.8f, 31.8f, 32.8f, 33.8f
+				},
+			}
+		};
+
+		tensor<int, 3> expected_1(2, 3, 4);
+		expected_1 =
+		{
+			{
+				{
+					10, 11, 12, 13
+				},
+				{
+					14, 15, 16, 17
+				},
+				{
+					18, 19, 20, 21
+				},
+			},
+			{
+				{
+					22, 23, 24, 25
+				},
+				{
+					26, 27, 28, 29
+				},
+				{
+					30, 31, 32, 33
+				},
+			}
+		};
+
+		tensor<float, 3> expected_2(2, 3, 4);
+		expected_2 =
+		{
+			{
+				{
+					10, 11, 12, 13
+				},
+				{
+					14, 15, 16, 17
+				},
+				{
+					18, 19, 20, 21
+				},
+			},
+			{
+				{
+					22, 23, 24, 25
+				},
+				{
+					26, 27, 28, 29
+				},
+				{
+					30, 31, 32, 33
+				},
+			}
+		};
+
+		swap(tsor_1, tsor_2); // specialization of swap()
+
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), expected_1.cbegin()))
+			throw std::runtime_error("TEST_6 in 'tensor_iteration_testing_suit' failed!\n");
+
+		if (!std::equal(tsor_2.cbegin(), tsor_2.cend(), expected_2.cbegin()))
+			throw std::runtime_error("TEST_6 in 'tensor_iteration_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 6 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor iteration tests...\n\n";
@@ -355,6 +476,7 @@ namespace tensor_iteration_testing_suit
 		TEST_3();
 		TEST_4();
 		TEST_5();
+		TEST_6();
 
 		std::cout << "\n";
 	}
