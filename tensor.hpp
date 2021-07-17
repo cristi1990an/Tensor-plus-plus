@@ -157,9 +157,9 @@ namespace tensor_lib
 		friend class subdimension<T, Rank>;
 		friend class const_subdimension<T, Rank>;
 
-		template <typename TT, typename U, std::size_t Rank>
+		template <typename TT, typename U, std::size_t RankS>
 		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(tensor<TT, Rank>& left, tensor<U, Rank>& right);
+			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
