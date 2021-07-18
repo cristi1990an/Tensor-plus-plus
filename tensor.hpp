@@ -170,9 +170,10 @@ namespace tensor_lib
 
 		constexpr tensor() noexcept
 			: _data(new T[1])
+			, _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 		{
-			std::fill(_order_of_dimension.begin(), _order_of_dimension.end(), 1u);
-			std::fill(_size_of_subdimension.begin(), _size_of_subdimension.end(), 1u);
+
 		}
 
 		template<typename... Sizes>

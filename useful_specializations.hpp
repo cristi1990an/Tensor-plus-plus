@@ -4,6 +4,7 @@
 
 #include <type_traits>
 #include <initializer_list>
+#include <array>
 
 namespace useful_specializations
 {
@@ -50,5 +51,15 @@ namespace useful_specializations
 		constexpr std::size_t multiply_all(const std::size_t first, const Sizes ... sizes) noexcept
 	{
 		return first * multiply_all(sizes...);
+	}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template<typename T, size_t Size>
+	consteval std::array<T, Size> value_initialize_array(T value)
+	{
+		std::array<T, Size> result{};
+		std::fill(result.begin(), result.end(), value);
+		return result;
 	}
 }
