@@ -172,6 +172,8 @@ namespace tensor_lib
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			: _data(new T[1])
+			, _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 		{
 
 		}
