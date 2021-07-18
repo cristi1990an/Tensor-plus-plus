@@ -112,7 +112,7 @@ int main()
 	};
 
 	/*
-		A simple initializer_list if we only want to focus on the values themselves:
+		A simple, one-dimensional initializer_list when we only want to focus on the values:
 	*/
 
 	my_tensor[0][0][0] = { 1, 2, 3, 4 };
@@ -125,6 +125,20 @@ int main()
 
 	for (auto& val : my_tensor[0][0][0])
 		val = aux++;
+
+	/*
+		Through the dedicated replace() method:
+	*/
+
+	tensor<int, 2> destination(2, 2);
+
+	destination.replace(my_tensor[0][0][0]);
+
+	/*
+		Or swap() specialization:
+	*/
+
+	swap(my_tensor[0][0][1], my_tensor[0][0][0]);
 
 	/*
 		Template parameters
@@ -203,7 +217,6 @@ int main()
 	my_tensor.order_of_current_dimension();	// is same as 'my_tensor.order_of_dimension(0)'
 	my_tensor.size_of_current_tensor();		// is same as 'my_tensor.size_of_subdimension(0)'
 
-
 	tensor_testing_suit::RUN_ALL_TESTS();
-	benchmark::RUN_ALL();
+	// benchmark::RUN_ALL();
 }

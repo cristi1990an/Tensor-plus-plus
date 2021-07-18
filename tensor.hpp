@@ -35,6 +35,10 @@ namespace tensor_lib
 
 	template <typename T, size_t Rank>
 	requires useful_concepts::is_not_zero<size_t, Rank>
+		class tensor;
+
+	template <typename T, size_t Rank>
+	requires useful_concepts::is_not_zero<size_t, Rank>
 		class subdimension;
 
 	template <typename T, size_t Rank>
@@ -43,7 +47,15 @@ namespace tensor_lib
 
 	template <typename T, typename U, std::size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		constexpr void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+
+	template <typename T, typename U, std::size_t Rank>
+	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
+
+	template <typename T, typename U, std::size_t Rank>
+	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
 
 	template <typename T, size_t Rank>
 	requires useful_concepts::is_not_zero<size_t, Rank>
@@ -71,7 +83,7 @@ namespace tensor_lib
 	private:
 		// Computes _size_of_subdimension at initialization. 
 		//
-		constexpr void construct_size_of_subdimension_array() noexcept
+		void construct_size_of_subdimension_array() noexcept
 		{
 			std::size_t index = Rank - 1;
 
@@ -93,7 +105,7 @@ namespace tensor_lib
 
 		template <std::size_t Rank_index>
 		requires useful_concepts::is_greater_than<std::size_t, std::size_t, Rank_index, 2u>
-			constexpr void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -111,7 +123,7 @@ namespace tensor_lib
 
 		template <std::size_t Rank_index>
 		requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 1u>
-			constexpr void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -124,7 +136,7 @@ namespace tensor_lib
 
 		template <std::size_t Rank_index>
 		requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 2u>
-			constexpr void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -145,6 +157,10 @@ namespace tensor_lib
 		friend class subdimension<T, Rank>;
 		friend class const_subdimension<T, Rank>;
 
+		template <typename TT, typename U, std::size_t RankS>
+		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
+			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
+
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
@@ -153,23 +169,24 @@ namespace tensor_lib
 		//
 
 		constexpr tensor() noexcept
-			: _data(new T[1])
+			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+			, _data(new T[1])
 		{
-			std::fill(_order_of_dimension.begin(), _order_of_dimension.end(), 1u);
-			std::fill(_size_of_subdimension.begin(), _size_of_subdimension.end(), 1u);
+
 		}
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
 			useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
-			constexpr tensor(const Sizes ... sizes) noexcept
+			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<std::size_t>(sizes)... }
 		{
 			construct_size_of_subdimension_array();
 			_data.reset(new T[_size_of_subdimension[0]]);
 		}
 
-		constexpr tensor(tensor&& other) noexcept
+		tensor(tensor&& other) noexcept
 			: _order_of_dimension(std::move(other._order_of_dimension))
 			, _size_of_subdimension(std::move(other._size_of_subdimension))
 			, _data(std::move(other._data))
@@ -179,7 +196,7 @@ namespace tensor_lib
 			other._data = std::make_unique<T[]>(1);
 		}
 
-		constexpr tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			auto data_size = data.size();
@@ -192,7 +209,7 @@ namespace tensor_lib
 			std::copy_n(data.begin(), data_size, _data.get());
 		}
 
-		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
 		{
 			construct_order_array<Rank>(data);
@@ -203,7 +220,7 @@ namespace tensor_lib
 			*this = data;
 		}
 
-		constexpr tensor(const tensor& other) noexcept
+		tensor(const tensor& other) noexcept
 			: _order_of_dimension(other._order_of_dimension)
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(new T[other._size_of_subdimension[0]])
@@ -214,7 +231,7 @@ namespace tensor_lib
 			}
 		}
 
-		constexpr tensor(const subdimension<T, Rank>& subdimension) noexcept
+		tensor(const subdimension<T, Rank>& subdimension) noexcept
 			: _data(new T[subdimension._size_of_subdimension[0]])
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
@@ -222,7 +239,7 @@ namespace tensor_lib
 			std::copy_n(subdimension._data.begin(), _size_of_subdimension[0], _data.get());
 		}
 
-		constexpr auto& operator = (const tensor& other) noexcept
+		auto& operator = (const tensor& other) noexcept
 		{
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
@@ -234,7 +251,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& operator = (tensor&& other) noexcept
+		auto& operator = (tensor&& other) noexcept
 		{
 			if (this != std::addressof(other))
 			{
@@ -249,7 +266,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const tensor& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const tensor& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -263,7 +280,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -277,7 +294,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -291,7 +308,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
@@ -308,7 +325,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
@@ -325,7 +342,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (size_of_current_tensor() != data.size())
@@ -337,7 +354,7 @@ namespace tensor_lib
 		}
 
 		template<typename... Sizes>
-		constexpr void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
+		void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
 			useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
 		{
@@ -352,7 +369,7 @@ namespace tensor_lib
 			_data.reset(new T[size_of_current_tensor()]);
 		}
 
-		constexpr auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+		auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
 		{
 			return subdimension<T, Rank - 1>
 				(
@@ -365,7 +382,7 @@ namespace tensor_lib
 					);
 		}
 
-		constexpr auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+		auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -378,77 +395,77 @@ namespace tensor_lib
 					);
 		}
 
-		constexpr auto& operator[] (const size_t index) noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+		auto& operator[] (const size_t index) noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			return _data[index];
 		}
 
-		constexpr auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+		auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			return _data[index];
 		}
 
-		constexpr iterator begin() noexcept
+		iterator begin() noexcept
 		{
 			return iterator(&_data[0]);
 		}
 
-		constexpr const_iterator begin() const noexcept
+		const_iterator begin() const noexcept
 		{
 			return const_iterator(&_data[0]);
 		}
 
-		constexpr const_iterator cbegin() const noexcept
+		const_iterator cbegin() const noexcept
 		{
 			return const_iterator(&_data[0]);
 		}
 
-		constexpr iterator end() noexcept
+		iterator end() noexcept
 		{
 			return iterator(&_data[size_of_current_tensor()]);
 		}
 
-		constexpr const_iterator end() const noexcept
+		const_iterator end() const noexcept
 		{
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		constexpr const_iterator cend() const noexcept
+		const_iterator cend() const noexcept
 		{
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		constexpr const std::array<std::size_t, Rank>& get_sizes() const noexcept
+		const std::array<std::size_t, Rank>& get_sizes() const noexcept
 		{
 			return _size_of_subdimension;
 		}
 
-		constexpr const std::array<std::size_t, Rank>& get_ranks() const noexcept
+		const std::array<std::size_t, Rank>& get_ranks() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		constexpr size_t order_of_dimension(const size_t& index) const noexcept
+		size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		constexpr size_t size_of_subdimension(const size_t& index) const noexcept
+		size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		constexpr size_t order_of_current_dimension() const noexcept
+		size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		constexpr size_t size_of_current_tensor() const noexcept
+		size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		constexpr T* data() const noexcept
+		T* data() const noexcept
 		{
 			return _data.get();
 		}
@@ -475,11 +492,11 @@ namespace tensor_lib
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
-		constexpr const_subdimension() = delete;
-		constexpr const_subdimension(const_subdimension&&) noexcept = delete;
-		constexpr const_subdimension(const const_subdimension&) noexcept = default;
+		const_subdimension() = delete;
+		const_subdimension(const_subdimension&&) noexcept = delete;
+		const_subdimension(const const_subdimension&) noexcept = default;
 
-		constexpr const_subdimension(const subdimension<T, Rank>& other) noexcept :
+		const_subdimension(const subdimension<T, Rank>& other) noexcept :
 			_order_of_dimension{ other._order_of_dimension },
 			_size_of_subdimension{ other._size_of_subdimension },
 			_data{ other._data }
@@ -488,7 +505,7 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3>
-		constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+		const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1))
 			, _size_of_subdimension(std::forward<T2>(param_2))
 			, _data(std::forward<T3>(param_3))
@@ -497,7 +514,7 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-		constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+		const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
 			, _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
 			, _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
@@ -505,7 +522,7 @@ namespace tensor_lib
 
 		}
 
-		constexpr const_subdimension(const tensor<const T, Rank>& tsor) noexcept :
+		const_subdimension(const tensor<const T, Rank>& tsor) noexcept :
 			_order_of_dimension{ tsor._order_of_dimension.begin(),      tsor._order_of_dimension.end() },
 			_size_of_subdimension{ tsor._size_of_subdimension.begin(),    tsor._size_of_subdimension.end() },
 			_data{ tsor.begin(),                          tsor.end() }
@@ -513,7 +530,7 @@ namespace tensor_lib
 
 		}
 
-		constexpr auto& operator=(const const_subdimension& other) noexcept
+		auto& operator=(const const_subdimension& other) noexcept
 		{
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
@@ -522,7 +539,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto operator[] (const size_t index) const noexcept
+		auto operator[] (const size_t index) const noexcept
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
@@ -536,69 +553,70 @@ namespace tensor_lib
 					);
 		}
 
-		constexpr const T& operator[] (const size_t index) const noexcept
+		const T& operator[] (const size_t index) const noexcept
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			return _data[index];
 		}
 
-		constexpr auto begin() const noexcept
+		auto begin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		constexpr auto end() const noexcept
+		auto end() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		constexpr auto cbegin() const noexcept
+		auto cbegin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		constexpr auto cend() const noexcept
+		auto cend() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		constexpr auto get_Rank() const noexcept
+		auto get_Rank() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		constexpr size_t& order_of_dimension(const size_t& index) const noexcept
+		size_t& order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		constexpr size_t& size_of_subdimension(const size_t& index) const noexcept
+		size_t& size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		constexpr size_t& order_of_current_dimension() const noexcept
+		size_t& order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		constexpr size_t& size_of_current_tensor() const noexcept
+		size_t& size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		constexpr T* data() const noexcept
+		T* data() const noexcept
 		{
 			auto it = _data.begin();
 			return reinterpret_cast<const T*>(&it);
 		}
 
-		consteval bool is_matrix() const noexcept
+		bool is_matrix() const noexcept
 		{
 			return (Rank == 2);
 		}
 
-		constexpr bool is_square_matrix() const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+		bool is_square_matrix() const noexcept
+			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
 		{
 			return (_size_of_subdimension[0] == _size_of_subdimension[1]);
 		}
@@ -624,16 +642,24 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1>;
 		friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
 
+		template <typename TT, typename U, std::size_t RankS>
+		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
+			friend void swap(subdimension<TT, RankS>& left, subdimension<U, RankS>& right);
+
+		template <typename TT, typename U, std::size_t RankS>
+		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
+			friend void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
+
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
-		constexpr subdimension() = delete;
-		constexpr subdimension(subdimension&&) noexcept = delete;
-		constexpr subdimension(const subdimension&) noexcept = default;
-		constexpr subdimension(const const_subdimension<T, Rank>&) noexcept = delete;
+		subdimension() = delete;
+		subdimension(subdimension&&) noexcept = delete;
+		subdimension(const subdimension&) noexcept = default;
+		subdimension(const const_subdimension<T, Rank>&) noexcept = delete;
 
 		template<typename T1, typename T2, typename T3>
-		constexpr subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+		subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
 			: _order_of_dimension{ std::forward<T1>(param_1) }
 			, _size_of_subdimension{ std::forward<T2>(param_2) }
 			, _data{ std::forward<T3>(param_3) }
@@ -642,7 +668,7 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-		constexpr subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+		subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
 			, _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
 			, _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
@@ -650,7 +676,7 @@ namespace tensor_lib
 
 		}
 
-		constexpr subdimension(tensor<T, Rank>& mat) noexcept
+		subdimension(tensor<T, Rank>& mat) noexcept
 			: _order_of_dimension{ mat._order_of_dimension.begin(),      mat._order_of_dimension.end() }
 			, _size_of_subdimension{ mat._size_of_subdimension.begin(),    mat._size_of_subdimension.end() }
 			, _data{ mat.begin(), mat.end() }
@@ -658,7 +684,7 @@ namespace tensor_lib
 
 		}
 
-		constexpr auto& operator=(const subdimension& other) noexcept
+		auto& operator=(const subdimension& other) noexcept
 		{
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
@@ -667,7 +693,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const tensor<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const tensor<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -681,7 +707,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -695,7 +721,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
@@ -709,7 +735,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
@@ -726,7 +752,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
@@ -743,7 +769,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (size_of_current_tensor() != data.size())
@@ -754,7 +780,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto operator[] (const size_t index) noexcept
+		auto operator[] (const size_t index) noexcept
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
 		{
 			return subdimension<T, Rank - 1>
@@ -768,7 +794,7 @@ namespace tensor_lib
 					);
 		}
 
-		constexpr auto operator[] (const size_t index) const noexcept
+		auto operator[] (const size_t index) const noexcept
 			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
@@ -782,84 +808,82 @@ namespace tensor_lib
 					);
 		}
 
-		constexpr const T& operator[] (const size_t index) const noexcept
+		const T& operator[] (const size_t index) const noexcept
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			return _data[index];
 		}
 
-		constexpr T& operator[] (const size_t index) noexcept
+		T& operator[] (const size_t index) noexcept
 			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
 		{
 			return _data[index];
 		}
 
-		constexpr auto begin() noexcept
+		auto begin() noexcept
 		{
 			return iterator(_data.data());
 		}
 
-		constexpr auto begin() const noexcept
+		auto begin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		constexpr auto cbegin() const noexcept
+		auto cbegin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		constexpr auto end() noexcept
+		auto end() noexcept
 		{
 			return iterator(std::to_address(_data.end()));
 		}
 
-		constexpr auto end() const noexcept
+		auto end() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		constexpr auto cend() const noexcept
+		auto cend() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		constexpr auto get_Rank() const noexcept
+		auto get_Rank() const noexcept
 		{
 			std::span<const size_t> dims_sizes{ _order_of_dimension.begin(), _order_of_dimension.end() };
 
 			return dims_sizes;
 		}
 
-		constexpr size_t& order_of_dimension(const size_t& index) const noexcept
+		size_t& order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		constexpr size_t& size_of_subdimension(const size_t& index) const noexcept
+		size_t& size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		constexpr size_t& order_of_current_dimension() const noexcept
+		size_t& order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		constexpr size_t& size_of_current_tensor() const noexcept
+		size_t& size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		constexpr T* data() noexcept
+		T* data() noexcept
 		{
 			auto it = _data.begin();
 			return reinterpret_cast<T*>(&it);
 		}
 
-		template <typename TT, typename U, std::size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend constexpr void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
+
 	};
 
 	template <typename T>
@@ -872,120 +896,120 @@ namespace tensor_lib
 		using reference = T&;
 		using iterator_category = std::contiguous_iterator_tag;
 
-		constexpr iterator() noexcept : ptr{} {};
-		constexpr iterator(const iterator&) noexcept = default;
-		constexpr iterator(iterator&&) noexcept = default;
-		constexpr iterator(pointer other) noexcept : ptr{ other } {}
-		constexpr iterator(bool) = delete;
+		iterator() noexcept : ptr{} {};
+		iterator(const iterator&) noexcept = default;
+		iterator(iterator&&) noexcept = default;
+		iterator(pointer other) noexcept : ptr{ other } {}
+		iterator(bool) = delete;
 
-		constexpr explicit operator reference() const noexcept
+		explicit operator reference() const noexcept
 		{
 			return *ptr;
 		}
 
-		constexpr iterator& operator=(const iterator&) = default;
+		iterator& operator=(const iterator&) = default;
 
-		constexpr iterator& operator=(iterator&&) = default;
+		iterator& operator=(iterator&&) = default;
 
-		constexpr iterator& operator= (const pointer other) noexcept
+		iterator& operator= (const pointer other) noexcept
 		{
 			ptr = other;
 			return (*this);
 		}
 
-		constexpr reference operator* (void) const noexcept
+		reference operator* (void) const noexcept
 		{
 			return *ptr;
 		}
 
-		constexpr pointer operator-> () const noexcept
+		pointer operator-> () const noexcept
 		{
 			return ptr;
 		}
 
-		constexpr iterator& operator++ () noexcept
+		iterator& operator++ () noexcept
 		{
 			++ptr;
 			return *this;
 		}
 
-		constexpr iterator operator++(int) noexcept
+		iterator operator++(int) noexcept
 		{
 			auto aux = ptr;
 			ptr++;
 			return iterator(aux);
 		}
 
-		constexpr iterator& operator-- () noexcept
+		iterator& operator-- () noexcept
 		{
 			--ptr;
 			return *this;
 		}
 
-		constexpr iterator operator--(int) noexcept
+		iterator operator--(int) noexcept
 		{
 			auto aux = ptr;
 			ptr--;
 			return iterator(aux);
 		}
 
-		constexpr iterator& operator+=(const ptrdiff_t offset) noexcept
+		iterator& operator+=(const ptrdiff_t offset) noexcept
 		{
 			ptr += offset;
 			return *this;
 		}
 
-		constexpr iterator& operator-=(const ptrdiff_t offset) noexcept
+		iterator& operator-=(const ptrdiff_t offset) noexcept
 		{
 			ptr -= offset;
 			return *this;
 		}
 
-		constexpr reference operator[](const size_t offset) const noexcept
+		reference operator[](const size_t offset) const noexcept
 		{
 			return *(ptr + offset);
 		}
 
-		friend constexpr bool operator==(const iterator it_a, const iterator it_b) noexcept
+		friend bool operator==(const iterator it_a, const iterator it_b) noexcept
 		{
 			return it_a.ptr == it_b.ptr;
 		}
 
-		friend constexpr bool operator!=(const iterator it_a, const iterator it_b) noexcept
+		friend bool operator!=(const iterator it_a, const iterator it_b) noexcept
 		{
 			return it_a.ptr != it_b.ptr;
 		}
 
-		friend constexpr iterator operator+(const iterator it, const size_t offset) noexcept
+		friend iterator operator+(const iterator it, const size_t offset) noexcept
 		{
 			T* result = it.ptr + offset;
 			return iterator(result);
 		}
 
-		friend constexpr iterator operator+(const size_t offset, const iterator& it) noexcept
+		friend iterator operator+(const size_t offset, const iterator& it) noexcept
 		{
 			auto aux = offset + it.ptr;
 			return iterator(aux);
 		}
 
-		friend constexpr iterator operator-(const iterator it, const size_t offset) noexcept
+		friend iterator operator-(const iterator it, const size_t offset) noexcept
 		{
 			T* aux = it.ptr - offset;
 			return iterator(aux);
 		}
 
-		friend constexpr iterator operator-(const size_t offset, const iterator it) noexcept
+		friend iterator operator-(const size_t offset, const iterator it) noexcept
 		{
 			auto aux = offset - it.ptr;
 			return iterator(aux);
 		}
 
-		friend constexpr difference_type operator-(const iterator a, const iterator b) noexcept
+		friend difference_type operator-(const iterator a, const iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
 		}
 
-		friend constexpr auto operator<=>(const iterator a, const iterator b) noexcept
+		friend auto operator<=>(const iterator a, const iterator b) noexcept
 		{
 			return a.ptr <=> b.ptr;
 		}
@@ -1005,129 +1029,129 @@ namespace tensor_lib
 		using reference = const T&;
 		using iterator_category = std::contiguous_iterator_tag;
 
-		constexpr const_iterator() noexcept : ptr{} {};
-		constexpr const_iterator(const const_iterator&) noexcept = default;
-		constexpr const_iterator(const_iterator&&) noexcept = default;
-		constexpr const_iterator(pointer other) noexcept : ptr{ other } {}
+		const_iterator() noexcept : ptr{} {};
+		const_iterator(const const_iterator&) noexcept = default;
+		const_iterator(const_iterator&&) noexcept = default;
+		const_iterator(pointer other) noexcept : ptr{ other } {}
 
-		constexpr const_iterator(bool) = delete;
+		const_iterator(bool) = delete;
 
-		constexpr const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
+		const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
 
-		constexpr explicit operator reference() const noexcept
+		explicit operator reference() const noexcept
 		{
 			return *ptr;
 		}
 
-		constexpr const_iterator& operator=(const const_iterator&) noexcept = default;
+		const_iterator& operator=(const const_iterator&) noexcept = default;
 
-		constexpr const_iterator& operator=(const_iterator&&) noexcept = default;
+		const_iterator& operator=(const_iterator&&) noexcept = default;
 
-		constexpr const_iterator& operator= (const pointer other) noexcept
+		const_iterator& operator= (const pointer other) noexcept
 		{
 			ptr = other;
 			return (*this);
 		}
 
-		constexpr reference operator* (void) const noexcept
+		reference operator* (void) const noexcept
 		{
 			return *ptr;
 		}
 
-		constexpr pointer operator-> () const noexcept
+		pointer operator-> () const noexcept
 		{
 			return ptr;
 		}
 
-		constexpr const_iterator& operator++ () noexcept
+		const_iterator& operator++ () noexcept
 		{
 			++ptr;
 			return *this;
 		}
 
-		constexpr const_iterator operator++(int) noexcept
+		const_iterator operator++(int) noexcept
 		{
 			auto aux = ptr;
 			ptr++;
 			return const_iterator(aux);
 		}
 
-		constexpr const_iterator& operator-- () noexcept
+		const_iterator& operator-- () noexcept
 		{
 			--ptr;
 			return *this;
 		}
 
-		constexpr const_iterator operator--(int) noexcept
+		const_iterator operator--(int) noexcept
 		{
 			auto aux = ptr;
 			ptr--;
 			return const_iterator(aux);
 		}
 
-		constexpr const_iterator& operator+=(const size_t offset) noexcept
+		const_iterator& operator+=(const size_t offset) noexcept
 		{
 			ptr += offset;
 			return *this;
 		}
 
-		constexpr const_iterator& operator-=(const size_t offset) noexcept
+		const_iterator& operator-=(const size_t offset) noexcept
 		{
 			ptr -= offset;
 			return *this;
 		}
 
-		constexpr reference operator[](const size_t offset) const noexcept
+		reference operator[](const size_t offset) const noexcept
 		{
 			return *(ptr + offset);
 		}
 
-		friend constexpr bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
+		friend  bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr == it_b.ptr;
 		}
 
-		friend constexpr bool operator==(const const_iterator it, const pointer adr) noexcept
+		friend  bool operator==(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr == adr;
 		}
 
-		friend constexpr bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
+		friend  bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr != it_b.ptr;
 		}
 
-		friend constexpr bool operator!=(const const_iterator it, const pointer adr) noexcept
+		friend  bool operator!=(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr != adr;
 		}
 
-		friend constexpr const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
+		friend  const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr + offset);
 		}
 
-		friend constexpr const_iterator operator+(const size_t offset, const const_iterator it) noexcept
+		friend  const_iterator operator+(const size_t offset, const const_iterator it) noexcept
 		{
 			return const_iterator(offset + it.ptr);
 		}
 
-		friend constexpr const_iterator operator-(const const_iterator it, const size_t offset) noexcept
+		friend  const_iterator operator-(const const_iterator it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr - offset);
 		}
 
-		friend constexpr const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
+		friend  const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
 		{
 			return const_iterator(offset - it.ptr);
 		}
 
-		friend constexpr difference_type operator-(const const_iterator a, const const_iterator b) noexcept
+		friend  difference_type operator-(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
 		}
 
-		friend constexpr auto operator<=>(const const_iterator a, const const_iterator b) noexcept
+		friend  auto operator<=>(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr <=> b.ptr;
 		}
@@ -1139,7 +1163,7 @@ namespace tensor_lib
 
 	template <typename T, typename U, std::size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		constexpr void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
+		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right)
 	{
 		if constexpr (TENSORLIB_DEBUGGING)
 			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
@@ -1175,6 +1199,81 @@ namespace tensor_lib
 		}
 	}
 
+	template <typename T, typename U, std::size_t Rank>
+	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
+	{
+		if constexpr (TENSORLIB_DEBUGGING)
+			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
+				throw std::runtime_error("Can't swap subdimensions of different sizes!");
+
+		if constexpr (std::is_same_v<T, U> == true)
+			if (std::addressof(left) == std::addressof(right))
+				return;
+
+		const auto size = left.size_of_current_tensor();
+
+		std::unique_ptr<T[]> aux(new T[size]);
+
+		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
+
+		if constexpr (std::is_same_v<T, U> != true)
+		{
+			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
+
+			for (std::size_t i = 0; i < size; i++)
+			{
+				right._data.data()[i] = static_cast<U>(aux[i]);
+			}
+		}
+		else
+		{
+			std::copy(right._data.begin(), right._data.end(), left._data.begin());
+
+			for (std::size_t i = 0; i < size; i++)
+			{
+				right._data.data()[i] = aux[i];
+			}
+		}
+	}
+
+	template <typename T, typename U, std::size_t Rank>
+	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right)
+	{
+		std::swap(left._order_of_dimension, right._order_of_dimension);
+		std::swap(left._size_of_subdimension, right._size_of_subdimension);
+
+		if constexpr (std::is_same_v<T, U>)
+		{
+			std::swap(left._data, right._data);
+		}
+		else
+		{
+			if constexpr (sizeof(T) > sizeof(U))
+			{
+				std::unique_ptr<U[]> aux(new U[left._size_of_subdimension[0]]);
+
+				for (std::size_t i = 0; i != left._size_of_subdimension[0]; ++i)
+				{
+					aux[i] = right._data[i];
+					right._data[i] = static_cast<U>(left._data[i]);
+					left._data[i] = static_cast<T>(aux[i]);
+				}
+			}
+			else
+			{
+				std::unique_ptr<T[]> aux(new T[left._size_of_subdimension[0]]);
+
+				for (std::size_t i = 0; i != left._size_of_subdimension[0]; ++i)
+				{
+					aux[i] = left._data[i];
+					left._data[i] = static_cast<T>(right._data[i]);
+					right._data[i] = static_cast<U>(aux[i]);
+				}
+			}
+		}
+	}
 
 	namespace aliases
 	{
