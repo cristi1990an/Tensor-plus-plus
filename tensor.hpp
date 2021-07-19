@@ -13,12 +13,18 @@
 
 namespace tensor_lib
 {
+// The TENSORLIB_DEBUGGING constant expression indicates wheather the algorithms 
+// will do extra range checks. Set it to 'false' manually for slightly better performance.
+// Keep in mind though that this will disable certain range checks that keep an instance 
+// of the tensor from entering invalid states (like having a subdimension of size zero). 
+// Only disable it if you know what you're doing.
+
 #ifdef _MSC_VER
-#ifdef _DEBUG
-	constexpr static auto TENSORLIB_DEBUGGING = true;
-#else
-	constexpr static auto TENSORLIB_DEBUGGING = false;
-#endif // _DEBUG
+	#ifdef _DEBUG
+		constexpr static auto TENSORLIB_DEBUGGING = true;
+	#else
+		constexpr static auto TENSORLIB_DEBUGGING = false;
+	#endif // _DEBUG
 #else
 	constexpr static auto TENSORLIB_DEBUGGING = true;
 #endif
