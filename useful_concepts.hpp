@@ -175,74 +175,56 @@ namespace useful_concepts
 		default_initialized_with_zero<T>;
 
 
-	template <typename T, typename U, T t, U u>
-	concept is_greater_than =
-		std::three_way_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_greater_than = requires()
 	{
 		requires(t > u);
 	};
 
-	template <typename T, T value>
+	template <auto value>
 	concept is_not_zero =
-		has_zero<T> &&
+		has_zero<decltype(value)> &&
 		requires()
 	{
-		requires(value != static_cast<T>(0));
+		requires(value != static_cast<decltype(value)>(0));
 	};
 
-	template <typename T, T value>
+	template <auto value>
 	concept is_zero =
-		has_zero<T> &&
+		has_zero<decltype(value)> &&
 		requires()
 	{
-		requires(value == static_cast<T>(0));
+		requires(value == static_cast<decltype(value)>(0));
 	};
 
-	template <typename T, typename U, T t, U u>
-	concept is_equal_to =
-		std::equality_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_equal_to = requires()
 	{
 		requires(t == u);
 	};
 
-	template <typename T, typename U, T t, U u>
-	concept is_not_equal_to =
-		std::equality_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_not_equal_to = requires()
 	{
 		requires(t != u);
 	};
 
-	template <typename T, typename U, T t, U u>
-	concept is_equal_or_greater_than =
-		std::three_way_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_equal_or_greater_than = requires()
 	{
 		requires(t >= u);
 	};
 
-	template <typename T, typename U, T t, U u>
-	concept is_smaller_than =
-		std::three_way_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_smaller_than = requires()
 	{
 		requires(t < u);
 	};
 
-	template <typename T, typename U, T t, U u>
-	concept is_equal_or_smaller_than =
-		std::three_way_comparable_with<T, U> &&
-		requires()
+	template <auto t, auto u>
+	concept is_equal_or_smaller_than = requires()
 	{
 		requires(t <= u);
-	};
-
-	template <typename T, typename U>
-	concept can_static_cast_to = requires (T t, U u)
-	{
-		u = static_cast<U>(t);
 	};
 
 	template <typename T, typename U>

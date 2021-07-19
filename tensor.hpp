@@ -34,31 +34,31 @@ namespace tensor_lib
 	};
 
 	template <typename T, size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class tensor;
 
 	template <typename T, size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class subdimension;
 
 	template <typename T, size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension;
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
 
 	template <typename T, size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class tensor : public _tensor_common<T>
 	{
 	private:
@@ -85,7 +85,7 @@ namespace tensor_lib
 		//
 		void construct_size_of_subdimension_array() noexcept
 		{
-			std::size_t index = Rank - 1;
+			size_t index = Rank - 1;
 
 			_size_of_subdimension[Rank - 1] = _order_of_dimension[Rank - 1];
 
@@ -103,8 +103,8 @@ namespace tensor_lib
 			}
 		}
 
-		template <std::size_t Rank_index>
-		requires useful_concepts::is_greater_than<std::size_t, std::size_t, Rank_index, 2u>
+		template <size_t Rank_index>
+		requires useful_concepts::is_greater_than<Rank_index, 2u>
 			void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
@@ -121,8 +121,8 @@ namespace tensor_lib
 			}
 		}
 
-		template <std::size_t Rank_index>
-		requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 1u>
+		template <size_t Rank_index>
+		requires useful_concepts::is_equal_to<Rank_index, 1u>
 			void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
@@ -134,8 +134,8 @@ namespace tensor_lib
 			_order_of_dimension[Rank - Rank_index] = data_size;
 		}
 
-		template <std::size_t Rank_index>
-		requires useful_concepts::is_equal_to<std::size_t, std::size_t, Rank_index, 2u>
+		template <size_t Rank_index>
+		requires useful_concepts::is_equal_to<Rank_index, 2u>
 			void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
@@ -157,7 +157,7 @@ namespace tensor_lib
 		friend class subdimension<T, Rank>;
 		friend class const_subdimension<T, Rank>;
 
-		template <typename TT, typename U, std::size_t RankS>
+		template <typename TT, typename U, size_t RankS>
 		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
 			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
 
@@ -178,9 +178,9 @@ namespace tensor_lib
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
-			useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+			useful_concepts::constructable_from_common_type<size_t, Sizes...>
 			tensor(const Sizes ... sizes) noexcept
-			: _order_of_dimension{ static_cast<std::size_t>(sizes)... }
+			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
 			construct_size_of_subdimension_array();
 			_data.reset(new T[_size_of_subdimension[0]]);
@@ -197,7 +197,7 @@ namespace tensor_lib
 		}
 
 		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			auto data_size = data.size();
 
@@ -210,7 +210,7 @@ namespace tensor_lib
 		}
 
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			construct_order_array<Rank>(data);
 			construct_size_of_subdimension_array();
@@ -225,7 +225,7 @@ namespace tensor_lib
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(new T[other._size_of_subdimension[0]])
 		{
-			for (std::size_t i = 0; i < _size_of_subdimension[0]; ++i)
+			for (size_t i = 0; i < _size_of_subdimension[0]; ++i)
 			{
 				_data[i] = other._data[i];
 			}
@@ -272,7 +272,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -286,7 +286,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -300,7 +300,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -309,7 +309,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
@@ -326,7 +326,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_equal_to<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
@@ -356,9 +356,9 @@ namespace tensor_lib
 		template<typename... Sizes>
 		void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
-			useful_concepts::constructable_from_common_type<std::size_t, Sizes...>
+			useful_concepts::constructable_from_common_type<size_t, Sizes...>
 		{
-			_order_of_dimension = { static_cast<std::size_t>(new_sizes)... };
+			_order_of_dimension = { static_cast<size_t>(new_sizes)... };
 
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0u) != _order_of_dimension.cend())
@@ -369,7 +369,7 @@ namespace tensor_lib
 			_data.reset(new T[size_of_current_tensor()]);
 		}
 
-		auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+		auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			return subdimension<T, Rank - 1>
 				(
@@ -382,7 +382,7 @@ namespace tensor_lib
 					);
 		}
 
-		auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+		auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -395,12 +395,12 @@ namespace tensor_lib
 					);
 		}
 
-		auto& operator[] (const size_t index) noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+		auto& operator[] (const size_t index) noexcept requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			return _data[index];
 		}
 
-		auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+		auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			return _data[index];
 		}
@@ -435,12 +435,12 @@ namespace tensor_lib
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		const std::array<std::size_t, Rank>& get_sizes() const noexcept
+		const std::array<size_t, Rank>& get_sizes() const noexcept
 		{
 			return _size_of_subdimension;
 		}
 
-		const std::array<std::size_t, Rank>& get_ranks() const noexcept
+		const std::array<size_t, Rank>& get_ranks() const noexcept
 		{
 			return _order_of_dimension;
 		}
@@ -472,7 +472,7 @@ namespace tensor_lib
 	};
 
 	template <typename T, size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension : public _tensor_common<T>
 	{
 		using ConstSourceSizeOfDimensionArraySpan = std::span<const size_t, Rank>;
@@ -540,7 +540,7 @@ namespace tensor_lib
 		}
 
 		auto operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -554,7 +554,7 @@ namespace tensor_lib
 		}
 
 		const T& operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			return _data[index];
 		}
@@ -616,14 +616,14 @@ namespace tensor_lib
 		}
 
 		bool is_square_matrix() const noexcept
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_equal_to<Rank, 2>
 		{
 			return (_size_of_subdimension[0] == _size_of_subdimension[1]);
 		}
 	};
 
-	template <typename T, std::size_t Rank>
-	requires useful_concepts::is_not_zero<size_t, Rank>
+	template <typename T, size_t Rank>
+	requires useful_concepts::is_not_zero<Rank>
 		class subdimension : public _tensor_common<T>
 	{
 		using SourceSizeOfDimensionArraySpan = std::span<size_t, Rank>;
@@ -642,11 +642,11 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1>;
 		friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
 
-		template <typename TT, typename U, std::size_t RankS>
+		template <typename TT, typename U, size_t RankS>
 		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
 			friend void swap(subdimension<TT, RankS>& left, subdimension<U, RankS>& right);
 
-		template <typename TT, typename U, std::size_t RankS>
+		template <typename TT, typename U, size_t RankS>
 		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
 			friend void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
 
@@ -699,7 +699,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -713,7 +713,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -727,7 +727,7 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (std::size_t i = 0; i < size_of_current_tensor(); i++)
+			for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
 			}
@@ -736,7 +736,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
@@ -753,7 +753,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 2>
+			requires useful_concepts::is_equal_to<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
@@ -781,7 +781,7 @@ namespace tensor_lib
 		}
 
 		auto operator[] (const size_t index) noexcept
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			return subdimension<T, Rank - 1>
 				(
@@ -795,7 +795,7 @@ namespace tensor_lib
 		}
 
 		auto operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_greater_than<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -809,13 +809,13 @@ namespace tensor_lib
 		}
 
 		const T& operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			return _data[index];
 		}
 
 		T& operator[] (const size_t index) noexcept
-			requires useful_concepts::is_equal_to<size_t, size_t, Rank, 1>
+			requires useful_concepts::is_equal_to<Rank, 1>
 		{
 			return _data[index];
 		}
@@ -1161,7 +1161,7 @@ namespace tensor_lib
 		pointer ptr;
 	};
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right)
 	{
@@ -1183,7 +1183,7 @@ namespace tensor_lib
 		{
 			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
 
-			for (std::size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < size; i++)
 			{
 				right._data.data()[i] = static_cast<U>(aux[i]);
 			}
@@ -1192,14 +1192,14 @@ namespace tensor_lib
 		{
 			std::copy(right._data.begin(), right._data.end(), left._data.begin());
 
-			for (std::size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < size; i++)
 			{
 				right._data.data()[i] = aux[i];
 			}
 		}
 	}
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
 	{
@@ -1221,7 +1221,7 @@ namespace tensor_lib
 		{
 			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
 
-			for (std::size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < size; i++)
 			{
 				right._data.data()[i] = static_cast<U>(aux[i]);
 			}
@@ -1230,14 +1230,14 @@ namespace tensor_lib
 		{
 			std::copy(right._data.begin(), right._data.end(), left._data.begin());
 
-			for (std::size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < size; i++)
 			{
 				right._data.data()[i] = aux[i];
 			}
 		}
 	}
 
-	template <typename T, typename U, std::size_t Rank>
+	template <typename T, typename U, size_t Rank>
 	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
 		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right)
 	{
@@ -1254,7 +1254,7 @@ namespace tensor_lib
 			{
 				std::unique_ptr<U[]> aux(new U[left._size_of_subdimension[0]]);
 
-				for (std::size_t i = 0; i != left._size_of_subdimension[0]; ++i)
+				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
 				{
 					aux[i] = right._data[i];
 					right._data[i] = static_cast<U>(left._data[i]);
@@ -1265,7 +1265,7 @@ namespace tensor_lib
 			{
 				std::unique_ptr<T[]> aux(new T[left._size_of_subdimension[0]]);
 
-				for (std::size_t i = 0; i != left._size_of_subdimension[0]; ++i)
+				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
 				{
 					aux[i] = left._data[i];
 					left._data[i] = static_cast<T>(right._data[i]);
