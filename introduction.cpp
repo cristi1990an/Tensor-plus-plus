@@ -218,5 +218,5 @@ int main()
 	my_tensor.size_of_current_tensor();		// is same as 'my_tensor.size_of_subdimension(0)'
 
 	tensor_testing_suit::RUN_ALL_TESTS();
-	// benchmark::RUN_ALL();
+	benchmark::RUN_ALL();
 }
