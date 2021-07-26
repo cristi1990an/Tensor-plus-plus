@@ -164,8 +164,8 @@ the future though...
 #### tensor(const Sizes ... sizes) noexcept;
 
 Constructor taking the sizes of each subdimension. The constructor has static requirements that: 
-	- the number of parameters passed equals the rank of the tensor
-	- the type of
+* the number of parameters passed equals the rank of the tensor
+* the type of
 
 
 TODO: 
