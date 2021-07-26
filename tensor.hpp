@@ -21,15 +21,17 @@ namespace tensor_lib
 
 #ifdef _MSC_VER
 #ifdef _DEBUG
-	constexpr static auto TENSORLIB_DEBUGGING = true;
+	constexpr static bool TENSORLIB_DEBUGGING = true;
 #else
-	constexpr static auto TENSORLIB_DEBUGGING = false;
+	constexpr static bool TENSORLIB_DEBUGGING = false;
 #endif // _DEBUG
 #else
-	constexpr static auto TENSORLIB_DEBUGGING = true;
+	constexpr static bool TENSORLIB_DEBUGGING = true;
 #endif
 
-#define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(!TENSORLIB_DEBUGGING)
+	constexpr static bool TENSORLIB_RELEASE = !TENSORLIB_DEBUGGING;
+
+#define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(TENSORLIB_RELEASE)
 
 	template <typename T>
 	class _tensor_common
@@ -174,7 +176,7 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		constexpr tensor() noexcept
+		tensor() noexcept
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(new T[1])
@@ -183,11 +185,27 @@ namespace tensor_lib
 		}
 
 		template<typename... Sizes>
-		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
-			useful_concepts::constructable_from_common_type<size_t, Sizes...>
+		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
+			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& TENSORLIB_RELEASE
 			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
+			construct_size_of_subdimension_array();
+			_data.reset(new T[_size_of_subdimension[0]]);
+		}
+
+		template<typename... Sizes>
+		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
+			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& TENSORLIB_DEBUGGING
+			tensor(const Sizes ... sizes)
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (useful_specializations::contains_zero(sizes...))
+					throw std::runtime_error("Size of subdimension cannot be zero!");
+
+			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			construct_size_of_subdimension_array();
 			_data.reset(new T[_size_of_subdimension[0]]);
 		}
@@ -654,7 +672,7 @@ namespace tensor_lib
 		friend class tensor<T, Rank>;
 		friend class tensor<T, Rank + 1>;
 		friend class subdimension<T, Rank + 1>;
-		friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
+		friend class tensor<T, Rank ? Rank : 1>;
 
 		template <typename TT, typename U, size_t RankS>
 		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
