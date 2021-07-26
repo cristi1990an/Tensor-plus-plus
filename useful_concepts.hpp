@@ -9,7 +9,7 @@ namespace useful_concepts
 	template <typename T, typename First, typename ... Args>
 	struct is_constructible_from_each
 	{
-		static constexpr bool value = [&]()
+		static constexpr bool value = []()
 		{
 			if constexpr (sizeof...(Args) == 0)
 				return std::is_constructible_v<T, First>;
