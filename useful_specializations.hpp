@@ -30,11 +30,25 @@ namespace useful_specializations
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	consteval std::size_t no_zero(const size_t val) noexcept
+	template <typename T>
+	constexpr bool are_not_zero(const T& value) noexcept
 	{
-		if (val)
-			return val;
-		return 1u;
+		return (static_cast<T>(0) != value);
+	}
+
+	template <typename T, typename ... Args>
+	constexpr bool are_not_zero(const T& value, const Args& ... others) noexcept
+	{
+		if (static_cast<T>(0) == value)
+			return false;
+
+		return are_not_zero(others...);
+	}
+
+	template <typename ... Args>
+	constexpr bool contains_zero(const Args& ... values)
+	{
+		return !are_not_zero(values...);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////

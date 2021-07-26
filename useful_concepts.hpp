@@ -6,6 +6,24 @@
 
 namespace useful_concepts
 {
+	template <typename T, typename First, typename ... Args>
+	struct is_constructible_from_each
+	{
+		static constexpr bool value = []()
+		{
+			if constexpr (sizeof...(Args) == 0)
+				return std::is_constructible_v<T, First>;
+			else
+				return std::is_constructible_v<T, First> ? is_constructible_from_each<T, Args...>::value : false;
+		}();
+	};
+
+	template<typename T, typename First, typename ... Args>
+	static constexpr bool is_constructible_from_each_v = is_constructible_from_each<T, First, Args...>::value;
+
+	template<typename ... Args>
+	concept constructible_from_each = is_constructible_from_each_v<Args...>;
+
 	template <typename T>
 	concept addable =
 		requires (T x, T y)
@@ -103,6 +121,12 @@ namespace useful_concepts
 	concept constructable_from_common_type = requires ()
 	{
 		requires(std::is_constructible_v<T, typename std::common_type_t<U...>> == true);
+	};
+
+	template <typename T, typename... U>
+	concept convertible_from_common_type = requires ()
+	{
+		requires(std::is_convertible_v<T, typename std::common_type_t<U...>> == true);
 	};
 
 	template <typename T, typename... U>
