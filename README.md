@@ -160,8 +160,8 @@ This is the default constructor. It will consider that all subdimensions to be o
 has even one subdimension be of size zero to be in an invalid state, so even when default initialized, a tensor will allocate memory for one element. This might change in
 the future though...
 	
-#### template<typename... Sizes>
-#### tensor(const Sizes ... sizes) noexcept;
+### template<typename... Sizes>
+### tensor(const Sizes ... sizes) noexcept;
 
 Constructor taking the sizes of each subdimension. The constructor has static requirements that: 
 * the number of parameters passed equals the rank of the tensor
