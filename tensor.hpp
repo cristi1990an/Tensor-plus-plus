@@ -315,7 +315,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 1>
+			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
