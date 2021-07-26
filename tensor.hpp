@@ -13,18 +13,18 @@
 
 namespace tensor_lib
 {
-// The TENSORLIB_DEBUGGING constant expression indicates wheather the algorithms 
-// will do extra range checks. Set it to 'false' manually for slightly better performance.
-// Keep in mind though that this will disable certain range checks that keep an instance 
-// of the tensor from entering invalid states (like having a subdimension of size zero). 
-// Only disable it if you know what you're doing.
+	// The TENSORLIB_DEBUGGING constant expression indicates wheather the algorithms 
+	// will do extra range checks. Set it to 'false' manually for slightly better performance.
+	// Keep in mind though that this will disable certain range checks that keep an instance 
+	// of the tensor from entering invalid states (like having a subdimension of size zero). 
+	// Only disable it if you know what you're doing.
 
 #ifdef _MSC_VER
-	#ifdef _DEBUG
-		constexpr static auto TENSORLIB_DEBUGGING = true;
-	#else
-		constexpr static auto TENSORLIB_DEBUGGING = false;
-	#endif // _DEBUG
+#ifdef _DEBUG
+	constexpr static auto TENSORLIB_DEBUGGING = true;
+#else
+	constexpr static auto TENSORLIB_DEBUGGING = false;
+#endif // _DEBUG
 #else
 	constexpr static auto TENSORLIB_DEBUGGING = true;
 #endif
@@ -197,8 +197,9 @@ namespace tensor_lib
 			, _size_of_subdimension(std::move(other._size_of_subdimension))
 			, _data(std::move(other._data))
 		{
-			std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
-			std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+			std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
+			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
+
 			other._data = std::make_unique<T[]>(1);
 		}
 
@@ -216,7 +217,7 @@ namespace tensor_lib
 		}
 
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 2>
+			requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			construct_order_array<Rank>(data);
 			construct_size_of_subdimension_array();
@@ -265,8 +266,9 @@ namespace tensor_lib
 				std::copy_n(other._size_of_subdimension.cbegin(), Rank, _size_of_subdimension.begin());
 				_data = move(other._data);
 
-				std::fill(other._order_of_dimension.begin(), other._order_of_dimension.end(), 1u);
-				std::fill(other._size_of_subdimension.begin(), other._size_of_subdimension.end(), 1u);
+				std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
+				std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
+
 				other._data.reset(new T[1]);
 			}
 			return *this;
@@ -511,7 +513,10 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3>
-		const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+		requires std::constructible_from<decltype(_order_of_dimension), T1>
+			&& std::constructible_from<decltype(_size_of_subdimension), T2>
+			&& std::constructible_from<decltype(_data), T3>
+			const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1))
 			, _size_of_subdimension(std::forward<T2>(param_2))
 			, _data(std::forward<T3>(param_3))
@@ -520,7 +525,10 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-		const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+		requires std::constructible_from<decltype(_order_of_dimension), T1, T2>
+			&& std::constructible_from<decltype(_size_of_subdimension), T3, T4>
+			&& std::constructible_from<decltype(_data), T5, T6>
+			const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
 			, _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
 			, _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
@@ -665,7 +673,10 @@ namespace tensor_lib
 		subdimension(const const_subdimension<T, Rank>&) noexcept = delete;
 
 		template<typename T1, typename T2, typename T3>
-		subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+		requires std::constructible_from<decltype(_order_of_dimension), T1>
+			&& std::constructible_from<decltype(_size_of_subdimension), T2>
+			&& std::constructible_from<decltype(_data), T3>
+			subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
 			: _order_of_dimension{ std::forward<T1>(param_1) }
 			, _size_of_subdimension{ std::forward<T2>(param_2) }
 			, _data{ std::forward<T3>(param_3) }
@@ -674,7 +685,10 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-		subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+		requires std::constructible_from<decltype(_order_of_dimension), T1, T2>
+			&& std::constructible_from<decltype(_size_of_subdimension), T3, T4>
+			&& std::constructible_from<decltype(_data), T5, T6>
+			subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
 			, _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
 			, _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
@@ -742,7 +756,7 @@ namespace tensor_lib
 		}
 
 		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 2>
+			requires useful_concepts::is_greater_than<Rank, 1>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (order_of_current_dimension() != data.size())
@@ -1112,52 +1126,52 @@ namespace tensor_lib
 			return *(ptr + offset);
 		}
 
-		friend  bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
+		friend bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr == it_b.ptr;
 		}
 
-		friend  bool operator==(const const_iterator it, const pointer adr) noexcept
+		friend bool operator==(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr == adr;
 		}
 
-		friend  bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
+		friend bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr != it_b.ptr;
 		}
 
-		friend  bool operator!=(const const_iterator it, const pointer adr) noexcept
+		friend bool operator!=(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr != adr;
 		}
 
-		friend  const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
+		friend const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr + offset);
 		}
 
-		friend  const_iterator operator+(const size_t offset, const const_iterator it) noexcept
+		friend const_iterator operator+(const size_t offset, const const_iterator it) noexcept
 		{
 			return const_iterator(offset + it.ptr);
 		}
 
-		friend  const_iterator operator-(const const_iterator it, const size_t offset) noexcept
+		friend const_iterator operator-(const const_iterator it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr - offset);
 		}
 
-		friend  const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
+		friend const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
 		{
 			return const_iterator(offset - it.ptr);
 		}
 
-		friend  difference_type operator-(const const_iterator a, const const_iterator b) noexcept
+		friend difference_type operator-(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
 		}
 
-		friend  auto operator<=>(const const_iterator a, const const_iterator b) noexcept
+		friend auto operator<=>(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr <=> b.ptr;
 		}

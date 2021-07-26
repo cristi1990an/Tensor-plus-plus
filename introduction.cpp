@@ -217,6 +217,12 @@ int main()
 	my_tensor.order_of_current_dimension();	// is same as 'my_tensor.order_of_dimension(0)'
 	my_tensor.size_of_current_tensor();		// is same as 'my_tensor.size_of_subdimension(0)'
 
+	tensor<float, 2> f_t = 
+	{
+		{ 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f },
+		{ 0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f  }
+	};
+
 	tensor_testing_suit::RUN_ALL_TESTS();
 	benchmark::RUN_ALL();
 }
