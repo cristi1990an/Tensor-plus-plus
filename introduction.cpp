@@ -138,7 +138,7 @@ int main()
 		Or swap() specialization:
 	*/
 
-	swap(my_tensor[0][0][1], my_tensor[0][0][0]);
+	// swap(my_tensor[0][0][1], my_tensor[0][0][0]);
 
 	/*
 		Template parameters
@@ -224,5 +224,5 @@ int main()
 	};
 
 	tensor_testing_suit::RUN_ALL_TESTS();
-	benchmark::RUN_ALL();
+	//benchmark::RUN_ALL();
 }

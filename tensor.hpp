@@ -39,31 +39,28 @@ namespace tensor_lib
 		struct const_iterator;
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class tensor;
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class subdimension;
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension;
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+	template <typename T, size_t Rank, typename allocator_type>
+		void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
+	template <typename T, size_t Rank, typename allocator_type>
+		void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
+	template <typename T, size_t Rank, typename allocator_type>
+		void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right);
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class tensor : public _tensor_common<T>
 	{
@@ -160,12 +157,10 @@ namespace tensor_lib
 
 	public:
 
-		friend class subdimension<T, Rank>;
-		friend class const_subdimension<T, Rank>;
+		friend class subdimension<T, Rank, allocator_type>;
+		friend class const_subdimension<T, Rank, allocator_type>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
+		friend void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -479,7 +474,7 @@ namespace tensor_lib
 		}
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension : public _tensor_common<T>
 	{
@@ -494,8 +489,8 @@ namespace tensor_lib
 
 	public:
 
-		friend class subdimension<T, Rank>;
-		friend class tensor<T, Rank>;
+		friend class subdimension<T, Rank, allocator_type>;
+		friend class tensor<T, Rank, allocator_type>;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -636,7 +631,7 @@ namespace tensor_lib
 		}
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class subdimension : public _tensor_common<T>
 	{
@@ -650,19 +645,15 @@ namespace tensor_lib
 		SourceDataSpan                              _data;
 
 	public:
-		friend class const_subdimension<T, Rank>;
-		friend class tensor<T, Rank>;
-		friend class tensor<T, Rank + 1>;
-		friend class subdimension<T, Rank + 1>;
-		friend class tensor<T, useful_specializations::no_zero(Rank - 1)>;
+		friend class const_subdimension<T, Rank, allocator_type>;
+		friend class tensor<T, Rank, allocator_type>;
+		friend class tensor<T, Rank + 1, allocator_type>;
+		friend class subdimension<T, Rank + 1, allocator_type>;
+		friend class tensor<T, useful_specializations::no_zero(Rank - 1), allocator_type>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>& left, subdimension<U, RankS>& right);
+		friend void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
+		friend void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1181,118 +1172,22 @@ namespace tensor_lib
 		pointer ptr;
 	};
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right)
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
-
-		const auto size = left.size_of_current_tensor();
-
-		std::unique_ptr<T[]> aux(new T[size]);
-
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right)
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
-
-		const auto size = left.size_of_current_tensor();
-
-		std::unique_ptr<T[]> aux(new T[size]);
-
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right)
 	{
-		std::swap(left._order_of_dimension, right._order_of_dimension);
-		std::swap(left._size_of_subdimension, right._size_of_subdimension);
-
-		if constexpr (std::is_same_v<T, U>)
-		{
-			std::swap(left._data, right._data);
-		}
-		else
-		{
-			if constexpr (sizeof(T) > sizeof(U))
-			{
-				std::unique_ptr<U[]> aux(new U[left._size_of_subdimension[0]]);
-
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = right._data[i];
-					right._data[i] = static_cast<U>(left._data[i]);
-					left._data[i] = static_cast<T>(aux[i]);
-				}
-			}
-			else
-			{
-				std::unique_ptr<T[]> aux(new T[left._size_of_subdimension[0]]);
-
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = left._data[i];
-					left._data[i] = static_cast<T>(right._data[i]);
-					right._data[i] = static_cast<U>(aux[i]);
-				}
-			}
-		}
+		
 	}
 
 	namespace aliases
