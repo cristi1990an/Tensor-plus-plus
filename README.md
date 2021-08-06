@@ -95,7 +95,9 @@ TODO: talk about all the other cool things you can do...
 ## Implementation
 	
 	
-**Template parameters**
+## Template parameters
+	
+**tensor_lib::tensor<T, Rank>**
 
 **T**	-	type of the elements
 
@@ -139,14 +141,31 @@ const_subdimension will be returned by the operator[] of either 'tensor' or 'sub
 []<typename T, size_t Rank>(const tensor<T, Rank>& my_tensor)
 {
   auto subdim = my_tensor[0];
-  std::cout << typeid(subdim).name() << '\n\n';
+  std::cout << typeid(subdim).name() << '\n\n'; // const_subdimension
 
-  // subdim[0][0][0][0] = 5;' won't work since it's a constant variable
+  // subdim[0][0][0][0] = 5;' won't work since const_subdimension can't modify the underlying data. It is however allowed to assign itself to other spans, the same way
+  // a const_iterator is allowed to increment or reasign itself to another address.
 
 }(my_tensor);
+	
 ```
+	
+## Member functions
+	
+### Constructors
+	
+### tensor() noexcept;
+	
+This is the default constructor. It will consider that all subdimensions to be of size 1, effectively making it a one element tensor. Current design considers a tensor that 
+has even one subdimension be of size zero to be in an invalid state, so even when default initialized, a tensor will allocate memory for one element. This might change in
+the future though...
+	
+### template<typename... Sizes> tensor (const Sizes ... sizes) noexcept;
 
-	//	display(my_tensor); // (un-comment me to display the result)
+Constructor taking the sizes of each subdimension. The constructor has static requirements that: 
+* the number of parameters passed equals the rank of the tensor
+* size_t can be constructed from each element passed
+
 
 TODO: 
 

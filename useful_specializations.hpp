@@ -30,27 +30,10 @@ namespace useful_specializations
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	consteval std::size_t no_zero(const size_t val) noexcept
+	template <typename ... Args>
+	constexpr bool contains_zero(const Args& ... values) noexcept
 	{
-		if (val)
-			return val;
-		return 1u;
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	requires std::convertible_to<T, std::size_t>
-		constexpr std::size_t multiply_all(const T val) noexcept
-	{
-		return val;
-	}
-
-	template<typename ... Sizes>
-	requires useful_concepts::convertible_to_common_type<std::size_t, Sizes...>
-		constexpr std::size_t multiply_all(const std::size_t first, const Sizes ... sizes) noexcept
-	{
-		return first * multiply_all(sizes...);
+		return !(... && values);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,5 +44,14 @@ namespace useful_specializations
 		std::array<T, Size> result{};
 		std::fill(result.begin(), result.end(), value);
 		return result;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	constexpr size_t exclude_zero(const size_t value) noexcept
+	{
+		if (value == 0)
+			return 1;
+		return value;
 	}
 }

@@ -21,15 +21,17 @@ namespace tensor_lib
 
 #ifdef _MSC_VER
 #ifdef _DEBUG
-	constexpr static auto TENSORLIB_DEBUGGING = true;
+	constexpr static bool TENSORLIB_DEBUGGING = true;
 #else
-	constexpr static auto TENSORLIB_DEBUGGING = false;
+	constexpr static bool TENSORLIB_DEBUGGING = false;
 #endif // _DEBUG
 #else
-	constexpr static auto TENSORLIB_DEBUGGING = true;
+	constexpr static bool TENSORLIB_DEBUGGING = true;
 #endif
 
-#define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(!TENSORLIB_DEBUGGING)
+	constexpr static bool TENSORLIB_RELEASE = !TENSORLIB_DEBUGGING;
+
+#define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(TENSORLIB_RELEASE)
 
 	template <typename T>
 	class _tensor_common
@@ -51,14 +53,17 @@ namespace tensor_lib
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension;
 
-	template <typename T, size_t Rank, typename allocator_type>
-		void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
 
-	template <typename T, size_t Rank, typename allocator_type>
-		void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
 
-	template <typename T, size_t Rank, typename allocator_type>
-		void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
+
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
 
 	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
@@ -160,7 +165,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank, allocator_type>;
 		friend class const_subdimension<T, Rank, allocator_type>;
 
-		friend void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right);
+		friend void swap<T, Rank, allocator_type>(tensor& left, tensor& right) noexcept;
+		friend void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -169,7 +175,7 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		constexpr tensor() noexcept
+		tensor() noexcept
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(new T[1])
@@ -178,11 +184,27 @@ namespace tensor_lib
 		}
 
 		template<typename... Sizes>
-		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
-			useful_concepts::constructable_from_common_type<size_t, Sizes...>
+		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
+			&& TENSORLIB_RELEASE
 			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
+			construct_size_of_subdimension_array();
+			_data.reset(new T[_size_of_subdimension[0]]);
+		}
+
+		template<typename... Sizes>
+		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
+			&& TENSORLIB_DEBUGGING
+			tensor(const Sizes ... sizes)
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+				if (useful_specializations::contains_zero(sizes...))
+					throw std::runtime_error("Size of subdimension cannot be zero!");
+
+			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			construct_size_of_subdimension_array();
 			_data.reset(new T[_size_of_subdimension[0]]);
 		}
@@ -531,7 +553,7 @@ namespace tensor_lib
 
 		}
 
-		const_subdimension(const tensor<const T, Rank>& tsor) noexcept :
+		const_subdimension(const tensor<const T, Rank, allocator_type>& tsor) noexcept :
 			_order_of_dimension{ tsor._order_of_dimension.begin(),      tsor._order_of_dimension.end() },
 			_size_of_subdimension{ tsor._size_of_subdimension.begin(),    tsor._size_of_subdimension.end() },
 			_data{ tsor.begin(),                          tsor.end() }
@@ -588,35 +610,34 @@ namespace tensor_lib
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		auto get_Rank() const noexcept
+		auto rank() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		size_t& order_of_dimension(const size_t& index) const noexcept
+		size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		size_t& size_of_subdimension(const size_t& index) const noexcept
+		size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		size_t& order_of_current_dimension() const noexcept
+		size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		size_t& size_of_current_tensor() const noexcept
+		size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		T* data() const noexcept
+		const T* data() const noexcept
 		{
-			auto it = _data.begin();
-			return reinterpret_cast<const T*>(&it);
+			return std::to_address(begin());
 		}
 
 		bool is_matrix() const noexcept
@@ -649,11 +670,10 @@ namespace tensor_lib
 		friend class tensor<T, Rank, allocator_type>;
 		friend class tensor<T, Rank + 1, allocator_type>;
 		friend class subdimension<T, Rank + 1, allocator_type>;
-		friend class tensor<T, useful_specializations::no_zero(Rank - 1), allocator_type>;
+		friend class tensor<T, useful_specializations::exclude_zero(Rank - 1), allocator_type>;
 
-		friend void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
-
-		friend void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
+		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&);
+		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1173,21 +1193,51 @@ namespace tensor_lib
 	};
 
 	template <typename T, size_t Rank, typename allocator_type>
+	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept
+	{
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data); 
+	}
+
+	template <typename T, size_t Rank, typename allocator_type>
 	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right)
 	{
-		
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
+
+		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
+
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
+
+		delete[] aux;
+	}
+
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
+	{
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data);
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right)
 	{
-		
-	}
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
-	template <typename T, size_t Rank, typename allocator_type>
-	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right)
-	{
-		
+		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
+
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
+
+		delete[] aux;
 	}
 
 	namespace aliases
