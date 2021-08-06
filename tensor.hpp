@@ -53,17 +53,29 @@ namespace tensor_lib
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension;
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+	template<typename T, size_t Rank>
+	void swap(tensor<T, Rank>& left, tensor<T, Rank>& right) noexcept;
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
+	template<typename T, size_t Rank>
+	void swap(subdimension<T, Rank>& left, subdimension<T, Rank>& right);
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
+	template<typename T, size_t Rank>
+	void swap(tensor<T, Rank>&& left, tensor<T, Rank>&& right) noexcept;
+
+	template<typename T, size_t Rank>
+	void swap(subdimension<T, Rank>&& left, subdimension<T, Rank>&& right);
+
+	//template <typename T, typename U, size_t Rank>
+	//requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+	//	void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+
+	//template <typename T, typename U, size_t Rank>
+	//requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+	//	void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
+
+	//template <typename T, typename U, size_t Rank>
+	//requires std::convertible_to<T, U>&& std::convertible_to<U, T>
+	//	void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
 
 	template <typename T, size_t Rank>
 	requires useful_concepts::is_not_zero<Rank>
@@ -165,9 +177,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank>;
 		friend class const_subdimension<T, Rank>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
+		friend void swap<T, Rank>(tensor& left, tensor& right) noexcept;
+		friend void swap<T, Rank>(tensor&& left, tensor&& right) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -186,7 +197,7 @@ namespace tensor_lib
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
 			&& TENSORLIB_RELEASE
 			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
@@ -197,7 +208,7 @@ namespace tensor_lib
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
 			&& TENSORLIB_DEBUGGING
 			tensor(const Sizes ... sizes)
 		{
@@ -611,35 +622,34 @@ namespace tensor_lib
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		auto get_Rank() const noexcept
+		auto rank() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		size_t& order_of_dimension(const size_t& index) const noexcept
+		size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		size_t& size_of_subdimension(const size_t& index) const noexcept
+		size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		size_t& order_of_current_dimension() const noexcept
+		size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		size_t& size_of_current_tensor() const noexcept
+		size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		T* data() const noexcept
+		const T* data() const noexcept
 		{
-			auto it = _data.begin();
-			return reinterpret_cast<const T*>(&it);
+			return std::to_address(begin());
 		}
 
 		bool is_matrix() const noexcept
@@ -674,13 +684,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1>;
 		friend class tensor<T, Rank ? Rank : 1>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>& left, subdimension<U, RankS>& right);
-
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
+		friend void swap<T, Rank>(subdimension&, subdimension&);
+		friend void swap<T, Rank>(subdimension&&, subdimension&&);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1199,118 +1204,52 @@ namespace tensor_lib
 		pointer ptr;
 	};
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right)
+	template <typename T, size_t Rank>
+	void swap(tensor<T, Rank>& left, tensor<T, Rank>& right) noexcept
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
-
-		const auto size = left.size_of_current_tensor();
-
-		std::unique_ptr<T[]> aux(new T[size]);
-
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data); 
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
+	template <typename T, size_t Rank>
+	void swap(subdimension<T, Rank>& left, subdimension<T, Rank>& right)
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
 		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
 
-		std::unique_ptr<T[]> aux(new T[size]);
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
 
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		delete[] aux;
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right)
+	template <typename T, size_t Rank>
+	void swap(tensor<T, Rank>&& left, tensor<T, Rank>&& right) noexcept
 	{
-		std::swap(left._order_of_dimension, right._order_of_dimension);
-		std::swap(left._size_of_subdimension, right._size_of_subdimension);
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data);
+	}
 
-		if constexpr (std::is_same_v<T, U>)
-		{
-			std::swap(left._data, right._data);
-		}
-		else
-		{
-			if constexpr (sizeof(T) > sizeof(U))
-			{
-				std::unique_ptr<U[]> aux(new U[left._size_of_subdimension[0]]);
+	template <typename T, size_t Rank>
+	void swap(subdimension<T, Rank>&& left, subdimension<T, Rank>&& right)
+	{
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = right._data[i];
-					right._data[i] = static_cast<U>(left._data[i]);
-					left._data[i] = static_cast<T>(aux[i]);
-				}
-			}
-			else
-			{
-				std::unique_ptr<T[]> aux(new T[left._size_of_subdimension[0]]);
+		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
 
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = left._data[i];
-					left._data[i] = static_cast<T>(right._data[i]);
-					right._data[i] = static_cast<U>(aux[i]);
-				}
-			}
-		}
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
+
+		delete[] aux;
 	}
 
 	namespace aliases

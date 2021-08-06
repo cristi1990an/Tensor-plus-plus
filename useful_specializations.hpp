@@ -30,41 +30,10 @@ namespace useful_specializations
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename T>
-	constexpr bool are_not_zero(const T& value) noexcept
-	{
-		return (static_cast<T>(0) != value);
-	}
-
-	template <typename T, typename ... Args>
-	constexpr bool are_not_zero(const T& value, const Args& ... others) noexcept
-	{
-		if (static_cast<T>(0) == value)
-			return false;
-
-		return are_not_zero(others...);
-	}
-
 	template <typename ... Args>
 	constexpr bool contains_zero(const Args& ... values)
 	{
-		return !are_not_zero(values...);
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	requires std::convertible_to<T, std::size_t>
-		constexpr std::size_t multiply_all(const T val) noexcept
-	{
-		return val;
-	}
-
-	template<typename ... Sizes>
-	requires useful_concepts::convertible_to_common_type<std::size_t, Sizes...>
-		constexpr std::size_t multiply_all(const std::size_t first, const Sizes ... sizes) noexcept
-	{
-		return first * multiply_all(sizes...);
+		return !(... && values);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////

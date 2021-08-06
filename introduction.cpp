@@ -80,7 +80,7 @@ int main()
 	*/
 	tensor<int, 5> my_tensor(3, 4, 5, 2, 2); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 2 by 2
 
-	int val = 0;
+	int new_val = 0;
 
 	for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
 	{
@@ -92,7 +92,7 @@ int main()
 				{
 					for (size_t e = 0; e < my_tensor.order_of_dimension(4) /* returns 7 */; e++)
 
-						my_tensor[a][b][c][d][e] = val++;  // We can do this <3
+						my_tensor[a][b][c][d][e] = new_val++;  // We can do this <3
 				}
 			}
 		}
@@ -164,10 +164,10 @@ int main()
 		use the square paranthesis operator to calculate the value range representing their desired subdimension and then access its value like a normal array.
 
 		Tensor is also compatible with standard algorithms:
-	*/
+	*/ 
 
 	std::fill(my_tensor[2][1].begin(), my_tensor[2][1].end(), 0);
-	std::sort(my_tensor[2][1].begin(), my_tensor[2][1].end());
+	std::sort(my_tensor[2][1].begin(), my_tensor[2][1].end()); 
 
 	/*
 		The design of the complementary non-owning subdimension class template requires however the implementation of a const_subdimension class template in order to maintain
