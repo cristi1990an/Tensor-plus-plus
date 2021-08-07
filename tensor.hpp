@@ -10,6 +10,7 @@
 #include <numeric>
 #include <span>
 #include <utility>
+#include <functional>
 
 namespace tensor_lib
 {
@@ -86,7 +87,13 @@ namespace tensor_lib
 
 		// Dynamically allocated data buffer.
 		//
-		std::unique_ptr<T[]> _data{};
+		T _data{};
+
+		[[no_unique_address]] allocator_type allocator_instance;
+
+		using allocator_type_traits = std::allocator_traits<allocator_type>;
+
+		allocator_type_traits::pointer tensor_allocate = std::bind_front(allocator_type_traits::allocate, allocator_instance);
 
 	private:
 		// Computes _size_of_subdimension at initialization. 
@@ -160,6 +167,14 @@ namespace tensor_lib
 			}
 		}
 
+		void construct_all() 
+		{
+			for (size_t i = 0; i != size_of_current_tensor(); ++i)
+			{
+				std::construct_at(&_data[i]);
+			}
+		}
+
 	public:
 
 		friend class subdimension<T, Rank, allocator_type>;
@@ -175,12 +190,12 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		tensor() noexcept
+		tensor() 
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
-			, _data(new T[1])
-		{
-
+			, _data(tensor_allocate(allocator_instance, 1u))
+		{ 
+			std::construct_at(_data);
 		}
 
 		template<typename... Sizes>
@@ -191,7 +206,10 @@ namespace tensor_lib
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
 			construct_size_of_subdimension_array();
-			_data.reset(new T[_size_of_subdimension[0]]);
+			//_data.reset(new T[_size_of_subdimension[0]]);
+
+			_data = tensor_allocate(size_of_current_tensor());
+			construct_all();
 		}
 
 		template<typename... Sizes>
@@ -206,7 +224,9 @@ namespace tensor_lib
 
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			construct_size_of_subdimension_array();
-			_data.reset(new T[_size_of_subdimension[0]]);
+
+			_data = tensor_allocate(size_of_current_tensor());
+			construct_all();
 		}
 
 		tensor(tensor&& other) noexcept
@@ -217,7 +237,8 @@ namespace tensor_lib
 			std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
 			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-			other._data = std::make_unique<T[]>(1);
+			other._data = allocator_type_traits.allocate(other.allocator_instance, 1u);
+			std::construct_at(other._data);
 		}
 
 		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -228,9 +249,14 @@ namespace tensor_lib
 			_order_of_dimension[0] = data_size;
 			_size_of_subdimension[0] = data_size;
 
-			_data.reset(new T[data_size]);
+			_data = tensor_allocate(data_size);
 
-			std::copy_n(data.begin(), data_size, _data.get());
+			T* it = &_data;
+
+			for (const auto& value : data)
+			{
+				std::construct_at(it++, data);
+			}
 		}
 
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE

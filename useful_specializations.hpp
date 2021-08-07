@@ -31,9 +31,15 @@ namespace useful_specializations
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template <typename ... Args>
-	constexpr bool contains_zero(const Args& ... values) noexcept
+	constexpr bool contains_zero(Args&& ... values) noexcept
 	{
 		return !(... && values);
+	}
+
+	template <typename ... Args>
+	constexpr bool does_not_contain_zero(Args&& ... values) noexcept
+	{
+		return not contains_zero(std::forward<Args>(values)...);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
