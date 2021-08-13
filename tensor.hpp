@@ -274,7 +274,7 @@ namespace tensor_lib
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(allocator_type_traits::allocate(allocator_instance, size_of_current_tensor()))
 		{
-			std::uninitialized_copy_n(tensor.begin(), size_of_current_tensor(), &_data[0]);
+			std::uninitialized_copy_n(other.begin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		tensor(const subdimension<T, Rank>& subdimension) noexcept
