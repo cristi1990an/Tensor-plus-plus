@@ -193,7 +193,8 @@ namespace tensor_lib
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(allocator_type_traits::allocate(allocator_instance, 1u))
 		{ 
-			std::construct_at(_data);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::construct_at(_data);
 		}
 
 		template<typename... Sizes>
@@ -206,7 +207,8 @@ namespace tensor_lib
 			construct_size_of_subdimension_array();
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
-			construct_all();
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 		}
 
 		template<typename... Sizes>
@@ -223,7 +225,8 @@ namespace tensor_lib
 			construct_size_of_subdimension_array();
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
-			construct_all();
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 		}
 
 		tensor(tensor&& other) noexcept
@@ -235,7 +238,8 @@ namespace tensor_lib
 			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
 			other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
-			std::construct_at(other._data);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::construct_at(other._data);
 		}
 
 		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -264,7 +268,8 @@ namespace tensor_lib
 
 			//_data.reset(new T[_size_of_subdimension[0]]);
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
-			construct_all();
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 
 			*this = data;
 		}
@@ -274,7 +279,10 @@ namespace tensor_lib
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(allocator_type_traits::allocate(allocator_instance, size_of_current_tensor()))
 		{
-			std::uninitialized_copy_n(other.begin(), size_of_current_tensor(), &_data[0]);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		tensor(const subdimension<T, Rank>& subdimension) noexcept
@@ -282,19 +290,26 @@ namespace tensor_lib
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
 			std::copy_n(subdimension._size_of_subdimension.begin(), Rank, _size_of_subdimension.begin());
-			std::uninitialized_copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		auto& operator = (const tensor& other) noexcept
 		{
-			std::destroy_n(_data, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, size_of_current_tensor());
 			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
-			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 
 			return *this;
 		}
@@ -303,7 +318,8 @@ namespace tensor_lib
 		{
 			if (this != std::addressof(other))
 			{
-				std::destroy_n(_data, size_of_current_tensor());
+				if constexpr (not std::is_fundamental_v<T>)
+					std::destroy_n(_data, size_of_current_tensor());
 				allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 
 				std::copy_n(other._order_of_dimension.cbegin(), Rank, _order_of_dimension.begin());
@@ -315,7 +331,8 @@ namespace tensor_lib
 
 				other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
 				
-				std::construct_at(other._data);
+				if constexpr (not std::is_fundamental_v<T>)
+					std::construct_at(other._data);
 			}
 			return *this;
 		}
@@ -424,11 +441,13 @@ namespace tensor_lib
 
 			construct_size_of_subdimension_array();
 
-			std::destroy_n(_data, old_size);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, old_size);
 			allocator_type_traits::deallocate(allocator_instance, _data, old_size);
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
-			construct_all();
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 
 			//_data.reset(new T[size_of_current_tensor()]);
 		}
@@ -536,7 +555,8 @@ namespace tensor_lib
 
 		~tensor()
 		{
-			std::destroy_n(_data, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, size_of_current_tensor());
 			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 		}
 	};
