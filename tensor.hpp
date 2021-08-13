@@ -531,7 +531,7 @@ namespace tensor_lib
 
 		T* data() const noexcept
 		{
-			return _data.get();
+			return _data;
 		}
 
 		~tensor()
