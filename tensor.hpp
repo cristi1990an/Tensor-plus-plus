@@ -10,6 +10,7 @@
 #include <numeric>
 #include <span>
 #include <utility>
+#include <functional>
 
 namespace tensor_lib
 {
@@ -41,31 +42,31 @@ namespace tensor_lib
 		struct const_iterator;
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class tensor;
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class subdimension;
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension;
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right);
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
 
-	template <typename T, size_t Rank>
+	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
+
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class tensor : public _tensor_common<T>
 	{
@@ -86,12 +87,16 @@ namespace tensor_lib
 
 		// Dynamically allocated data buffer.
 		//
-		std::unique_ptr<T[]> _data{};
+		T * _data{};
+
+		[[no_unique_address]] allocator_type allocator_instance{};
+
+		using allocator_type_traits = std::allocator_traits<allocator_type>;
 
 	private:
 		// Computes _size_of_subdimension at initialization. 
 		//
-		void construct_size_of_subdimension_array() noexcept
+		inline void construct_size_of_subdimension_array() noexcept
 		{
 			size_t index = Rank - 1;
 
@@ -113,7 +118,7 @@ namespace tensor_lib
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_greater_than<Rank_index, 2u>
-			void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -131,7 +136,7 @@ namespace tensor_lib
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_equal_to<Rank_index, 1u>
-			void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -144,7 +149,7 @@ namespace tensor_lib
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_equal_to<Rank_index, 2u>
-			void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -160,14 +165,21 @@ namespace tensor_lib
 			}
 		}
 
+		inline void construct_all()
+		{
+			for (size_t i = 0; i != size_of_current_tensor(); ++i)
+			{
+				std::construct_at(&_data[i]);
+			}
+		}
+
 	public:
 
-		friend class subdimension<T, Rank>;
-		friend class const_subdimension<T, Rank>;
+		friend class subdimension<T, Rank, allocator_type>;
+		friend class const_subdimension<T, Rank, allocator_type>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(tensor<TT, RankS>& left, tensor<U, RankS>& right);
+		friend void swap<T, Rank, allocator_type>(tensor& left, tensor& right) noexcept;
+		friend void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -176,28 +188,32 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		tensor() noexcept
+		tensor() 
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
-			, _data(new T[1])
-		{
-
+			, _data(allocator_type_traits::allocate(allocator_instance, 1u))
+		{ 
+			if constexpr (not std::is_fundamental_v<T>)
+				std::construct_at(_data);
 		}
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
 			&& TENSORLIB_RELEASE
 			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
 			construct_size_of_subdimension_array();
-			_data.reset(new T[_size_of_subdimension[0]]);
+
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 		}
 
 		template<typename... Sizes>
 		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::constructible_from_each<size_t, Sizes...>
+			&& useful_concepts::integrals<Sizes...>
 			&& TENSORLIB_DEBUGGING
 			tensor(const Sizes ... sizes)
 		{
@@ -207,7 +223,10 @@ namespace tensor_lib
 
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			construct_size_of_subdimension_array();
-			_data.reset(new T[_size_of_subdimension[0]]);
+
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 		}
 
 		tensor(tensor&& other) noexcept
@@ -218,7 +237,9 @@ namespace tensor_lib
 			std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
 			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-			other._data = std::make_unique<T[]>(1);
+			other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::construct_at(other._data);
 		}
 
 		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -229,9 +250,14 @@ namespace tensor_lib
 			_order_of_dimension[0] = data_size;
 			_size_of_subdimension[0] = data_size;
 
-			_data.reset(new T[data_size]);
+			_data = allocator_type_traits::allocate(allocator_instance, data_size);
 
-			std::copy_n(data.begin(), data_size, _data.get());
+			size_t index = 0;
+
+			for (const auto& value : data)
+			{
+				std::construct_at(&_data[index], value);
+			}
 		}
 
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -240,7 +266,10 @@ namespace tensor_lib
 			construct_order_array<Rank>(data);
 			construct_size_of_subdimension_array();
 
-			_data.reset(new T[_size_of_subdimension[0]]);
+			//_data.reset(new T[_size_of_subdimension[0]]);
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
 
 			*this = data;
 		}
@@ -248,30 +277,39 @@ namespace tensor_lib
 		tensor(const tensor& other) noexcept
 			: _order_of_dimension(other._order_of_dimension)
 			, _size_of_subdimension(other._size_of_subdimension)
-			, _data(new T[other._size_of_subdimension[0]])
+			, _data(allocator_type_traits::allocate(allocator_instance, size_of_current_tensor()))
 		{
-			for (size_t i = 0; i < _size_of_subdimension[0]; ++i)
-			{
-				_data[i] = other._data[i];
-			}
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		tensor(const subdimension<T, Rank>& subdimension) noexcept
-			: _data(new T[subdimension._size_of_subdimension[0]])
+			: _data(allocator_type_traits::allocate(allocator_instance, subdimension.size_of_current_tensor()))
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
 			std::copy_n(subdimension._size_of_subdimension.begin(), Rank, _size_of_subdimension.begin());
-			std::copy_n(subdimension._data.begin(), _size_of_subdimension[0], _data.get());
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		auto& operator = (const tensor& other) noexcept
 		{
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, size_of_current_tensor());
+			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
 
-			_data.reset(_size_of_subdimension[0]);
-
-			std::copy_n(other._data.get(), _size_of_subdimension[0], _data.get());
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+			else
+				std::copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 
 			return *this;
 		}
@@ -280,14 +318,21 @@ namespace tensor_lib
 		{
 			if (this != std::addressof(other))
 			{
+				if constexpr (not std::is_fundamental_v<T>)
+					std::destroy_n(_data, size_of_current_tensor());
+				allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+
 				std::copy_n(other._order_of_dimension.cbegin(), Rank, _order_of_dimension.begin());
 				std::copy_n(other._size_of_subdimension.cbegin(), Rank, _size_of_subdimension.begin());
-				_data = move(other._data);
+				_data = other._data;
 
 				std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
 				std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-				other._data.reset(new T[1]);
+				other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
+				
+				if constexpr (not std::is_fundamental_v<T>)
+					std::construct_at(other._data);
 			}
 			return *this;
 		}
@@ -298,10 +343,11 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (size_t i = 0; i < size_of_current_tensor(); i++)
+			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
-			}
+			}*/
+			std::copy_n(other._data, size_of_current_tensor(), _data);
 
 			return *this;
 		}
@@ -312,10 +358,11 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (size_t i = 0; i < size_of_current_tensor(); i++)
+			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
-			}
+			}*/
+			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
 
 			return *this;
 		}
@@ -326,10 +373,11 @@ namespace tensor_lib
 				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
-			for (size_t i = 0; i < size_of_current_tensor(); i++)
+			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
 				_data[i] = other._data[i];
-			}
+			}*/
+			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
 
 			return *this;
 		}
@@ -384,6 +432,7 @@ namespace tensor_lib
 			requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
 			useful_concepts::constructable_from_common_type<size_t, Sizes...>
 		{
+			const auto old_size = size_of_current_tensor();
 			_order_of_dimension = { static_cast<size_t>(new_sizes)... };
 
 			if constexpr (TENSORLIB_DEBUGGING)
@@ -392,7 +441,15 @@ namespace tensor_lib
 
 			construct_size_of_subdimension_array();
 
-			_data.reset(new T[size_of_current_tensor()]);
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, old_size);
+			allocator_type_traits::deallocate(allocator_instance, _data, old_size);
+
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			if constexpr (not std::is_fundamental_v<T>)
+				construct_all();
+
+			//_data.reset(new T[size_of_current_tensor()]);
 		}
 
 		auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<Rank, 1>
@@ -493,11 +550,18 @@ namespace tensor_lib
 
 		T* data() const noexcept
 		{
-			return _data.get();
+			return _data;
+		}
+
+		~tensor()
+		{
+			if constexpr (not std::is_fundamental_v<T>)
+				std::destroy_n(_data, size_of_current_tensor());
+			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 		}
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class const_subdimension : public _tensor_common<T>
 	{
@@ -512,8 +576,8 @@ namespace tensor_lib
 
 	public:
 
-		friend class subdimension<T, Rank>;
-		friend class tensor<T, Rank>;
+		friend class subdimension<T, Rank, allocator_type>;
+		friend class tensor<T, Rank, allocator_type>;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -554,7 +618,7 @@ namespace tensor_lib
 
 		}
 
-		const_subdimension(const tensor<const T, Rank>& tsor) noexcept :
+		const_subdimension(const tensor<const T, Rank, allocator_type>& tsor) noexcept :
 			_order_of_dimension{ tsor._order_of_dimension.begin(),      tsor._order_of_dimension.end() },
 			_size_of_subdimension{ tsor._size_of_subdimension.begin(),    tsor._size_of_subdimension.end() },
 			_data{ tsor.begin(),                          tsor.end() }
@@ -611,35 +675,34 @@ namespace tensor_lib
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		auto get_Rank() const noexcept
+		auto rank() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		size_t& order_of_dimension(const size_t& index) const noexcept
+		size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		size_t& size_of_subdimension(const size_t& index) const noexcept
+		size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		size_t& order_of_current_dimension() const noexcept
+		size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		size_t& size_of_current_tensor() const noexcept
+		size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		T* data() const noexcept
+		const T* data() const noexcept
 		{
-			auto it = _data.begin();
-			return reinterpret_cast<const T*>(&it);
+			return std::to_address(begin());
 		}
 
 		bool is_matrix() const noexcept
@@ -654,7 +717,7 @@ namespace tensor_lib
 		}
 	};
 
-	template <typename T, size_t Rank>
+	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
 		class subdimension : public _tensor_common<T>
 	{
@@ -668,19 +731,14 @@ namespace tensor_lib
 		SourceDataSpan                              _data;
 
 	public:
-		friend class const_subdimension<T, Rank>;
-		friend class tensor<T, Rank>;
-		friend class tensor<T, Rank + 1>;
-		friend class subdimension<T, Rank + 1>;
-		friend class tensor<T, Rank ? Rank : 1>;
+		friend class const_subdimension<T, Rank, allocator_type>;
+		friend class tensor<T, Rank, allocator_type>;
+		friend class tensor<T, Rank + 1, allocator_type>;
+		friend class subdimension<T, Rank + 1, allocator_type>;
+		friend class tensor<T, useful_specializations::exclude_zero(Rank - 1), allocator_type>;
 
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>& left, subdimension<U, RankS>& right);
-
-		template <typename TT, typename U, size_t RankS>
-		requires std::convertible_to<TT, U>&& std::convertible_to<U, TT>
-			friend void swap(subdimension<TT, RankS>&& left, subdimension<U, RankS>&& right);
+		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&);
+		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1199,118 +1257,52 @@ namespace tensor_lib
 		pointer ptr;
 	};
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>& left, subdimension<U, Rank>& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
-
-		const auto size = left.size_of_current_tensor();
-
-		std::unique_ptr<T[]> aux(new T[size]);
-
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data); 
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(subdimension<T, Rank>&& left, subdimension<U, Rank>&& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right)
 	{
-		if constexpr (TENSORLIB_DEBUGGING)
-			if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-				throw std::runtime_error("Can't swap subdimensions of different sizes!");
-
-		if constexpr (std::is_same_v<T, U> == true)
-			if (std::addressof(left) == std::addressof(right))
-				return;
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
 		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
 
-		std::unique_ptr<T[]> aux(new T[size]);
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
 
-		std::memcpy(aux.get(), left._data.data(), sizeof(T) * size);
-
-		if constexpr (std::is_same_v<T, U> != true)
-		{
-			std::transform(right._data.begin(), right._data.end(), left._data.begin(), [](const U& val) { return static_cast<T>(val); });
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = static_cast<U>(aux[i]);
-			}
-		}
-		else
-		{
-			std::copy(right._data.begin(), right._data.end(), left._data.begin());
-
-			for (size_t i = 0; i < size; i++)
-			{
-				right._data.data()[i] = aux[i];
-			}
-		}
+		delete[] aux;
 	}
 
-	template <typename T, typename U, size_t Rank>
-	requires std::convertible_to<T, U>&& std::convertible_to<U, T>
-		void swap(tensor<T, Rank>& left, tensor<U, Rank>& right)
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
 	{
-		std::swap(left._order_of_dimension, right._order_of_dimension);
-		std::swap(left._size_of_subdimension, right._size_of_subdimension);
+		std::swap(left._order_of_dimension,		right._order_of_dimension);
+		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
+		std::swap(left._data,					right._data);
+	}
 
-		if constexpr (std::is_same_v<T, U>)
-		{
-			std::swap(left._data, right._data);
-		}
-		else
-		{
-			if constexpr (sizeof(T) > sizeof(U))
-			{
-				std::unique_ptr<U[]> aux(new U[left._size_of_subdimension[0]]);
+	template <typename T, size_t Rank, typename allocator_type>
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right)
+	{
+		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = right._data[i];
-					right._data[i] = static_cast<U>(left._data[i]);
-					left._data[i] = static_cast<T>(aux[i]);
-				}
-			}
-			else
-			{
-				std::unique_ptr<T[]> aux(new T[left._size_of_subdimension[0]]);
+		const auto size = left.size_of_current_tensor();
+		T* aux = new T[size];
 
-				for (size_t i = 0; i != left._size_of_subdimension[0]; ++i)
-				{
-					aux[i] = left._data[i];
-					left._data[i] = static_cast<T>(right._data[i]);
-					right._data[i] = static_cast<U>(aux[i]);
-				}
-			}
-		}
+		std::copy(left.cbegin(),	left.cend(),	aux);
+		std::copy(right.cbegin(),	right.cend(),	left.begin());
+		std::copy(aux,				&aux[size],		right.begin());
+
+		delete[] aux;
 	}
 
 	namespace aliases

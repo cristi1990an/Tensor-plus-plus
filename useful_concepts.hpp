@@ -6,6 +6,12 @@
 
 namespace useful_concepts
 {
+	template <typename ... IntegralTypes>
+	concept integrals = requires()
+	{
+		requires(... && std::is_integral_v<std::remove_cv_t<IntegralTypes>>);
+	};
+
 	template <typename T, typename First, typename ... Args>
 	struct is_constructible_from_each
 	{

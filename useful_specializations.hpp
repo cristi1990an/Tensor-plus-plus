@@ -30,41 +30,16 @@ namespace useful_specializations
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	template <typename T>
-	constexpr bool are_not_zero(const T& value) noexcept
+	template <typename ... Args>
+	constexpr bool contains_zero(Args&& ... values) noexcept
 	{
-		return (static_cast<T>(0) != value);
-	}
-
-	template <typename T, typename ... Args>
-	constexpr bool are_not_zero(const T& value, const Args& ... others) noexcept
-	{
-		if (static_cast<T>(0) == value)
-			return false;
-
-		return are_not_zero(others...);
+		return !(... && values);
 	}
 
 	template <typename ... Args>
-	constexpr bool contains_zero(const Args& ... values)
+	constexpr bool does_not_contain_zero(Args&& ... values) noexcept
 	{
-		return !are_not_zero(values...);
-	}
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<typename T>
-	requires std::convertible_to<T, std::size_t>
-		constexpr std::size_t multiply_all(const T val) noexcept
-	{
-		return val;
-	}
-
-	template<typename ... Sizes>
-	requires useful_concepts::convertible_to_common_type<std::size_t, Sizes...>
-		constexpr std::size_t multiply_all(const std::size_t first, const Sizes ... sizes) noexcept
-	{
-		return first * multiply_all(sizes...);
+		return not contains_zero(std::forward<Args>(values)...);
 	}
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,5 +50,14 @@ namespace useful_specializations
 		std::array<T, Size> result{};
 		std::fill(result.begin(), result.end(), value);
 		return result;
+	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	constexpr size_t exclude_zero(const size_t value) noexcept
+	{
+		if (value == 0)
+			return 1;
+		return value;
 	}
 }
