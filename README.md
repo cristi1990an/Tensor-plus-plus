@@ -2,7 +2,7 @@
 
 ## Functionality
 	
-**tensor_lib::tensor** is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. 
+**tensor_lib::tensor** is an allocator-aware template container that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. 
 
 **Rational:** The decision of having the whole data allocated contiguously is a "no-brainer", allowing for fast and easy allocation, accessing, copying, moving etc. Open-source alternatives to nested vector already exist, both in the form of 2d matrices and multi-dimensional tensors such as ours. One major caveat they all share and reason why certain developers are still inclined to keep to nested vector structures, even in modern neural-network projects, has always been the "syntactic sugar" such structures provide.
 	
