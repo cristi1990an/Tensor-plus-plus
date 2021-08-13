@@ -89,7 +89,7 @@ namespace tensor_lib
 		//
 		T * _data{};
 
-		[[no_unique_address]] allocator_type allocator_instance;
+		[[no_unique_address]] allocator_type allocator_instance{};
 
 		using allocator_type_traits = std::allocator_traits<allocator_type>;
 
