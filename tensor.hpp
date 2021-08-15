@@ -96,7 +96,7 @@ namespace tensor_lib
 	private:
 		// Computes _size_of_subdimension at initialization. 
 		//
-		inline void construct_size_of_subdimension_array() noexcept
+		inline void _construct_size_of_subdimension_array() noexcept
 		{
 			size_t index = Rank - 1;
 
@@ -118,7 +118,7 @@ namespace tensor_lib
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_greater_than<Rank_index, 2u>
-			inline void construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void _construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -130,13 +130,13 @@ namespace tensor_lib
 
 			for (const auto& init_list : data)
 			{
-				construct_order_array<Rank_index - 1>(init_list);
+				_construct_order_array<Rank_index - 1>(init_list);
 			}
 		}
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_equal_to<Rank_index, 1u>
-			inline void construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void _construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -149,7 +149,7 @@ namespace tensor_lib
 
 		template <size_t Rank_index>
 		requires useful_concepts::is_equal_to<Rank_index, 2u>
-			inline void construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void _construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			const auto data_size = data.size();
 
@@ -161,11 +161,11 @@ namespace tensor_lib
 
 			for (const auto& init_list : data)
 			{
-				construct_order_array<Rank_index - 1>(init_list);
+				_construct_order_array<Rank_index - 1>(init_list);
 			}
 		}
 
-		inline void construct_all()
+		inline void _construct_all()
 		{
 			for (size_t i = 0; i != size_of_current_tensor(); ++i)
 			{
@@ -204,11 +204,11 @@ namespace tensor_lib
 			tensor(const Sizes ... sizes) noexcept
 			: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
-			construct_size_of_subdimension_array();
+			_construct_size_of_subdimension_array();
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			if constexpr (not std::is_fundamental_v<T>)
-				construct_all();
+				_construct_all();
 		}
 
 		template<typename... Sizes>
@@ -222,11 +222,11 @@ namespace tensor_lib
 					throw std::runtime_error("Size of subdimension cannot be zero!");
 
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
-			construct_size_of_subdimension_array();
+			_construct_size_of_subdimension_array();
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			if constexpr (not std::is_fundamental_v<T>)
-				construct_all();
+				_construct_all();
 		}
 
 		tensor(tensor&& other) noexcept
@@ -263,13 +263,13 @@ namespace tensor_lib
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_greater_than<Rank, 1>
 		{
-			construct_order_array<Rank>(data);
-			construct_size_of_subdimension_array();
+			_construct_order_array<Rank>(data);
+			_construct_size_of_subdimension_array();
 
 			//_data.reset(new T[_size_of_subdimension[0]]);
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			if constexpr (not std::is_fundamental_v<T>)
-				construct_all();
+				_construct_all();
 
 			*this = data;
 		}
@@ -439,7 +439,7 @@ namespace tensor_lib
 				if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0u) != _order_of_dimension.cend())
 					throw std::runtime_error("Size of dimension can't be changed to zero!");
 
-			construct_size_of_subdimension_array();
+			_construct_size_of_subdimension_array();
 
 			if constexpr (not std::is_fundamental_v<T>)
 				std::destroy_n(_data, old_size);
@@ -447,7 +447,7 @@ namespace tensor_lib
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			if constexpr (not std::is_fundamental_v<T>)
-				construct_all();
+				_construct_all();
 
 			//_data.reset(new T[size_of_current_tensor()]);
 		}
