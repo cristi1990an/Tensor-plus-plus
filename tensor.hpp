@@ -87,7 +87,7 @@ namespace tensor_lib
 
 		// Dynamically allocated data buffer.
 		//
-		T * _data{};
+		T* _data{};
 
 		[[no_unique_address]] allocator_type allocator_instance{};
 
@@ -173,6 +173,51 @@ namespace tensor_lib
 			}
 		}
 
+		template<size_t Rank_index, typename Last, typename ... Args>
+		requires std::integral<Last> &&
+			useful_concepts::is_equal_to<Rank_index, 1u>
+			inline void _construct_order_array_and_forward_rest(const Last last, Args&& ... data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+			{
+				if (last == 0)
+					throw std::runtime_error("Size of subdimension cannot be zero!");
+			}
+
+			_order_of_dimension[Rank - Rank_index] = last;
+
+			_construct_size_of_subdimension_array();
+
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+
+			if constexpr (not std::is_fundamental_v<T>)
+				for (size_t i = 0; i != size_of_current_tensor(); ++i)
+				{
+					std::construct_at(&_data[i], std::forward<Args>(data)...);
+				}
+			else
+				for (size_t i = 0; i != size_of_current_tensor(); ++i)
+				{
+					_data[i] = { std::forward<Args>(data)... };
+				}
+		}
+
+		template<size_t Rank_index, typename First, typename ... Args>
+		requires std::integral<First> &&
+			useful_concepts::is_not_equal_to<Rank_index, 1u>
+			inline void _construct_order_array_and_forward_rest(const First first, Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			if constexpr (TENSORLIB_DEBUGGING)
+			{
+				if (first == 0)
+					throw std::runtime_error("Size of subdimension cannot be zero!");
+			}
+
+			_order_of_dimension[Rank - Rank_index] = first;
+
+			_construct_order_array_and_forward_rest<Rank_index - 1, Args...>(std::forward<Args>(args)...);
+		}
+
 	public:
 
 		friend class subdimension<T, Rank, allocator_type>;
@@ -188,11 +233,11 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		tensor() 
+		tensor()
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(allocator_type_traits::allocate(allocator_instance, 1u))
-		{ 
+		{
 			if constexpr (not std::is_fundamental_v<T>)
 				std::construct_at(_data);
 		}
@@ -296,6 +341,13 @@ namespace tensor_lib
 				std::copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
+		template<typename ... Args>
+		requires useful_concepts::is_greater_than<sizeof...(Args), Rank>
+		tensor(Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+		{
+			_construct_order_array_and_forward_rest<Rank, Args...>(std::forward<Args>(args)...);
+		}
+
 		auto& operator = (const tensor& other) noexcept
 		{
 			if constexpr (not std::is_fundamental_v<T>)
@@ -330,7 +382,7 @@ namespace tensor_lib
 				std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
 				other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
-				
+
 				if constexpr (not std::is_fundamental_v<T>)
 					std::construct_at(other._data);
 			}
@@ -586,7 +638,7 @@ namespace tensor_lib
 		const_subdimension(const_subdimension&&) noexcept = delete;
 		const_subdimension(const const_subdimension&) noexcept = default;
 
-		const_subdimension(const subdimension<T, Rank>& other) noexcept :
+		const_subdimension(const subdimension<T, Rank, allocator_type>& other) noexcept :
 			_order_of_dimension{ other._order_of_dimension },
 			_size_of_subdimension{ other._size_of_subdimension },
 			_data{ other._data }
@@ -618,10 +670,12 @@ namespace tensor_lib
 
 		}
 
-		const_subdimension(const tensor<const T, Rank, allocator_type>& tsor) noexcept :
-			_order_of_dimension{ tsor._order_of_dimension.begin(),      tsor._order_of_dimension.end() },
-			_size_of_subdimension{ tsor._size_of_subdimension.begin(),    tsor._size_of_subdimension.end() },
-			_data{ tsor.begin(),                          tsor.end() }
+		template<typename Tensor>
+		requires std::is_same_v<Tensor, tensor<const T, Rank, allocator_type>>
+		const_subdimension(const Tensor& tsor) noexcept :
+			_order_of_dimension{ tsor._order_of_dimension.begin(), tsor._order_of_dimension.end() },
+			_size_of_subdimension{ tsor._size_of_subdimension.begin(), tsor._size_of_subdimension.end() },
+			_data{ tsor.begin(), tsor.end() }
 		{
 
 		}
@@ -1260,23 +1314,23 @@ namespace tensor_lib
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept
 	{
-		std::swap(left._order_of_dimension,		right._order_of_dimension);
-		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
-		std::swap(left._data,					right._data); 
+		std::swap(left._order_of_dimension, right._order_of_dimension);
+		std::swap(left._size_of_subdimension, right._size_of_subdimension);
+		std::swap(left._data, right._data);
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right)
 	{
-		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
 			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
 		const auto size = left.size_of_current_tensor();
 		T* aux = new T[size];
 
-		std::copy(left.cbegin(),	left.cend(),	aux);
-		std::copy(right.cbegin(),	right.cend(),	left.begin());
-		std::copy(aux,				&aux[size],		right.begin());
+		std::copy(left.cbegin(), left.cend(), aux);
+		std::copy(right.cbegin(), right.cend(), left.begin());
+		std::copy(aux, &aux[size], right.begin());
 
 		delete[] aux;
 	}
@@ -1284,23 +1338,23 @@ namespace tensor_lib
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
 	{
-		std::swap(left._order_of_dimension,		right._order_of_dimension);
-		std::swap(left._size_of_subdimension,	right._size_of_subdimension);
-		std::swap(left._data,					right._data);
+		std::swap(left._order_of_dimension, right._order_of_dimension);
+		std::swap(left._size_of_subdimension, right._size_of_subdimension);
+		std::swap(left._data, right._data);
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right)
 	{
-		if (!std::equal(left._order_of_dimension.begin(),	left._order_of_dimension.end(),		right._order_of_dimension.begin()))
+		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
 			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
 
 		const auto size = left.size_of_current_tensor();
 		T* aux = new T[size];
 
-		std::copy(left.cbegin(),	left.cend(),	aux);
-		std::copy(right.cbegin(),	right.cend(),	left.begin());
-		std::copy(aux,				&aux[size],		right.begin());
+		std::copy(left.cbegin(), left.cend(), aux);
+		std::copy(right.cbegin(), right.cend(), left.begin());
+		std::copy(aux, &aux[size], right.begin());
 
 		delete[] aux;
 	}
