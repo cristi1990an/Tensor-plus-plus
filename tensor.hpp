@@ -184,7 +184,7 @@ namespace tensor_lib
 					throw std::runtime_error("Size of subdimension cannot be zero!");
 			}
 
-			_order_of_dimension[Rank - Rank_index] = last;
+			_order_of_dimension[Rank - Rank_index] = static_cast<size_t>(last);
 
 			_construct_size_of_subdimension_array();
 
@@ -213,7 +213,7 @@ namespace tensor_lib
 					throw std::runtime_error("Size of subdimension cannot be zero!");
 			}
 
-			_order_of_dimension[Rank - Rank_index] = first;
+			_order_of_dimension[Rank - Rank_index] = static_cast<size_t>(first);
 
 			_construct_order_array_and_forward_rest<Rank_index - 1, Args...>(std::forward<Args>(args)...);
 		}
