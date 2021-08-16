@@ -89,19 +89,18 @@ for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
 }
 ```
 	
-TODO: talk about all the other cool things you can do...
-	
-	
 ## Implementation
 	
 	
 ## Template parameters
 	
-**tensor_lib::tensor<T, Rank>**
+**tensor_lib::tensor<T, Rank, typename allocator_type = = std::allocator<std::remove_cv_t<T>>>**
 
-**T**	-	type of the elements
+**T**			-	type of the elements
 
-**Rank**	-	the rank of the tensor, aka the number of dimensions
+**Rank**		-	the rank of the tensor, aka the number of dimensions
+
+**allocator_type	- 	an allocator that is used to acquire/release memory and to construct/destroy the elements in that memory; defaults to the default allocator of T
 
 One specific feature of the tensor class is the ability of having intuitive syntax when stacking calls to the operator[] and being able to interpret nested initializer_list structures like in the examples above.
 The way it works is that operator[] returns an instance of "subdimension<Rank - 1>", a lightweight instance of an object that referes to the data owned by the parent tensor. It's implemented using a dynamic span of the original data it covers, a static span of the sizes it needs and a static span of the array with precomputed sizes of the submatrices at each dimension, which in turn returns the same and so on. sizeof(subdimension) being always the size of 4 pointers.
@@ -157,29 +156,67 @@ const_subdimension will be returned by the operator[] of either 'tensor' or 'sub
 ### tensor() noexcept;
 	
 This is the default constructor. It will consider that all subdimensions to be of size 1, effectively making it a one element tensor. Current design considers a tensor that 
-has even one subdimension be of size zero to be in an invalid state, so even when default initialized, a tensor will allocate memory for one element. This might change in
-the future though...
+has even one subdimension be of size zero to be in an invalid state, so even when default initialized, a tensor will allocate memory for one element (this might change in
+the future though...).
 	
 ### template<typename... Sizes> tensor (const Sizes ... sizes) noexcept;
 
-Constructor taking the sizes of each subdimension. The constructor has static requirements that: 
+Constructor taking the sizes of each subdimension. Passing "2, 3, 4" into this constructor for example will create a tensor of size 2 by 3 by 4, with a total size of 24 elements, all default initialized. 
+
+The constructor has static requirements that: 
 * the number of parameters passed equals the rank of the tensor
-* size_t can be constructed from each element passed
+* each element in the parameter pack is an integral type
+	
+Example: 
+	
+```
+tensor<int, 3> tsor (2, 3, 4);
+```
+	
+### tensor(const tensor& other) noexcept;
+	
+Copy constructor. The tensor will take all the properties of the other tensor (size/dimensions) and make a copy of all elements.
 
+### tensor(const subdimension<T, Rank>& subdimension) noexcept;
+	
+Copy constructor from a subdimension of the same rank.
+	
+### tensor(tensor&& other) noexcept;
+	
+Move constructor. Tensor will take ownership over the heap-allocated data and will reset the other tensor to the default state described by the default constructor.
+	
+### tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE;
+	
+Constructor exclusive to tensor<T, 1u> (one dimensional tensor), taking an initializer_list<T>. The size of the tensor will be equal to the size of the initializer_list. Example:
+	
+```
+tensor<int, 1> tsor = { 1, 2, 3, 4, 5, 6 };
+```
+	
+### tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE;
 
-TODO: 
+Constructor taking a nested initializer_list construct (initializer_list<initializer_list<...initializer_list<T>...>>).
 
-~ talk about...
-- constructors
-- move semantics
-- iterator
-- algorithms 
-- performance
-- etc...
+The constructor has static requirements that: 
+* the depth of the nested initializer_list (the number of dimensions) must be equal to the rank of the tensor
+* the underlying element type must be T
 
-~ implement...
-- ~~make container allocator-aware (after learning how to do that)~~
-- ~~bug fixes in iterator returned by 'subdimension'~~
-- ~~bug fixes in resize()~~
-- ~~benchmarks for move/resize~~
-- more benchmarks in general
+The constructor has run-time requirements (enabled by default with the TENSORLIB_DEBUGGING flag) that:
+* subdimensions of the same rank must also be of the same size, aka this is invalid: `{ {1, 2, 3}, {5, 6} }`
+
+### template<typename ... Args>
+### tensor(Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+	
+Constructor that supports emplace initialization of all elements in the tensor from a set of perfect forwarded arguments. Example:
+
+```
+tensor<std::string, 3> tsor (2, 3, 4, "Cristi");
+```
+The first N parameters (where N equals the rank of the tensor) are considered the sizes of the tensor and the same constraints are applied to them as with the normal constructor that only takes sizes. All other arguments passed are going to be perfect forwarded and the constructor of each element in the tensor is going to be called with them.
+	
+The constructor has static requirements that: 
+* the number of parameters passed must be greater than the rank of the tensor (sizes + arguments)
+* the first N (N = Rank) elements in the parameter pack are all of an integral type
+* T can be constructed from the arguments passed after the sizes
+	
+Be aware that passing this constructor an xvalue reference is ill-adviced since only the first element in the tensor will end up having a valid value.
