@@ -398,6 +398,42 @@ namespace benchmark
 		std::cout << '\n';
 	}
 
+	void BENCHMARK_EMPLACE_INITIALIZATION()
+	{
+		long tensor_average_time = 0;
+		long vector_average_time = 0;
+		std::chrono::high_resolution_clock::time_point start, stop;
+
+		for (unsigned int it = 0; it < ITERATIONS; it++)
+		{
+			start = std::chrono::high_resolution_clock::now();
+
+			tensor<std::string, 4> tsor(5, 4, 3, 2, "Some long string I'm writing out of the top of my head...");
+
+			stop = std::chrono::high_resolution_clock::now();
+
+			tensor_average_time += (stop - start).count();
+
+			start = std::chrono::high_resolution_clock::now();
+			std::vector<std::string> vec;
+			vec.reserve(5 * 4 * 3 * 2);
+			for (size_t index = 0; index != vec.capacity(); index++)
+			{
+				vec.emplace_back("Some long string I'm writing out of the top of my head...");
+			}
+			stop = std::chrono::high_resolution_clock::now();
+
+			vector_average_time += (stop - start).count();
+		}
+
+		tensor_average_time /= ITERATIONS;
+		vector_average_time /= ITERATIONS;
+
+		std::cout << "\tTensor average emplace initialization time: " << tensor_average_time << "\n";
+		std::cout << "\tVector average emplace initialization time: " << vector_average_time << "\n";
+		std::cout << '\n';
+	}
+
 	void BENCHMARK_RESIZE()
 	{
 		long tensor_average_time = 0;
@@ -450,6 +486,7 @@ namespace benchmark
 		BENCHMARK_ASSIGN_ONE_DIMENSION();
 		BENCHMARK_COPY();
 		BENCHMARK_RESIZE();
+		BENCHMARK_EMPLACE_INITIALIZATION();
 
 		std::cout << '\n';
 	}

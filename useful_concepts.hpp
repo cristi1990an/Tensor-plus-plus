@@ -111,6 +111,12 @@ namespace useful_concepts
 		requires(sizeof...(T) == SUM);
 	};
 
+	template <size_t SUM, typename... T>
+	concept size_of_parameter_pack_does_not_equal = requires()
+	{
+		requires(sizeof...(T) != SUM);
+	};
+
 	template <typename T, size_t VAL>
 	concept size_equals = requires ()
 	{

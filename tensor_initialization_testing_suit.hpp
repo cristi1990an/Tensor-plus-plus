@@ -252,6 +252,142 @@ namespace tensor_initialization_testing_suit
 		std::cout << "\tTEST 11 PASSED.\n";
 	}
 
+	struct Helper_Class_1
+	{
+		std::string _string{};
+
+		Helper_Class_1()
+		{
+			throw std::runtime_error("Default constructor called!\n");
+		}
+		template<typename T>
+		Helper_Class_1(T&& value)
+			: _string(std::forward<T>(value))
+		{
+
+		}
+	};
+
+	void TEST_12()
+	{
+		tensor<Helper_Class_1, 3> tsor(1, 2, 3, "Cristi");
+
+		for (const auto& obj : tsor)
+		{
+			if (obj._string != "Cristi")
+				throw std::runtime_error("TEST_12 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		if(tsor.size_of_current_tensor() != 6)
+			throw std::runtime_error("TEST_12 in 'tensor_initialization_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 12 PASSED.\n";
+	}
+
+
+	struct Helper_Class_2
+	{
+		int _int{};
+		float _float{};
+		std::string _string{};
+
+		Helper_Class_2()
+		{
+			throw std::runtime_error("Default constructor called!\n");
+		}
+		template<typename T>
+		Helper_Class_2(const int integer, const float fp, T&& value)
+			: _int(integer)
+			, _float(fp)
+			, _string(std::forward<T>(value))
+		{
+
+		}
+	};
+
+	void TEST_13()
+	{
+		tensor<Helper_Class_2, 3> tsor(1, 2, 3, 5, 5.5f, "Cristi");
+
+		for (const auto& obj : tsor)
+		{
+			if (obj._int != 5 || obj._float != 5.5f || obj._string != "Cristi")
+				throw std::runtime_error("TEST_13 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		if (tsor.size_of_current_tensor() != 6)
+			throw std::runtime_error("TEST_13 in 'tensor_initialization_testing_suit' failed!\n");
+
+
+		std::cout << "\tTEST 13 PASSED.\n";
+	}
+
+
+	struct Helper_Class_3
+	{
+		int value = 5;
+		static size_t counter;
+
+		Helper_Class_3()
+		{
+
+		}
+		Helper_Class_3(const Helper_Class_3&)
+		{
+			counter++;
+			if (counter > 1 * 2 * 3)
+			{
+				throw std::runtime_error("Object was copied!\n");
+			}
+		}
+	};
+	size_t Helper_Class_3::counter = 0;
+
+	struct Helper_Class_4
+	{
+		Helper_Class_3 obj;
+
+		Helper_Class_4(const Helper_Class_3& other)
+			: obj(other)
+		{
+			
+		}
+	};
+
+	void TEST_14()
+	{
+		tensor<Helper_Class_4, 3> tsor(1, 2, 3, Helper_Class_3());
+
+		for (const auto& object : tsor)
+		{
+			if (object.obj.value != 5)
+				throw std::runtime_error("TEST_14 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		if (tsor.size_of_current_tensor() != 6)
+			throw std::runtime_error("TEST_14 in 'tensor_initialization_testing_suit' failed!\n");
+
+
+		std::cout << "\tTEST 14 PASSED.\n";
+	}
+
+	void TEST_15()
+	{
+		tensor<std::string, 4> tsor(5, 4, 3, 2, "Some long string I'm writing out of the top of my head...");
+
+		for (size_t index = 0; index != tsor.size_of_current_tensor(); index++)
+		{
+			if (*(tsor.cbegin() + index) != "Some long string I'm writing out of the top of my head...")
+				throw std::runtime_error("TEST_15 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		if (tsor.size_of_current_tensor() != 120)
+			throw std::runtime_error("TEST_15 in 'tensor_initialization_testing_suit' failed!\n");
+
+
+		std::cout << "\tTEST 15 PASSED.\n";
+	}
+
 
 	void RUN_ALL()
 	{
@@ -268,6 +404,10 @@ namespace tensor_initialization_testing_suit
 		TEST_9();
 		TEST_10();
 		TEST_11();
+		TEST_12();
+		TEST_13();
+		TEST_14();
+		TEST_15();
 
 		std::cout << "\n";
 	}
