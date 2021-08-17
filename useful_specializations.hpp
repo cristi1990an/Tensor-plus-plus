@@ -60,4 +60,23 @@ namespace useful_specializations
 			return 1;
 		return value;
 	}
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	template <typename Last>
+	constexpr bool constains_rvalue_references(Last&& last) noexcept
+	{
+		return (std::is_rvalue_reference_v<decltype(std::forward<Last>(last))>);
+	}
+
+	template <typename First, typename ... Args>
+	constexpr bool constains_rvalue_references(First&& first, Args&& ... args) noexcept
+	{
+		if constexpr (std::is_rvalue_reference_v<decltype(std::forward<First>(first))>)
+		{
+			return true;
+		}
+		else
+			return constains_rvalue_references(std::forward<Args>(args)...);
+	}
 }

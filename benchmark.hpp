@@ -12,6 +12,7 @@ namespace benchmark
 #define nested_initializer_list {{{{ 10, 11 },{ 12, 13 },{ 14, 15 },},{ { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, } }, { { { 34, 35 }, { 36, 37 }, { 38, 39 }, }, { { 40, 41 }, { 42, 43 }, { 44, 45 }, }, { { 46, 47 }, { 48, 49 }, { 50, 51 }, }, { { 52, 53 }, { 54, 55 }, { 56, 57 }, } }, { { { 58, 59 }, { 60, 61 }, { 62, 63 }, }, { { 64, 65 }, { 66, 67 }, { 68, 69 }, }, { { 70, 71 }, { 72, 73 }, { 74, 75 }, }, { { 76, 77 }, { 78, 79 }, { 80, 81 }, } }, { { { 82, 83 }, { 84, 85 }, { 86, 87 }, }, { { 88, 89 }, { 90, 91 }, { 92, 93 }, }, { { 94, 95 }, { 96, 97 }, { 98, 99 }, }, { { 10, 11 }, { 12, 13 }, { 14, 15 }, } }, { { { 16, 17 }, { 18, 19 }, { 20, 21 }, }, { { 22, 23 }, { 24, 25 }, { 26, 27 }, }, { { 28, 29 }, { 30, 31 }, { 32, 33 }, }, { { 34, 35 }, { 36, 37 }, { 38, 39 }, } } }
 #define empty_nested_initializer_list {{{{ 0, 0 },{ 0, 0 },{ 0, 0 },},{ { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } }, { { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, }, { { 0, 0 }, { 0, 0 }, { 0, 0 }, } } }
 #define one_dimensional_initializer_list { 1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7,8,9 }
+#define non_trivial_one_dimensional_initializer_list {"Some long string can can't be optimized ... 1","Some long string can can't be optimized ... 2","Some long string can can't be optimized ... 3","Some long string can can't be optimized ... 4","Some long string can can't be optimized ... 5","Some long string can can't be optimized ... 6","Some long string can can't be optimized ... 7","Some long string can can't be optimized ... 8","Some long string can can't be optimized ... 9","Some long string can can't be optimized ... 10","Some long string can can't be optimized ... 11","Some long string can can't be optimized ... 12"}
 
 #define ITERATIONS 200000
 
@@ -139,6 +140,48 @@ namespace benchmark
 		average_time /= ITERATIONS;
 
 		std::cout << "\tVector average initialization time from one dimensional initializer list: " << average_time << "\n";
+		std::cout << '\n';
+	}
+
+	void BENCHMARK_ALLOCATION_FROM_NON_TRIVIAL_ONE_DIMENSIONAL_INITIALIZER_LIST()
+	{
+		long average_time = 0;
+
+		for (unsigned int i = 0; i < ITERATIONS; i++)
+		{
+			std::chrono::high_resolution_clock::time_point start, stop;
+
+			start = std::chrono::high_resolution_clock::now();
+
+			tensor<std::string, 1> tsor = non_trivial_one_dimensional_initializer_list;
+
+			stop = std::chrono::high_resolution_clock::now();
+
+			average_time += (stop - start).count();
+		}
+
+		average_time /= ITERATIONS;
+
+		std::cout << "\tTensor average initialization time from non-trivial one dimensional initializer list: " << average_time << "\n";
+
+		average_time = 0;
+
+		for (unsigned int i = 0; i < ITERATIONS; i++)
+		{
+			std::chrono::high_resolution_clock::time_point start, stop;
+
+			start = std::chrono::high_resolution_clock::now();
+
+			std::vector<std::string> vec = non_trivial_one_dimensional_initializer_list;
+
+			stop = std::chrono::high_resolution_clock::now();
+
+			average_time += (stop - start).count();
+		}
+
+		average_time /= ITERATIONS;
+
+		std::cout << "\tVector average initialization time from non-trivial one dimensional initializer list: " << average_time << "\n";
 		std::cout << '\n';
 	}
 
@@ -479,6 +522,7 @@ namespace benchmark
 		BENCHMARK_ALLOCATION_FROM_NESTED_INITIALIZER_LIST_WITH_EXPLICIT_SIZES();
 		BENCHMARK_ALLOCATION_FROM_NESTED_INITIALIZER_LIST_WITH_DEDUCED_SIZES();
 		BENCHMARK_ALLOCATION_FROM_ONE_DIMENSIONAL_INITIALIZER_LIST();
+		BENCHMARK_ALLOCATION_FROM_NON_TRIVIAL_ONE_DIMENSIONAL_INITIALIZER_LIST();
 		BENCHMARK_BIG_ALLOCATION();
 		BENCHMARK_RANDOM_ACCESS();
 		BENCHMARK_ASSIGN_THROUGH_BRACKETS();

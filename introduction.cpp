@@ -190,27 +190,6 @@ int main()
 	//	display(my_tensor); // (un-comment me to display the result)
 
 
-	/*
-		TODO:
-
-		~ talk about...
-		- constructors
-		- move semantics
-		- iterator
-		- algorithms
-		- performance
-		- etc...
-
-		~ implement...
-		- bug fixes in iterator returned by 'subdimension'
-		- bug fixes in resize()
-		- benchmarks for move/resize
-		- more benchmarks in general
-
-	*/
-
-	//	Available methods:
-
 	std::cout << "'my_tensor.order_of_dimension(2)' returns " << my_tensor.order_of_dimension(2) << '\n';		// return 5
 	std::cout << "'my_tensor.size_of_subdimension(2)' returns " << my_tensor.size_of_subdimension(2) << '\n';	// returns 5 * 6 * 7 = 210
 

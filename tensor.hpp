@@ -176,7 +176,7 @@ namespace tensor_lib
 		template<size_t Rank_index, typename Last, typename ... Args>
 		requires std::integral<Last> &&
 			useful_concepts::is_equal_to<Rank_index, 1u>
-			inline void _construct_order_array_and_forward_rest(const Last last, Args&& ... data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void _construct_order_array_and_forward_rest(const Last last, const Args& ... data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -190,22 +190,37 @@ namespace tensor_lib
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 
-			if constexpr (not std::is_fundamental_v<T>)
-				for (size_t i = 0; i != size_of_current_tensor(); ++i)
-				{
-					std::construct_at(&_data[i], std::forward<Args>(data)...);
-				}
+			/*if (useful_specializations::constains_rvalue_references(std::forward<Args>(data)...))
+			{
+				const T aux(std::forward<Args>(data)...);
+
+				if constexpr (not std::is_fundamental_v<T>)
+					for (size_t i = 0; i != size_of_current_tensor(); ++i)
+					{
+						std::construct_at(&_data[i], aux);
+					}
+				else
+					std::fill_n(&_data[0], size_of_current_tensor(), aux);
+			}
 			else
-				for (size_t i = 0; i != size_of_current_tensor(); ++i)
-				{
-					_data[i] = { std::forward<Args>(data)... };
-				}
+			{*/
+				if constexpr (not std::is_fundamental_v<T>)
+					for (size_t i = 0; i != size_of_current_tensor(); ++i)
+					{
+						std::construct_at(&_data[i], data...);
+					}
+				else
+					for (size_t i = 0; i != size_of_current_tensor(); ++i)
+					{
+						_data[i] = { data... };
+					}
+			//}
 		}
 
 		template<size_t Rank_index, typename First, typename ... Args>
 		requires std::integral<First> &&
 			useful_concepts::is_not_equal_to<Rank_index, 1u>
-			inline void _construct_order_array_and_forward_rest(const First first, Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+			inline void _construct_order_array_and_forward_rest(const First first, const Args& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -215,7 +230,7 @@ namespace tensor_lib
 
 			_order_of_dimension[Rank - Rank_index] = static_cast<size_t>(first);
 
-			_construct_order_array_and_forward_rest<Rank_index - 1, Args...>(std::forward<Args>(args)...);
+			_construct_order_array_and_forward_rest<Rank_index - 1, Args...>(args...);
 		}
 
 	public:
@@ -299,10 +314,13 @@ namespace tensor_lib
 
 			size_t index = 0;
 
-			for (const auto& value : data)
-			{
-				std::construct_at(&_data[index], value);
-			}
+			if constexpr (not std::is_fundamental_v<T>)
+				for (const auto& value : data)
+				{
+					std::construct_at(&_data[index++], value);
+				}
+			else
+				std::copy_n(data.begin(), data_size, &_data[0]);
 		}
 
 		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
@@ -343,9 +361,9 @@ namespace tensor_lib
 
 		template<typename ... Args>
 		requires useful_concepts::is_greater_than<sizeof...(Args), Rank>
-		tensor(Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+		tensor(const Args& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
-			_construct_order_array_and_forward_rest<Rank, Args...>(std::forward<Args>(args)...);
+			_construct_order_array_and_forward_rest<Rank, Args...>(args...);
 		}
 
 		auto& operator = (const tensor& other) noexcept
