@@ -302,6 +302,29 @@ namespace tensor_lib
 				std::construct_at(other._data);
 		}
 
+		template<typename U>
+		tensor(const std::initializer_list<U>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+			requires useful_concepts::is_equal_to<Rank, 1> &&
+			std::is_constructible_v<T, U>
+		{
+			auto data_size = data.size();
+
+			_order_of_dimension[0] = data_size;
+			_size_of_subdimension[0] = data_size;
+
+			_data = allocator_type_traits::allocate(allocator_instance, data_size);
+
+			size_t index = 0;
+
+			if constexpr (not std::is_fundamental_v<T>)
+				for (const auto& value : data)
+				{
+					std::construct_at(&_data[index++], value);
+				}
+			else
+				std::transform(data.begin(), data.end(), &_data[0], [](const U value) { return static_cast<T>(value); });
+		}
+
 		tensor(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 			requires useful_concepts::is_equal_to<Rank, 1>
 		{
