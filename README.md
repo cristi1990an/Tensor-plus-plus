@@ -212,11 +212,9 @@ Constructor that supports emplace initialization of all elements in the tensor f
 ```
 tensor<std::string, 3> tsor (2, 3, 4, "Cristi");
 ```
-The first N parameters (where N equals the rank of the tensor) are considered the sizes of the tensor and the same constraints are applied to them as with the normal constructor that only takes sizes. All other arguments passed are going to be perfect forwarded and the constructor of each element in the tensor is going to be called with them.
+The first N parameters (where N equals the rank of the tensor) are considered the sizes of the tensor and the same constraints are applied to them as with the normal constructor that only takes sizes. All other arguments passed are going to be perfect forwarded to a temporary object with which and the copy constructor of each element in the tensor is going to be called.
 	
 The constructor has static requirements that: 
 * the number of parameters passed must be greater than the rank of the tensor (sizes + arguments)
 * the first N (N = Rank) elements in the parameter pack are all of an integral type
 * T can be constructed from the arguments passed after the sizes
-	
-Be aware that passing this constructor an xvalue reference is ill-adviced since only the first element in the tensor will end up having a valid value.
