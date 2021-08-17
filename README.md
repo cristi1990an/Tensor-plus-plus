@@ -205,14 +205,14 @@ The constructor has run-time requirements (enabled by default with the TENSORLIB
 * subdimensions of the same rank must also be of the same size, aka this is invalid: `{ {1, 2, 3}, {5, 6} }`
 
 ### template<typename ... Args>
-### tensor(Args&& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+### tensor(const Args& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
 	
-Constructor that supports emplace initialization of all elements in the tensor from a set of perfect forwarded arguments. Example:
+Constructor that supports emplace initialization of all elements in the tensor from a set of arguments. Example:
 
 ```
 tensor<std::string, 3> tsor (2, 3, 4, "Cristi");
 ```
-The first N parameters (where N equals the rank of the tensor) are considered the sizes of the tensor and the same constraints are applied to them as with the normal constructor that only takes sizes. All other arguments passed are going to be perfect forwarded and the constructor of each element in the tensor is going to be called with them. Passing an rvalue reference of type T is going to create an auxiliary copy and the copy constructor of each element is going to be called instead. Passing other argument that T can be constructed from is not a covered case and ill-advised.
+The first N parameters (where N equals the rank of the tensor) are considered the sizes of the tensor and the same constraints are applied to them as with the normal constructor that only takes sizes. The constructor of each element in the tensor is going to be called with the rest of the arguments passed.
 	
 The constructor has static requirements that: 
 * the number of parameters passed must be greater than the rank of the tensor (sizes + arguments)
