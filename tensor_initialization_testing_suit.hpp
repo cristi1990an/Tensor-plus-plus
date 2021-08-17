@@ -445,7 +445,6 @@ namespace tensor_initialization_testing_suit
 		std::string aux ("Some long string that will be allocated on the heap...");
 		tensor<std::string, 3> tsor(2, 3, 4, std::move(aux));
 
-		int index = 0;
 		for (const auto& str : tsor)
 		{
 			if (str != "Some long string that will be allocated on the heap...")
