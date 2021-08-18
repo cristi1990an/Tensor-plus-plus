@@ -1032,9 +1032,7 @@ namespace tensor_lib
 
 		iterator operator++(int) noexcept
 		{
-			auto aux = ptr;
-			ptr++;
-			return iterator(aux);
+			return iterator(ptr++);
 		}
 
 		iterator& operator-- () noexcept
@@ -1045,9 +1043,7 @@ namespace tensor_lib
 
 		iterator operator--(int) noexcept
 		{
-			auto aux = ptr;
-			ptr--;
-			return iterator(aux);
+			return iterator(ptr--);
 		}
 
 		iterator& operator+=(const ptrdiff_t offset) noexcept
@@ -1092,12 +1088,6 @@ namespace tensor_lib
 		friend iterator operator-(const iterator it, const size_t offset) noexcept
 		{
 			T* aux = it.ptr - offset;
-			return iterator(aux);
-		}
-
-		friend iterator operator-(const size_t offset, const iterator it) noexcept
-		{
-			auto aux = offset - it.ptr;
 			return iterator(aux);
 		}
 
@@ -1168,9 +1158,7 @@ namespace tensor_lib
 
 		const_iterator operator++(int) noexcept
 		{
-			auto aux = ptr;
-			ptr++;
-			return const_iterator(aux);
+			return const_iterator(ptr++);
 		}
 
 		const_iterator& operator-- () noexcept
@@ -1181,9 +1169,7 @@ namespace tensor_lib
 
 		const_iterator operator--(int) noexcept
 		{
-			auto aux = ptr;
-			ptr--;
-			return const_iterator(aux);
+			return const_iterator(ptr--);
 		}
 
 		const_iterator& operator+=(const size_t offset) noexcept
@@ -1236,11 +1222,6 @@ namespace tensor_lib
 		friend const_iterator operator-(const const_iterator it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr - offset);
-		}
-
-		friend const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
-		{
-			return const_iterator(offset - it.ptr);
 		}
 
 		friend difference_type operator-(const const_iterator a, const const_iterator b) noexcept
