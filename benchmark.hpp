@@ -374,8 +374,7 @@ namespace benchmark
 		long tensor_average_time = 0;
 		long vector_average_time = 0;
 		tensor<int, 1> tsor(1000);
-		std::vector<int> vec;
-		vec.reserve(1000);
+		std::vector<int> vec(1000);
 		std::chrono::high_resolution_clock::time_point start, stop;
 		size_t i;
 		std::array<int, 1000> data;
@@ -392,7 +391,7 @@ namespace benchmark
 			tensor_average_time += (stop - start).count();
 
 			start = std::chrono::high_resolution_clock::now();
-			for (i = 0; i < 1000; i++)
+			for (i = 0; i < 999; i++)
 				vec[i] = data[i];
 			stop = std::chrono::high_resolution_clock::now();
 
