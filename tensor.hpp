@@ -58,13 +58,13 @@ namespace tensor_lib
 	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right);
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right);
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
 
 	template <typename T, size_t Rank, typename allocator_type>
 	requires useful_concepts::is_not_zero<Rank>
@@ -123,8 +123,12 @@ namespace tensor_lib
 			const auto data_size = data.size();
 
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+				{
 					throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
+				}
+			}
 
 			_order_of_dimension[Rank - Rank_index] = data_size;
 
@@ -141,8 +145,12 @@ namespace tensor_lib
 			const auto data_size = data.size();
 
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+				{
 					throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
+				}
+			}
 
 			_order_of_dimension[Rank - Rank_index] = data_size;
 		}
@@ -154,8 +162,12 @@ namespace tensor_lib
 			const auto data_size = data.size();
 
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
+				{
 					throw std::runtime_error("Initializer list constains uneven number of values for dimensions of equal rank!");
+				}
+			}
 
 			_order_of_dimension[Rank - Rank_index] = data_size;
 
@@ -246,8 +258,12 @@ namespace tensor_lib
 			tensor(const Sizes ... sizes)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (useful_specializations::contains_zero(sizes...))
+				{
 					throw std::runtime_error("Size of subdimension cannot be zero!");
+				}
+			}
 
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			_construct_size_of_subdimension_array();
@@ -319,7 +335,10 @@ namespace tensor_lib
 		auto& operator = (const tensor& other) noexcept
 		{
 			if constexpr (not std::is_fundamental_v<T>)
+			{
 				std::destroy_n(_data, size_of_current_tensor());
+			}
+
 			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 
 			_order_of_dimension = other._order_of_dimension;
@@ -336,7 +355,10 @@ namespace tensor_lib
 			if (this != std::addressof(other))
 			{
 				if constexpr (not std::is_fundamental_v<T>)
+				{
 					std::destroy_n(_data, size_of_current_tensor());
+				}
+
 				allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 
 				std::copy_n(other._order_of_dimension.cbegin(), Rank, _order_of_dimension.begin());
@@ -356,8 +378,12 @@ namespace tensor_lib
 		auto& replace(const tensor& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+			{
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
+				{
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+				}
+			}
 
 			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
 
@@ -367,8 +393,12 @@ namespace tensor_lib
 		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+			{
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
+				{
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+				}
+			}
 
 			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
 
@@ -378,8 +408,12 @@ namespace tensor_lib
 		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+			{
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
+				{
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+				}
+			}
 
 			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
 
@@ -390,8 +424,12 @@ namespace tensor_lib
 			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (order_of_current_dimension() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+				}
+			}
 
 			auto it = data.begin();
 
@@ -407,8 +445,12 @@ namespace tensor_lib
 			requires useful_concepts::is_equal_to<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (order_of_current_dimension() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+				}
+			}
 
 			auto it = data.begin();
 
@@ -423,8 +465,12 @@ namespace tensor_lib
 		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (size_of_current_tensor() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
+				}
+			}
 
 			std::copy_n(data.begin(), data.size(), begin());
 
@@ -440,8 +486,12 @@ namespace tensor_lib
 			_order_of_dimension = { static_cast<size_t>(new_sizes)... };
 
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0u) != _order_of_dimension.cend())
+				{
 					throw std::runtime_error("Size of dimension can't be changed to zero!");
+				}
+			}
 
 			_construct_size_of_subdimension_array();
 
@@ -582,7 +632,7 @@ namespace tensor_lib
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
 		const_subdimension() = delete;
-		const_subdimension(const_subdimension&&) noexcept = delete;
+		const_subdimension(const_subdimension&&) noexcept = default;
 		const_subdimension(const const_subdimension&) noexcept = default;
 
 		const_subdimension(const subdimension<T, Rank, allocator_type>& other) noexcept :
@@ -738,8 +788,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1, allocator_type>;
 		friend class tensor<T, useful_specializations::exclude_zero(Rank - 1), allocator_type>;
 
-		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&);
-		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&);
+		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&) noexcept;
+		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -793,8 +843,12 @@ namespace tensor_lib
 		auto& replace(const tensor<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+			{
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
+				{
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+				}
+			}
 
 			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
@@ -808,13 +862,13 @@ namespace tensor_lib
 		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
-					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
-
-			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
-				_data[i] = other._data[i];
-			}*/
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
+				{
+					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
+				}
+			}
+
 			std::copy_n(other.cbegin(), size_of_current_tensor(), begin());
 
 			return *this;
@@ -823,7 +877,7 @@ namespace tensor_lib
 		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(this->_order_of_dimension.begin(), this->_order_of_dimension.end(), other._order_of_dimension.begin()))
+				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
 					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
 
 			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
@@ -839,8 +893,12 @@ namespace tensor_lib
 			requires useful_concepts::is_greater_than<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (order_of_current_dimension() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+				}
+			}
 
 			auto it = data.begin();
 
@@ -856,8 +914,12 @@ namespace tensor_lib
 			requires useful_concepts::is_equal_to<Rank, 2>
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (order_of_current_dimension() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of dimension!");
+				}
+			}
 
 			auto it = data.begin();
 
@@ -872,8 +934,12 @@ namespace tensor_lib
 		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
+			{
 				if (size_of_current_tensor() != data.size())
+				{
 					throw std::runtime_error("Size of initializer_list doesn't match size of tensor!");
+				}
+			}
 
 			std::copy_n(data.begin(), data.size(), begin());
 
@@ -1014,7 +1080,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		reference operator* (void) const noexcept
+		reference operator* () const noexcept
 		{
 			return *ptr;
 		}
@@ -1032,9 +1098,7 @@ namespace tensor_lib
 
 		iterator operator++(int) noexcept
 		{
-			auto aux = ptr;
-			ptr++;
-			return iterator(aux);
+			return iterator(ptr++);
 		}
 
 		iterator& operator-- () noexcept
@@ -1045,9 +1109,7 @@ namespace tensor_lib
 
 		iterator operator--(int) noexcept
 		{
-			auto aux = ptr;
-			ptr--;
-			return iterator(aux);
+			return iterator(ptr--);
 		}
 
 		iterator& operator+=(const ptrdiff_t offset) noexcept
@@ -1064,7 +1126,7 @@ namespace tensor_lib
 
 		reference operator[](const size_t offset) const noexcept
 		{
-			return *(ptr + offset);
+			return ptr[offset];
 		}
 
 		friend bool operator==(const iterator it_a, const iterator it_b) noexcept
@@ -1092,12 +1154,6 @@ namespace tensor_lib
 		friend iterator operator-(const iterator it, const size_t offset) noexcept
 		{
 			T* aux = it.ptr - offset;
-			return iterator(aux);
-		}
-
-		friend iterator operator-(const size_t offset, const iterator it) noexcept
-		{
-			auto aux = offset - it.ptr;
 			return iterator(aux);
 		}
 
@@ -1150,7 +1206,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		reference operator* (void) const noexcept
+		reference operator* () const noexcept
 		{
 			return *ptr;
 		}
@@ -1168,9 +1224,7 @@ namespace tensor_lib
 
 		const_iterator operator++(int) noexcept
 		{
-			auto aux = ptr;
-			ptr++;
-			return const_iterator(aux);
+			return const_iterator(ptr++);
 		}
 
 		const_iterator& operator-- () noexcept
@@ -1181,9 +1235,7 @@ namespace tensor_lib
 
 		const_iterator operator--(int) noexcept
 		{
-			auto aux = ptr;
-			ptr--;
-			return const_iterator(aux);
+			return const_iterator(ptr--);
 		}
 
 		const_iterator& operator+=(const size_t offset) noexcept
@@ -1200,7 +1252,7 @@ namespace tensor_lib
 
 		reference operator[](const size_t offset) const noexcept
 		{
-			return *(ptr + offset);
+			return ptr[offset];
 		}
 
 		friend bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
@@ -1238,11 +1290,6 @@ namespace tensor_lib
 			return const_iterator(it.ptr - offset);
 		}
 
-		friend const_iterator operator-(const size_t offset, const const_iterator& it) noexcept
-		{
-			return const_iterator(offset - it.ptr);
-		}
-
 		friend difference_type operator-(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
@@ -1267,10 +1314,12 @@ namespace tensor_lib
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right)
+	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept
 	{
-		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
+		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin(), right._order_of_dimension.end()))
+		{
+			std::exit(-1);
+		}
 
 		std::unique_ptr<T[]> aux = std::make_unique<T[]>(left.size_of_current_tensor());
 
@@ -1282,22 +1331,13 @@ namespace tensor_lib
 	template <typename T, size_t Rank, typename allocator_type>
 	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
 	{
-		std::swap(left._order_of_dimension, right._order_of_dimension);
-		std::swap(left._size_of_subdimension, right._size_of_subdimension);
-		std::swap(left._data, right._data);
+		swap(left, right);
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right)
+	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept
 	{
-		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin()))
-			throw std::runtime_error("Can't swap subdimensions of different sizes!\n");
-
-		std::unique_ptr<T[]> aux = std::make_unique<T[]>(left.size_of_current_tensor());
-
-		std::copy(left.cbegin(), left.cend(), &aux[0]);
-		std::copy(right.cbegin(), right.cend(), left.begin());
-		std::copy(&aux[0], &aux[left.size_of_current_tensor()], right.begin());
+		swap(left, right);
 	}
 
 	namespace aliases
