@@ -1064,7 +1064,7 @@ namespace tensor_lib
 
 		reference operator[](const size_t offset) const noexcept
 		{
-			return *(ptr + offset);
+			return ptr[offset];
 		}
 
 		friend bool operator==(const iterator it_a, const iterator it_b) noexcept
@@ -1200,7 +1200,7 @@ namespace tensor_lib
 
 		reference operator[](const size_t offset) const noexcept
 		{
-			return *(ptr + offset);
+			return ptr[offset];
 		}
 
 		friend bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
