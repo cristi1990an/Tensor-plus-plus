@@ -632,7 +632,7 @@ namespace tensor_lib
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
 		const_subdimension() = delete;
-		const_subdimension(const_subdimension&&) noexcept = delete;
+		const_subdimension(const_subdimension&&) noexcept = default;
 		const_subdimension(const const_subdimension&) noexcept = default;
 
 		const_subdimension(const subdimension<T, Rank, allocator_type>& other) noexcept :
