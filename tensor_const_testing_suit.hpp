@@ -188,7 +188,7 @@ namespace tensor_const_testing_suit
 		{
 			auto it = tsor.begin();
 
-			if (not std::is_same_v<decltype(it), _tensor_common<int>::const_iterator>)
+			if (!std::is_same_v<decltype(it), _tensor_common<int>::const_iterator>)
 			{
 				throw std::runtime_error("TEST_12 in 'tensor_const_testing_suit' failed!\n");
 			}

@@ -27,7 +27,7 @@ namespace tensor_initialization_testing_suit
 			value = val++;
 		}
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_1 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -52,7 +52,7 @@ namespace tensor_initialization_testing_suit
 			tsor_2[1][i] = 7;
 		}
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_2 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -72,7 +72,7 @@ namespace tensor_initialization_testing_suit
 
 		tsor_2 = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_3 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -92,7 +92,7 @@ namespace tensor_initialization_testing_suit
 		tsor_2[0] = { 0, 0, 0, 0 };
 		tsor_2[1] = { 4, 5, 6, 7 };
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_4 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -118,7 +118,7 @@ namespace tensor_initialization_testing_suit
 			}
 		};
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_5 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -138,7 +138,7 @@ namespace tensor_initialization_testing_suit
 		std::copy(tsor_2.cbegin(), tsor_2.cend(), tsor_1[0].begin());
 		std::copy(tsor_2.cbegin(), tsor_2.cend(), sub_1.begin());
 
-		if (not std::equal(tsor_1[0].cbegin(), tsor_1[0].cend(), tsor_2.cbegin()) or not std::equal(tsor_1[1].cbegin(), tsor_1[1].cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1[0].cbegin(), tsor_1[0].cend(), tsor_2.cbegin()) or !std::equal(tsor_1[1].cbegin(), tsor_1[1].cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_6 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -157,7 +157,7 @@ namespace tensor_initialization_testing_suit
 
 		subdimension reference(tsor[0]);
 
-		if (not std::equal(real_copy.cbegin(), real_copy.cend(), reference.cbegin()))
+		if (!std::equal(real_copy.cbegin(), real_copy.cend(), reference.cbegin()))
 		{
 			throw std::runtime_error("TEST_7 in 'tensor_initialization_testing_suit' failed!\n");
 		}
@@ -181,7 +181,7 @@ namespace tensor_initialization_testing_suit
 			value = val++;
 		}
 
-		if (not std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
+		if (!std::equal(tsor_1.cbegin(), tsor_1.cend(), tsor_2.cbegin()))
 		{
 			throw std::runtime_error("TEST_8 in 'tensor_initialization_testing_suit' failed!\n");
 		}
