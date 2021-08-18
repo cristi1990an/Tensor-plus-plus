@@ -1080,7 +1080,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		reference operator* (void) const noexcept
+		reference operator* () const noexcept
 		{
 			return *ptr;
 		}
@@ -1206,7 +1206,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		reference operator* (void) const noexcept
+		reference operator* () const noexcept
 		{
 			return *ptr;
 		}
