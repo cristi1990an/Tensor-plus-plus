@@ -218,3 +218,36 @@ The constructor has static requirements that:
 * the number of parameters passed must be greater than the rank of the tensor (sizes + arguments)
 * the first N (N = Rank) elements in the parameter pack are all of an integral type
 * T can be constructed from the arguments passed after the sizes
+	
+### operator=
+	
+### auto& operator = (const tensor& other) noexcept
+	
+Copy assignment operator
+	
+### auto& operator = (tensor&& other) noexcept
+	
+Move assignment operator
+	
+### auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE 
+### auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+### auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+	
+Copy assignment operators that support simple and nested initializer_lists. 
+	
+### auto& replace(const [tensor/subdimension/const_subdimension]& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+	
+Checks if the tensor has the same sizes as the other tensor passed and then copies the new values.
+	
+### void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
+	
+Resizes the tensor, deleting all the data and reallocating a new heap space.
+	
+### Operator[]
+	
+### auto operator[] (const size_t index) noexcept 
+### auto operator[] (const size_t index) const noexcept
+	
+Operator[] return an instance of the N-th subdimension<T, Rank-1>/const_subdimension<T, Rank-1> depending on the context its called in. When the tensor instance is const, it will return const_subdimension<T, Rank-1> which doesn't allow the modification of the underlying values, though the object itself can be reassigned to another subdimension of the same Rank in another tensor or in the same tensor.
+	
+Operator[] simply returns the value if the rank of the tensor is one. 
