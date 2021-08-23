@@ -89,7 +89,11 @@ namespace tensor_lib
 		//
 		T* _data{};
 
+#ifdef _MSC_VER
+		[[msvc::no_unique_address]] allocator_type allocator_instance{};
+#else
 		[[no_unique_address]] allocator_type allocator_instance{};
+#endif
 
 		using allocator_type_traits = std::allocator_traits<allocator_type>;
 
