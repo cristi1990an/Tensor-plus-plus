@@ -1,7 +1,7 @@
 #pragma once
 
-#include "useful_concepts.hpp"
-#include "useful_specializations.hpp"
+#include "tensor_useful_concepts.hpp"
+#include "tensor_useful_specializations.hpp"
 
 #include <array>
 #include <chrono>

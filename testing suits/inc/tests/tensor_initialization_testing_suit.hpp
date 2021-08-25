@@ -1,7 +1,6 @@
 #pragma once
 
-#include "helpers.hpp"
-#include "tensor.hpp"
+#include "../../../inc/tensor.hpp"
 
 #include <algorithm>
 #include <cmath>

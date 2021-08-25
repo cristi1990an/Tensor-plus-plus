@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tensor.hpp"
+#include "../../../inc/tensor.hpp"
 
 #include <chrono>
 #include <iostream>
