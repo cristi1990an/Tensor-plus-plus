@@ -1,7 +1,7 @@
 #pragma once
 
-#include "useful_concepts.hpp"
-#include "useful_specializations.hpp"
+#include "tensor_useful_concepts.hpp"
+#include "tensor_useful_specializations.hpp"
 
 #include <array>
 #include <chrono>
@@ -32,8 +32,6 @@ namespace tensor_lib
 
 	constexpr static bool TENSORLIB_RELEASE = !TENSORLIB_DEBUGGING;
 
-#define TENSORLIB_NOEXCEPT_IN_RELEASE noexcept(TENSORLIB_RELEASE)
-
 	template <typename T>
 	class _tensor_common
 	{
@@ -42,17 +40,14 @@ namespace tensor_lib
 		struct const_iterator;
 	};
 
-	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	requires useful_concepts::is_not_zero<Rank>
-		class tensor;
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>> requires (Rank != 0u)
+	class tensor;
 
-	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	requires useful_concepts::is_not_zero<Rank>
-		class subdimension;
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>> requires (Rank != 0u)
+	class subdimension;
 
-	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	requires useful_concepts::is_not_zero<Rank>
-		class const_subdimension;
+	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>> requires (Rank != 0u)
+	class const_subdimension;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
@@ -66,9 +61,8 @@ namespace tensor_lib
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
 
-	template <typename T, size_t Rank, typename allocator_type>
-	requires useful_concepts::is_not_zero<Rank>
-		class tensor : public _tensor_common<T>
+	template <typename T, size_t Rank, typename allocator_type> requires (Rank != 0u)
+	class tensor : public _tensor_common<T>
 	{
 	private:
 		// Stores the size of each individual dimension of the tensor.
@@ -97,10 +91,14 @@ namespace tensor_lib
 
 		using allocator_type_traits = std::allocator_traits<allocator_type>;
 
+		static constexpr bool no_throw_default_construction = std::is_nothrow_default_constructible_v<T>;
+		static constexpr bool no_throw_destructible = std::is_nothrow_destructible_v<T>;
+		static constexpr bool no_throw_copyable = std::is_nothrow_copy_assignable_v<T>;
+
 	private:
 		// Computes _size_of_subdimension at initialization. 
 		//
-		inline void _construct_size_of_subdimension_array() noexcept
+		inline constexpr void _construct_size_of_subdimension_array() noexcept
 		{
 			size_t index = Rank - 1;
 
@@ -120,9 +118,8 @@ namespace tensor_lib
 			}
 		}
 
-		template <size_t Rank_index>
-		requires useful_concepts::is_greater_than<Rank_index, 2u>
-			inline void _construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template <size_t Rank_index> requires (Rank_index > 2u)
+		inline constexpr void _construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) noexcept(TENSORLIB_RELEASE)
 		{
 			const auto data_size = data.size();
 
@@ -142,9 +139,8 @@ namespace tensor_lib
 			}
 		}
 
-		template <size_t Rank_index>
-		requires useful_concepts::is_equal_to<Rank_index, 1u>
-			inline void _construct_order_array(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template <size_t Rank_index> requires (Rank_index == 1u)
+		inline constexpr void _construct_order_array(const std::initializer_list<T>& data) noexcept(TENSORLIB_RELEASE)
 		{
 			const auto data_size = data.size();
 
@@ -159,13 +155,12 @@ namespace tensor_lib
 			_order_of_dimension[Rank - Rank_index] = data_size;
 		}
 
-		template <size_t Rank_index>
-		requires useful_concepts::is_equal_to<Rank_index, 2u>
-			inline void _construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template <size_t Rank_index> requires (Rank_index == 2u)
+		inline constexpr void _construct_order_array(const std::initializer_list<std::initializer_list<T>>& data) noexcept(TENSORLIB_RELEASE)
 		{
 			const auto data_size = data.size();
 
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (_order_of_dimension[Rank - Rank_index] != 0 && _order_of_dimension[Rank - Rank_index] != data_size)
 				{
@@ -181,12 +176,10 @@ namespace tensor_lib
 			}
 		}
 
-		template<size_t Rank_index, typename Last, typename ... Args>
-		requires std::integral<Last> &&
-			useful_concepts::is_equal_to<Rank_index, 1u>
-			inline void _construct_order_array_and_forward_rest(const Last last, const Args& ... data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template<size_t Rank_index, typename Last, typename ... Args> requires (std::integral<Last> && (Rank_index == 1u))
+		inline void _construct_order_array_and_forward_rest(const Last last, const Args& ... data) noexcept(TENSORLIB_RELEASE && std::is_nothrow_constructible_v<T, Args...>)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (last == 0)
 					throw std::runtime_error("Size of subdimension cannot be zero!");
@@ -204,12 +197,10 @@ namespace tensor_lib
 			}
 		}
 
-		template<size_t Rank_index, typename First, typename ... Args>
-		requires std::integral<First> &&
-			useful_concepts::is_not_equal_to<Rank_index, 1u>
-			inline void _construct_order_array_and_forward_rest(const First first, const Args& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template<size_t Rank_index, typename First, typename ... Args> requires (std::integral<First> && (Rank_index != 1u))
+		inline void _construct_order_array_and_forward_rest(const First first, const Args& ... args) noexcept(TENSORLIB_RELEASE&& std::is_nothrow_constructible_v<T, Args...>)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (first == 0)
 					throw std::runtime_error("Size of subdimension cannot be zero!");
@@ -235,7 +226,7 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		tensor()
+		constexpr tensor() 
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(allocator_type_traits::allocate(allocator_instance, 1u))
@@ -243,23 +234,17 @@ namespace tensor_lib
 			std::uninitialized_default_construct_n(&_data[0], 1u);
 		}
 
-		template<typename... Sizes>
-		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::integrals<Sizes...>
-			&& TENSORLIB_RELEASE
-			tensor(const Sizes ... sizes) noexcept
-			: _order_of_dimension{ static_cast<size_t>(sizes)... }
+		template<typename... Sizes> requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> && useful_concepts::integrals<Sizes...>&& TENSORLIB_RELEASE
+		tensor(const Sizes ... sizes) 
+		: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
 			_construct_size_of_subdimension_array();
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
-		template<typename... Sizes>
-		requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>
-			&& useful_concepts::integrals<Sizes...>
-			&& TENSORLIB_DEBUGGING
-			tensor(const Sizes ... sizes)
+		template<typename... Sizes> requires ((sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_DEBUGGING)
+		constexpr tensor(const Sizes ... sizes) 
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -276,7 +261,7 @@ namespace tensor_lib
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
-		tensor(tensor&& other) noexcept
+		constexpr tensor(tensor&& other)
 			: _order_of_dimension(std::move(other._order_of_dimension))
 			, _size_of_subdimension(std::move(other._size_of_subdimension))
 			, _data(std::move(other._data))
@@ -288,10 +273,8 @@ namespace tensor_lib
 			std::uninitialized_default_construct_n(&other._data[0], 1u);
 		}
 
-		template<typename U>
-		tensor(const std::initializer_list<U>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<Rank, 1> &&
-			std::is_constructible_v<T, U>
+		template<typename U> requires ((Rank == 1u) && std::is_constructible_v<T, U>)
+		constexpr tensor(const std::initializer_list<U>& data)
 		{
 			_order_of_dimension[0] = data.size();
 			_size_of_subdimension[0] = data.size();
@@ -300,8 +283,7 @@ namespace tensor_lib
 			std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 1>
+		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 1u)		
 		{
 			_construct_order_array<Rank>(data);
 			_construct_size_of_subdimension_array();
@@ -313,7 +295,7 @@ namespace tensor_lib
 			*this = data; 
 		}
 
-		tensor(const tensor& other) noexcept
+		constexpr tensor(const tensor& other)
 			: _order_of_dimension(other._order_of_dimension)
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(allocator_type_traits::allocate(allocator_instance, size_of_current_tensor()))
@@ -321,7 +303,7 @@ namespace tensor_lib
 			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		tensor(const subdimension<T, Rank>& subdimension) noexcept
+		constexpr tensor(const subdimension<T, Rank>& subdimension)
 			: _data(allocator_type_traits::allocate(allocator_instance, subdimension.size_of_current_tensor()))
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
@@ -329,16 +311,15 @@ namespace tensor_lib
 			std::uninitialized_copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		template<typename ... Args>
-		requires useful_concepts::is_greater_than<sizeof...(Args), Rank>
-		tensor(const Args& ... args) TENSORLIB_NOEXCEPT_IN_RELEASE
+		template<typename ... Args> requires (sizeof...(Args) > Rank)
+		constexpr tensor(const Args& ... args) 
 		{
 			_construct_order_array_and_forward_rest<Rank, Args...>(args...);
 		}
 
-		auto& operator = (const tensor& other) noexcept
+		constexpr auto& operator = (const tensor& other) 
 		{
-			if constexpr (not std::is_fundamental_v<T>)
+			if (!std::is_fundamental_v<T>)
 			{
 				std::destroy_n(_data, size_of_current_tensor());
 			}
@@ -354,11 +335,11 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& operator = (tensor&& other) noexcept
+		constexpr auto& operator = (tensor&& other) 
 		{
 			if (this != std::addressof(other))
 			{
-				if constexpr (not std::is_fundamental_v<T>)
+				if constexpr (!std::is_fundamental_v<T>)
 				{
 					std::destroy_n(_data, size_of_current_tensor());
 				}
@@ -379,9 +360,9 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const tensor& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		constexpr auto& replace(const tensor& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
 				{
@@ -394,9 +375,9 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		constexpr auto& replace(const subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
 				{
@@ -409,9 +390,9 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		constexpr auto& replace(const const_subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
 				{
@@ -424,8 +405,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 2>
+		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 2u)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -445,10 +425,9 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<Rank, 2>
+		constexpr auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) noexcept(TENSORLIB_RELEASE) requires (Rank == 2)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (order_of_current_dimension() != data.size())
 				{
@@ -466,9 +445,9 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		constexpr auto& operator=(const std::initializer_list<T>& data) noexcept(TENSORLIB_RELEASE)
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (size_of_current_tensor() != data.size())
 				{
@@ -481,15 +460,13 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		template<typename... Sizes>
-		void resize(const Sizes ... new_sizes) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...>&&
-			useful_concepts::constructable_from_common_type<size_t, Sizes...>
+		template<typename... Sizes> requires ((sizeof...(Sizes) == Rank) && useful_concepts::constructable_from_common_type<size_t, Sizes...>)
+		constexpr void resize(const Sizes ... new_sizes) 
 		{
 			const auto old_size = size_of_current_tensor();
 			_order_of_dimension = { static_cast<size_t>(new_sizes)... };
 
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (TENSORLIB_DEBUGGING)
 			{
 				if (std::find(_order_of_dimension.cbegin(), _order_of_dimension.cend(), 0u) != _order_of_dimension.cend())
 				{
@@ -506,7 +483,7 @@ namespace tensor_lib
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
-		auto operator[] (const size_t index) noexcept requires useful_concepts::is_greater_than<Rank, 1>
+		constexpr auto operator[] (const size_t index) noexcept requires (Rank > 1u)
 		{
 			return subdimension<T, Rank - 1>
 				(
@@ -519,7 +496,7 @@ namespace tensor_lib
 					);
 		}
 
-		auto operator[] (const size_t index) const noexcept requires useful_concepts::is_greater_than<Rank, 1>
+		constexpr auto operator[] (const size_t index) const noexcept requires (Rank > 1u)
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -532,91 +509,90 @@ namespace tensor_lib
 					);
 		}
 
-		auto& operator[] (const size_t index) noexcept requires useful_concepts::is_equal_to<Rank, 1>
+		constexpr auto& operator[] (const size_t index) noexcept requires (Rank == 1u)
 		{
 			return _data[index];
 		}
 
-		auto& operator[] (const size_t index) const noexcept requires useful_concepts::is_equal_to<Rank, 1>
+		constexpr auto& operator[] (const size_t index) const noexcept requires (Rank == 1u)
 		{
 			return _data[index];
 		}
 
-		iterator begin() noexcept
+		constexpr iterator begin() noexcept
 		{
 			return iterator(&_data[0]);
 		}
 
-		const_iterator begin() const noexcept
+		constexpr const_iterator begin() const noexcept
 		{
 			return const_iterator(&_data[0]);
 		}
 
-		const_iterator cbegin() const noexcept
+		constexpr const_iterator cbegin() const noexcept
 		{
 			return const_iterator(&_data[0]);
 		}
 
-		iterator end() noexcept
+		constexpr iterator end() noexcept
 		{
 			return iterator(&_data[size_of_current_tensor()]);
 		}
 
-		const_iterator end() const noexcept
+		constexpr const_iterator end() const noexcept
 		{
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		const_iterator cend() const noexcept
+		constexpr const_iterator cend() const noexcept
 		{
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		const std::array<size_t, Rank>& get_sizes() const noexcept
+		constexpr const std::array<size_t, Rank>& get_sizes() const noexcept
 		{
 			return _size_of_subdimension;
 		}
 
-		const std::array<size_t, Rank>& get_ranks() const noexcept
+		constexpr const std::array<size_t, Rank>& get_ranks() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		size_t order_of_dimension(const size_t& index) const noexcept
+		constexpr size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		size_t size_of_subdimension(const size_t& index) const noexcept
+		constexpr size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		size_t order_of_current_dimension() const noexcept
+		constexpr size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		size_t size_of_current_tensor() const noexcept
+		constexpr size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
 
-		T* data() const noexcept
+		constexpr T* data() const noexcept
 		{
 			return _data;
 		}
 
-		~tensor()
+		constexpr ~tensor()
 		{
 			std::destroy_n(_data, size_of_current_tensor());
 			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
 		}
 	};
 
-	template <typename T, size_t Rank, typename allocator_type>
-	requires useful_concepts::is_not_zero<Rank>
-		class const_subdimension : public _tensor_common<T>
+	template <typename T, size_t Rank, typename allocator_type> requires (Rank != 0u)
+	class const_subdimension : public _tensor_common<T>
 	{
 		using ConstSourceSizeOfDimensionArraySpan = std::span<const size_t, Rank>;
 		using ConstSourceSizeOfSubdimensionArraySpan = std::span<const size_t, Rank>;
@@ -626,6 +602,10 @@ namespace tensor_lib
 		ConstSourceSizeOfDimensionArraySpan              _order_of_dimension;
 		ConstSourceSizeOfSubdimensionArraySpan           _size_of_subdimension;
 		ConstSourceDataSpan                              _data;
+
+		static constexpr bool no_throw_default_construction = std::is_nothrow_default_constructible_v<T>;
+		static constexpr bool no_throw_destructible = std::is_nothrow_destructible_v<T>;
+		static constexpr bool no_throw_copyable = std::is_nothrow_copy_assignable_v<T>;
 
 	public:
 
@@ -690,22 +670,20 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_greater_than<Rank, 1>
+		auto operator[] (const size_t index) const noexcept requires (Rank > 1u)
 		{
 			return const_subdimension<T, Rank - 1>
 				(
-					_order_of_dimension.begin() + 1,
-					_order_of_dimension.end(),
-					_size_of_subdimension.begin() + 1,
-					_size_of_subdimension.end(),
-					cbegin() + index * _size_of_subdimension[1],
-					cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1]
-					);
+				_order_of_dimension.begin() + 1,
+				_order_of_dimension.end(),
+				_size_of_subdimension.begin() + 1,
+				_size_of_subdimension.end(),
+				cbegin() + index * _size_of_subdimension[1],
+				cbegin() + index * _size_of_subdimension[1] + _size_of_subdimension[1]
+				);
 		}
 
-		const T& operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_equal_to<Rank, 1>
+		const T& operator[] (const size_t index) const noexcept requires (Rank == 1u)
 		{
 			return _data[index];
 		}
@@ -765,16 +743,14 @@ namespace tensor_lib
 			return (Rank == 2);
 		}
 
-		bool is_square_matrix() const noexcept
-			requires useful_concepts::is_equal_to<Rank, 2>
+		bool is_square_matrix() const noexcept requires (Rank == 2u)
 		{
 			return (_size_of_subdimension[0] == _size_of_subdimension[1]);
 		}
 	};
 
-	template <typename T, size_t Rank, typename allocator_type>
-	requires useful_concepts::is_not_zero<Rank>
-		class subdimension : public _tensor_common<T>
+	template <typename T, size_t Rank, typename allocator_type> requires (Rank != 0u)
+	class subdimension : public _tensor_common<T>
 	{
 		using SourceSizeOfDimensionArraySpan = std::span<size_t, Rank>;
 		using SourceSizeOfSubdimensionArraySpan = std::span<size_t, Rank>;
@@ -784,6 +760,10 @@ namespace tensor_lib
 		SourceSizeOfDimensionArraySpan              _order_of_dimension;
 		SourceSizeOfSubdimensionArraySpan           _size_of_subdimension;
 		SourceDataSpan                              _data;
+
+		static constexpr bool no_throw_default_construction = std::is_nothrow_default_constructible_v<T>;
+		static constexpr bool no_throw_destructible = std::is_nothrow_destructible_v<T>;
+		static constexpr bool no_throw_copyable = std::is_nothrow_copy_assignable_v<T>;
 
 	public:
 		friend class const_subdimension<T, Rank, allocator_type>;
@@ -844,7 +824,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const tensor<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const tensor<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -863,7 +843,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -878,7 +858,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const const_subdimension<T, Rank>& other) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& replace(const const_subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
@@ -893,8 +873,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_greater_than<Rank, 2>
+		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) noexcept(TENSORLIB_RELEASE) requires (Rank > 2u)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -914,8 +893,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
-			requires useful_concepts::is_equal_to<Rank, 2>
+		auto& operator=(const std::initializer_list<std::initializer_list<T>>& data) noexcept(TENSORLIB_RELEASE) requires (Rank == 2u)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -935,7 +913,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto& operator=(const std::initializer_list<T>& data) TENSORLIB_NOEXCEPT_IN_RELEASE
+		auto& operator=(const std::initializer_list<T>& data) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -950,8 +928,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto operator[] (const size_t index) noexcept
-			requires useful_concepts::is_greater_than<Rank, 1>
+		auto operator[] (const size_t index) noexcept requires (Rank > 1u)
 		{
 			return subdimension<T, Rank - 1>
 				(
@@ -964,8 +941,7 @@ namespace tensor_lib
 					);
 		}
 
-		auto operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_greater_than<Rank, 1>
+		auto operator[] (const size_t index) const noexcept requires (Rank > 1u)
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -978,14 +954,12 @@ namespace tensor_lib
 					);
 		}
 
-		const T& operator[] (const size_t index) const noexcept
-			requires useful_concepts::is_equal_to<Rank, 1>
+		const T& operator[] (const size_t index) const noexcept requires (Rank == 1u)
 		{
 			return _data[index];
 		}
 
-		T& operator[] (const size_t index) noexcept
-			requires useful_concepts::is_equal_to<Rank, 1>
+		T& operator[] (const size_t index) noexcept requires(Rank == 1u)
 		{
 			return _data[index];
 		}

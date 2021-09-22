@@ -1,63 +1,69 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    <Filter Include="inc">
+      <UniqueIdentifier>{17b81c9f-9547-491e-9432-ae44af234836}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    <Filter Include="introduction">
+      <UniqueIdentifier>{05709b09-cea7-4811-89cf-70896e97f015}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    <Filter Include="testing suits">
+      <UniqueIdentifier>{eaf92fe1-8ba7-42e0-abc5-f0725a940a42}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testing suits\inc">
+      <UniqueIdentifier>{59e834b4-06bf-4462-8408-789f95180d76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testing suits\src">
+      <UniqueIdentifier>{57392da2-c480-4ef1-922e-b79ee7d21c06}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testing suits\inc\benchmarks">
+      <UniqueIdentifier>{1b093505-41a0-4571-b03f-c3458de180b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testing suits\inc\tests">
+      <UniqueIdentifier>{fd26d1b8-bb73-4d4c-b412-f4427020d06d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="introduction.cpp">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="inc\tensor.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\benchmarks\benchmark.hpp">
+      <Filter>testing suits\inc\benchmarks</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_const_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_initialization_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_iteration_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_move_semantics_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_replace_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_resize_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="introduction\tensor_introduction_helpers.hpp">
+      <Filter>introduction</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\tensor_useful_concepts.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\tensor_useful_specializations.hpp">
+      <Filter>inc</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="introduction\tensor_introduction.cpp">
+      <Filter>introduction</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="helpers.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="useful_concepts.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="useful_specializations.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_const_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_initialization_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="benchmark.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_move_semantics_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_resize_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_iteration_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tensor_replace_testing_suit.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

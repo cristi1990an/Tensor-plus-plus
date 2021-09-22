@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tensor.hpp"
+#include "../../../inc/tensor.hpp"
 #include "tensor_const_testing_suit.hpp"
 #include "tensor_initialization_testing_suit.hpp"
 #include "tensor_move_semantics_testing_suit.hpp"

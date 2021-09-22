@@ -1,14 +1,13 @@
-#include "tensor.hpp"
-#include "helpers.hpp"
-#include "tensor_testing_suit.hpp"
-#include "benchmark.hpp"
+#include "../inc/tensor.hpp"
+#include "tensor_introduction_helpers.hpp"
+#include "../testing suits/inc/tests/tensor_testing_suit.hpp"
+#include "../testing suits/inc/benchmarks/benchmark.hpp"
 
 #include <algorithm>
 #include <iostream>
 #include <vector>
 
 using namespace tensor_lib;
-
 
 int main()
 {

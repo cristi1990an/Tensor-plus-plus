@@ -18,6 +18,23 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\tensor.hpp" />
+    <ClInclude Include="inc\tensor_useful_concepts.hpp" />
+    <ClInclude Include="inc\tensor_useful_specializations.hpp" />
+    <ClInclude Include="introduction\tensor_introduction_helpers.hpp" />
+    <ClInclude Include="testing suits\inc\benchmarks\benchmark.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_const_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_initialization_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_iteration_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_move_semantics_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_replace_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_resize_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_testing_suit.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="introduction\tensor_introduction.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -178,26 +195,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="introduction.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="benchmark.hpp" />
-    <ClInclude Include="helpers.hpp" />
-    <ClInclude Include="tensor.hpp" />
-    <ClInclude Include="tensor_const_testing_suit.hpp" />
-    <ClInclude Include="tensor_initialization_testing_suit.hpp" />
-    <ClInclude Include="tensor_iteration_testing_suit.hpp" />
-    <ClInclude Include="tensor_move_semantics_testing_suit.hpp" />
-    <ClInclude Include="tensor_replace_testing_suit.hpp" />
-    <ClInclude Include="tensor_resize_testing_suit.hpp" />
-    <ClInclude Include="tensor_testing_suit.hpp" />
-    <ClInclude Include="useful_concepts.hpp" />
-    <ClInclude Include="useful_specializations.hpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="cpp.hint" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
