@@ -7,11 +7,11 @@ project(
   LANGUAGES CXX)
 
 add_executable(main)
-target_sources(main PRIVATE /introduction/tensor_introduction.cpp)
+target_sources(main PRIVATE introduction/tensor_introduction.cpp)
 target_compile_features(main PRIVATE cxx_std_20)
 
 add_executable(all_test)
-target_sources(all_test PRIVATE /testing\ suits/src/all_test.cpp)
+target_sources(all_test PRIVATE testing\ suits/src/all_test.cpp)
 target_compile_features(all_test PRIVATE cxx_std_20)
 
 enable_testing()
