@@ -210,59 +210,6 @@ namespace useful_concepts
 		signed_type<T> &&
 		default_initialized_with_zero<T>;
 
-
-	template <auto t, auto u>
-	concept is_greater_than = requires()
-	{
-		requires(t > u);
-	};
-
-	template <auto value>
-	concept is_not_zero =
-		has_zero<decltype(value)> &&
-		requires()
-	{
-		requires(value != static_cast<decltype(value)>(0));
-	};
-
-	template <auto value>
-	concept is_zero =
-		has_zero<decltype(value)> &&
-		requires()
-	{
-		requires(value == static_cast<decltype(value)>(0));
-	};
-
-	template <auto t, auto u>
-	concept is_equal_to = requires()
-	{
-		requires(t == u);
-	};
-
-	template <auto t, auto u>
-	concept is_not_equal_to = requires()
-	{
-		requires(t != u);
-	};
-
-	template <auto t, auto u>
-	concept is_equal_or_greater_than = requires()
-	{
-		requires(t >= u);
-	};
-
-	template <auto t, auto u>
-	concept is_smaller_than = requires()
-	{
-		requires(t < u);
-	};
-
-	template <auto t, auto u>
-	concept is_equal_or_smaller_than = requires()
-	{
-		requires(t <= u);
-	};
-
 	template <typename T, typename U>
 	concept is_same = requires()
 	{
