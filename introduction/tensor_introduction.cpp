@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../inc/tensor.hpp"
 #include "tensor_introduction_helpers.hpp"
 #include "../testing suits/inc/tests/tensor_testing_suit.hpp"

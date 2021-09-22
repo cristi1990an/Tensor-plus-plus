@@ -22,8 +22,7 @@ void display(const std::span<T>& arr)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 1>
+template<typename T, size_t Rank> requires (Rank == 1u)
 void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 {
 	for (auto& val : mat)
@@ -33,8 +32,7 @@ void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 2>
+template<typename T, size_t Rank> requires (Rank == 2u)
 void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 {
 	for (size_t i = 0; i < mat.order_of_current_dimension(); i++)
@@ -42,8 +40,7 @@ void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_greater_than<Rank, 2>
+template<typename T, size_t Rank> requires (Rank > 2u)
 void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 {
 	for (size_t i = 0; i < mat.order_of_current_dimension(); i++)
@@ -52,8 +49,7 @@ void display(const tensor_lib::const_subdimension<T, Rank>& mat)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 1>
+template<typename T, size_t Rank> requires (Rank == 1u)
 void display(const tensor_lib::subdimension<T, Rank>& mat)
 {
 	for (auto& val : mat)
@@ -63,8 +59,7 @@ void display(const tensor_lib::subdimension<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 2>
+template<typename T, size_t Rank> requires (Rank == 2u)
 void display(const tensor_lib::subdimension<T, Rank>& mat)
 {
 	for (size_t i = 0; i < mat.order_of_current_dimension(); i++)
@@ -72,8 +67,7 @@ void display(const tensor_lib::subdimension<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_greater_than<Rank, 2>
+template<typename T, size_t Rank> requires (Rank > 2u)
 void display(const tensor_lib::subdimension<T, Rank>& mat)
 {
 	for (size_t i = 0; i < mat.order_of_current_dimension(); i++)
@@ -82,8 +76,7 @@ void display(const tensor_lib::subdimension<T, Rank>& mat)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 1>
+template<typename T, size_t Rank> requires (Rank == 1u)
 void display(const tensor_lib::tensor<T, Rank>& mat)
 {
 	for (auto& val : mat)
@@ -93,8 +86,7 @@ void display(const tensor_lib::tensor<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_equal_to<Rank, 2>
+template<typename T, size_t Rank> requires (Rank == 2u)
 void display(const tensor_lib::tensor<T, Rank>& mat)
 {
 	for (size_t i = 0; i < mat.order_of_current_dimension(); i++)
@@ -102,8 +94,7 @@ void display(const tensor_lib::tensor<T, Rank>& mat)
 	std::cout << std::endl;
 }
 
-template<typename T, size_t Rank>
-requires useful_concepts::is_greater_than<Rank, 2>
+template<typename T, size_t Rank> requires (Rank > 2u)
 void display(const tensor_lib::tensor<T, Rank>& mat)
 {
 
