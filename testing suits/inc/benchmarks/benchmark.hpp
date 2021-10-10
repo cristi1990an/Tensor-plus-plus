@@ -18,7 +18,7 @@ namespace benchmark
 
 	void BENCHMARK_ALLOCATION_FROM_NESTED_INITIALIZER_LIST_WITH_EXPLICIT_SIZES()
 	{
-		long average_time = 0;
+		long long average_time = 0;
 
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
@@ -61,7 +61,7 @@ namespace benchmark
 
 	void BENCHMARK_ALLOCATION_FROM_NESTED_INITIALIZER_LIST_WITH_DEDUCED_SIZES()
 	{
-		long average_time = 0;
+		long long average_time = 0;
 
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
@@ -103,7 +103,7 @@ namespace benchmark
 
 	void BENCHMARK_ALLOCATION_FROM_ONE_DIMENSIONAL_INITIALIZER_LIST()
 	{
-		long average_time = 0;
+		long long average_time = 0;
 
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
@@ -145,7 +145,7 @@ namespace benchmark
 
 	void BENCHMARK_ALLOCATION_FROM_NON_TRIVIAL_ONE_DIMENSIONAL_INITIALIZER_LIST()
 	{
-		long average_time = 0;
+		long long average_time = 0;
 
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
@@ -187,7 +187,7 @@ namespace benchmark
 
 	void BENCHMARK_BIG_ALLOCATION()
 	{
-		long average_time = 0;
+		long long average_time = 0;
 
 		for (unsigned int i = 0; i < ITERATIONS; i++)
 		{
@@ -230,8 +230,8 @@ namespace benchmark
 
 	void BENCHMARK_RANDOM_ACCESS()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
@@ -272,8 +272,8 @@ namespace benchmark
 
 	void BENCHMARK_ASSIGN_THROUGH_BRACKETS()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
@@ -326,8 +326,8 @@ namespace benchmark
 
 	void BENCHMARK_ASSIGN_THROUGH_ITERATOR()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 4> tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		std::vector<std::vector<std::vector<std::vector<int>>>> vec nested_initializer_list;
@@ -371,8 +371,8 @@ namespace benchmark
 
 	void BENCHMARK_ASSIGN_ONE_DIMENSION()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 1> tsor(1000);
 		std::vector<int> vec(1000);
 		std::chrono::high_resolution_clock::time_point start, stop;
@@ -408,8 +408,8 @@ namespace benchmark
 
 	void BENCHMARK_COPY()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 4> tsor(5, 4, 3, 2), destination_tsor(5, 4, 3, 2);
 		tsor = nested_initializer_list;
 		destination_tsor = empty_nested_initializer_list;
@@ -442,8 +442,8 @@ namespace benchmark
 
 	void BENCHMARK_EMPLACE_INITIALIZATION()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		std::chrono::high_resolution_clock::time_point start, stop;
 
 		for (unsigned int it = 0; it < ITERATIONS; it++)
@@ -478,8 +478,8 @@ namespace benchmark
 
 	void BENCHMARK_RESIZE()
 	{
-		long tensor_average_time = 0;
-		long vector_average_time = 0;
+		long long tensor_average_time = 0;
+		long long vector_average_time = 0;
 		tensor<int, 4> tsor(1, 1, 1, 1); // also default state
 		std::vector<int> vec;
 		vec.reserve(1);
