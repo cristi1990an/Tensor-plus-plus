@@ -96,28 +96,6 @@ namespace tensor_lib
 		static constexpr bool no_throw_copyable = std::is_nothrow_copy_assignable_v<T>;
 
 	private:
-		// Computes _size_of_subdimension at initialization. 
-		//
-		inline constexpr void _construct_size_of_subdimension_array() noexcept
-		{
-			size_t index = Rank - 1;
-
-			_size_of_subdimension[Rank - 1] = _order_of_dimension[Rank - 1];
-
-			if constexpr (Rank - 1 != 0)
-			{
-				index--;
-
-				while (index)
-				{
-					_size_of_subdimension[index] = _size_of_subdimension[index + 1] * _order_of_dimension[index];
-					index--;
-				}
-
-				_size_of_subdimension[0] = _size_of_subdimension[1] * _order_of_dimension[0];
-			}
-		}
-
 		template <size_t Rank_index> requires (Rank_index > 2u)
 		inline constexpr void _construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) noexcept(TENSORLIB_RELEASE)
 		{
@@ -187,7 +165,7 @@ namespace tensor_lib
 
 			_order_of_dimension[Rank - Rank_index] = static_cast<size_t>(last);
 
-			_construct_size_of_subdimension_array();
+			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			//std::uninitialized_fill_n(&_data[0], size_of_current_tensor(), T(data...));
@@ -238,7 +216,7 @@ namespace tensor_lib
 		tensor(const Sizes ... sizes) 
 		: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
-			_construct_size_of_subdimension_array();
+			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
@@ -255,7 +233,7 @@ namespace tensor_lib
 			}
 
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
-			_construct_size_of_subdimension_array();
+			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
@@ -286,7 +264,7 @@ namespace tensor_lib
 		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 1u)		
 		{
 			_construct_order_array<Rank>(data);
-			_construct_size_of_subdimension_array();
+			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
 			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
 
@@ -474,7 +452,7 @@ namespace tensor_lib
 				}
 			}
 
-			_construct_size_of_subdimension_array();
+			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
 			std::destroy_n(_data, old_size);
 			allocator_type_traits::deallocate(allocator_instance, _data, old_size);
