@@ -569,12 +569,12 @@ namespace tensor_lib
 			return const_iterator(&_data[size_of_current_tensor()]);
 		}
 
-		constexpr const auto get_sizes() const noexcept
+		constexpr auto get_sizes() const noexcept
 		{
 			return std::span<const size_t, Rank>(_size_of_subdimension);
 		}
 
-		constexpr const auto get_ranks() const noexcept
+		constexpr auto get_ranks() const noexcept
 		{
 			return std::span<const size_t, Rank>(_order_of_dimension);
 		}
@@ -753,12 +753,12 @@ namespace tensor_lib
 			return _size_of_subdimension[0];
 		}
 
-		constexpr const auto get_sizes() const noexcept
+		constexpr auto get_sizes() const noexcept
 		{
 			return std::span<const size_t, Rank>(_size_of_subdimension);
 		}
 
-		constexpr const auto get_ranks() const noexcept
+		constexpr auto get_ranks() const noexcept
 		{
 			return std::span<const size_t, Rank>(_order_of_dimension);
 		}
@@ -1061,12 +1061,12 @@ namespace tensor_lib
 			return _data.data();
 		}
 
-		constexpr const auto get_sizes() const noexcept
+		constexpr auto get_sizes() const noexcept
 		{
 			return std::span<const size_t, Rank>(_size_of_subdimension);
 		}
 
-		constexpr const auto get_ranks() const noexcept
+		constexpr auto get_ranks() const noexcept
 		{
 			return std::span<const size_t, Rank>(_order_of_dimension);
 		}
