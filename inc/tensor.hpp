@@ -61,6 +61,11 @@ namespace tensor_lib
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
 
+	template <typename U, typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
+	concept is_tensor = std::same_as <U, tensor<T, Rank, allocator_type>>
+		|| std::same_as<U, subdimension<T, Rank, allocator_type>>
+		|| std::same_as<U, const_subdimension<T, Rank, allocator_type>>;
+
 	template <typename T, size_t Rank, typename allocator_type> requires (Rank != 0u)
 	class tensor : public _tensor_common<T>
 	{
@@ -1357,11 +1362,6 @@ namespace tensor_lib
 	{
 		swap(left, right);
 	}
-
-	template <typename U, typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	concept is_tensor = std::same_as <U, tensor<T, Rank, allocator_type>>
-		|| std::same_as<U, subdimension<T, Rank, allocator_type>>
-		|| std::same_as<U, const_subdimension<T, Rank, allocator_type>>;
 
 	template <typename T>
 	using tensor_1d = tensor<T, 1>;
