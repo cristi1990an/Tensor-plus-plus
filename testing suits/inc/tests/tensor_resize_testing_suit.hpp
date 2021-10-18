@@ -58,11 +58,11 @@ namespace tensor_resize_testing_suit
 		}
 		std::cout << std::endl;*/
 
-		if (!std::equal(tsor.get_sizes().cbegin(), tsor.get_sizes().cend(), expected_sizes.cbegin()))
+		if (!std::equal(tsor.get_sizes().begin(), tsor.get_sizes().end(), expected_sizes.cbegin()))
 		{
 			throw std::runtime_error("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
 		}
-		if (!std::equal(tsor.get_ranks().cbegin(), tsor.get_ranks().cend(), expected_ranks.cbegin()))
+		if (!std::equal(tsor.get_ranks().begin(), tsor.get_ranks().end(), expected_ranks.cbegin()))
 		{
 			throw std::runtime_error("TEST_3 in 'tensor_resize_testing_suit' failed!\n");
 		}
