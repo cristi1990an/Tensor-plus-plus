@@ -511,6 +511,67 @@ namespace tensor_initialization_testing_suit
 		std::cout << "\tTEST 22 PASSED.\n";
 	}
 
+	void TEST_23()
+	{
+		tensor<int, 2> t1(2, 2), t2(2, 2), t3(2, 2);
+		t1 = { 1,2,3,4 };
+		t2 = { 5,6,7,8 };
+		t3 = { 9, 10, 11, 12 };
+
+		tensor<int, 3> combined;
+		combined.replace(t1, t2, t3);
+
+		int aux = 1;
+		for (const auto val : combined)
+		{
+			if (val != aux++)
+			{
+				throw std::runtime_error("TEST_23 in 'tensor_initialization_testing_suit' failed!\n");
+			}
+		}
+		std::cout << "\tTEST 23 PASSED.\n";
+	}
+
+	void TEST_24()
+	{
+		tensor<int, 2> t1(2, 2), t2(2, 2), t3(2, 2);
+		t1 = { 1,2,3,4 };
+		t2 = { 5,6,7,8 };
+		t3 = { 9, 10, 11, 12 };
+
+		tensor<int, 2> combined;
+		combined.replace(t1[0], t2[1], t3[0]);
+
+		const auto expected = { 1, 2, 7, 8, 9, 10 };
+
+		if (!std::equal(combined.cbegin(), combined.cend(), expected.begin(), expected.end()))
+		{
+			throw std::runtime_error("TEST_24 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		std::cout << "\tTEST 24 PASSED.\n";
+	}
+
+	void TEST_25()
+	{
+		tensor<int, 2> t1(2, 2), t3(2, 2);
+		tensor<int, 1> t2 = { 6, 7 };
+		t1 = { 1,2,3,4 };
+		t3 = { 9, 10, 11, 12 };
+
+		tensor<int, 2> combined;
+		combined.replace(t1[0], t2, t3[1]);
+
+		const auto expected = { 1, 2, 6, 7, 11, 12 };
+
+		if (!std::equal(combined.cbegin(), combined.cend(), expected.begin(), expected.end()))
+		{
+			throw std::runtime_error("TEST_25 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		std::cout << "\tTEST 25 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor initialization tests...\n\n";
@@ -537,6 +598,9 @@ namespace tensor_initialization_testing_suit
 		TEST_20();
 		TEST_21();
 		TEST_22();
+		TEST_23();
+		TEST_24();
+		TEST_25();
 
 		std::cout << "\n";
 	}
