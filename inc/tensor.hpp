@@ -86,7 +86,7 @@ namespace tensor_lib
 
 		// Dynamically allocated data buffer.
 		//
-		T* _data{};
+		T* _data = nullptr;
 
 #ifdef _MSC_VER
 		[[msvc::no_unique_address]] allocator_type allocator_instance{};
@@ -337,8 +337,26 @@ namespace tensor_lib
 			_assign_subdimensions<0, First, Args...>(first, tensors...);
 		}
 
+		constexpr auto& operator = (const tensor& other)
+		{
+			if (!std::is_fundamental_v<T>)
+			{
+				std::destroy_n(_data, size_of_current_tensor());
+			}
+
+			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+
+			_order_of_dimension = other.get_ranks();
+			_size_of_subdimension = other.get_sizes();
+
+			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
+
+			return *this;
+		}
+
 		template <typename Tensor_Type>
-		constexpr auto& operator = (const Tensor_Type& other) requires (is_tensor<Tensor_Type, T, Rank, allocator_type>)
+		constexpr auto& operator = (const Tensor_Type& other) requires (is_tensor<Tensor_Type, T, Rank, allocator_type> && !std::is_same_v<Tensor_Type, tensor>)
 		{
 			if (!std::is_fundamental_v<T>)
 			{
