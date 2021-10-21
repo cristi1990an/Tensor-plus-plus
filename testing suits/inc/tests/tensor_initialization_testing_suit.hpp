@@ -572,6 +572,50 @@ namespace tensor_initialization_testing_suit
 		std::cout << "\tTEST 25 PASSED.\n";
 	}
 
+	void TEST_26()
+	{
+		tensor<int, 2> t1(2, 2), t2(2, 2), t3(2, 2);
+		t1 = { 1,2,3,4 };
+		t2 = { 5,6,7,8 };
+		t3 = { 9, 10, 11, 12 };
+
+		tensor<int, 3> combined(3, 2, 2, 0); // 3x2x2 tensor will all elements initialized to zero
+		
+		combined[0].replace(t1[0], t2[0]);
+		combined[1].replace(t3[0], t3[1]);
+		combined[2].replace(t1[1], t2[1]);
+
+		auto expected = { 1,2,5,6,9,10,11,12,3,4,7,8 };
+
+		if (!std::equal(combined.cbegin(), combined.cend(), expected.begin(), expected.end()))
+		{
+			throw std::runtime_error("TEST_26 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		std::cout << "\tTEST 26 PASSED.\n";
+	}
+
+	void TEST_27()
+	{
+		tensor<int, 2> t1(2, 2), t2(2, 2), t3(2, 2);
+		t1 = { 1,2,3,4 };
+		t2 = { 5,6,7,8 };
+		t3 = { 9, 10, 11, 12 };
+
+		tensor<int, 4> combined(2, 3, 2, 2, 0); // 2x3x3x2x2 tensor will all elements initialized to zero
+
+		combined[0].replace(t2, t3, t1);
+
+		auto expected = { 5,6,7,8,9,10,11,12,1,2,3,4,0,0,0,0,0,0,0,0,0,0,0,0 };
+
+		if (!std::equal(combined.cbegin(), combined.cend(), expected.begin(), expected.end()))
+		{
+			throw std::runtime_error("TEST_27 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		std::cout << "\tTEST 27 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor initialization tests...\n\n";
@@ -601,6 +645,8 @@ namespace tensor_initialization_testing_suit
 		TEST_23();
 		TEST_24();
 		TEST_25();
+		TEST_26();
+		TEST_27();
 
 		std::cout << "\n";
 	}

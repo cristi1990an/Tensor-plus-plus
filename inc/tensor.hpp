@@ -313,7 +313,7 @@ namespace tensor_lib
 			std::uninitialized_copy_n(subdimension.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		template<typename ... Args> requires (sizeof...(Args) > Rank)
+		template<typename ... Args> requires (sizeof...(Args) > Rank && !(is_tensor<Args, T, Rank - 1, allocator_type> && ...))
 		constexpr tensor(const Args& ... args) 
 		{
 			_construct_order_array_and_forward_rest<Rank, Args...>(args...);
@@ -337,7 +337,7 @@ namespace tensor_lib
 			_assign_subdimensions<0, First, Args...>(first, tensors...);
 		}
 
-		constexpr auto& operator = (const tensor& other)
+		constexpr auto& operator= (const tensor& other)
 		{
 			if (!std::is_fundamental_v<T>)
 			{
@@ -356,7 +356,7 @@ namespace tensor_lib
 		}
 
 		template <typename Tensor_Type>
-		constexpr auto& operator = (const Tensor_Type& other) requires (is_tensor<Tensor_Type, T, Rank, allocator_type> && !std::is_same_v<Tensor_Type, tensor>)
+		constexpr auto& operator= (const Tensor_Type& other) requires (is_tensor<Tensor_Type, T, Rank, allocator_type> && !std::is_same_v<Tensor_Type, tensor>)
 		{
 			if (!std::is_fundamental_v<T>)
 			{
@@ -399,37 +399,8 @@ namespace tensor_lib
 			return *this;
 		}
 
-		constexpr auto& replace(const tensor& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
-		{
-			if constexpr (TENSORLIB_DEBUGGING)
-			{
-				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
-				{
-					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
-				}
-			}
-
-			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
-
-			return *this;
-		}
-
-		constexpr auto& replace(const subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
-		{
-			if constexpr (TENSORLIB_DEBUGGING)
-			{
-				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
-				{
-					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
-				}
-			}
-
-			std::copy_n(&other._data[0], size_of_current_tensor(), &_data[0]);
-
-			return *this;
-		}
-
-		constexpr auto& replace(const const_subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
+		template<typename Tensor_Type> requires (is_tensor<Tensor_Type, T, Rank, allocator_type>)
+		constexpr auto& replace(const Tensor_Type& other) noexcept(TENSORLIB_RELEASE && no_throw_copyable)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -841,6 +812,25 @@ namespace tensor_lib
 		static constexpr bool no_throw_destructible = std::is_nothrow_destructible_v<T>;
 		static constexpr bool no_throw_copyable = std::is_nothrow_copy_assignable_v<T>;
 
+		template <typename First, typename ... Args>
+		inline constexpr bool _are_same_size(const First& first, const Args& ... tensors) noexcept
+		{
+			return (std::equal(first.get_ranks().begin(), first.get_ranks().end(), tensors.get_ranks().begin(), tensors.get_ranks().end()) && ...);
+		}
+
+		template <size_t Index, typename Last>
+		inline constexpr void _assign_subdimensions(const Last& last)
+		{
+			(*this)[Index].replace(last);
+		}
+
+		template <size_t Index, typename First, typename ... Args>
+		inline constexpr void _assign_subdimensions(const First& first, const Args& ... tensors) noexcept
+		{
+			(*this)[Index].replace(first);
+			_assign_subdimensions<Index + 1, Args...>(tensors...);
+		}
+
 	public:
 		friend class const_subdimension<T, Rank, allocator_type>;
 		friend class tensor<T, Rank, allocator_type>;
@@ -900,26 +890,8 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const tensor<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
-		{
-			if constexpr (TENSORLIB_DEBUGGING)
-			{
-				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
-				{
-					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
-				}
-			}
-
-			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
-			{
-				_data[i] = other._data[i];
-			}*/
-			std::copy_n(other.cbegin(), size_of_current_tensor(), begin());
-
-			return *this;
-		}
-
-		auto& replace(const subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
+		template<typename Tensor_Type> requires (is_tensor<Tensor_Type, T, Rank, allocator_type>)
+		auto& replace(const Tensor_Type& other) noexcept(TENSORLIB_RELEASE)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -934,19 +906,20 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto& replace(const const_subdimension<T, Rank>& other) noexcept(TENSORLIB_RELEASE)
+		template<typename ... Tensors> requires ((sizeof...(Tensors) > 1) && (is_tensor<Tensors, T, Rank - 1, allocator_type> && ...))
+		auto& replace(const Tensors& ... tensors) noexcept(TENSORLIB_RELEASE)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
-				if (!std::equal(_order_of_dimension.begin(), _order_of_dimension.end(), other._order_of_dimension.begin(), other._order_of_dimension.end()))
-					throw std::runtime_error("Size of tensor we take values from must match the size of current tensor");
-
-			/*for (size_t i = 0; i < size_of_current_tensor(); i++)
 			{
-				_data[i] = other._data[i];
-			}*/
-			std::copy_n(other.cbegin(), size_of_current_tensor(), begin());
+				if (!_are_same_size(tensors...))
+				{
+					throw std::runtime_error("Size of tensor we take values from must match the size of current subdimension");
+				}
+			}
 
-			return *this;
+			_assign_subdimensions<0, Tensors...>(tensors...);
+
+			return (*this);
 		}
 
 		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) noexcept(TENSORLIB_RELEASE) requires (Rank > 2u)
