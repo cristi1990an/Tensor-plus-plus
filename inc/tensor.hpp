@@ -911,7 +911,7 @@ namespace tensor_lib
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
-				if (!_are_same_size(tensors...))
+				if (!_are_same_size((*this)[0], tensors...))
 				{
 					throw std::runtime_error("Size of tensor we take values from must match the size of current subdimension");
 				}
