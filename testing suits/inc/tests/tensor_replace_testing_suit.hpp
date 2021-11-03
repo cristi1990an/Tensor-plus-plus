@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <array>
+#include <list>
 
 namespace tensor_replace_testing_suit
 {
@@ -199,6 +200,44 @@ namespace tensor_replace_testing_suit
 		std::cout << "\tTEST 6 PASSED.\n";
 	}
 
+	void TEST_7()
+	{
+		tensor<int, 3> tsor(3, 2, 2); // 12 in size
+		std::list values = { 1,2,3,4,5,6,7,8,9,10,11,12 };
+
+		tsor.replace(values.cbegin(), values.cend());
+
+		for (int i = 1; const auto val : tsor)
+		{
+			if (val != i++)
+			{
+				throw std::runtime_error("TEST_7 in 'tensor_replace_testing_suit' failed!\n");
+			}
+		}
+
+		std::cout << "\tTEST 7 PASSED.\n";
+	}
+
+	void TEST_8()
+	{
+		tensor<int, 3> tsor(3, 2, 2); // 12 in size
+		std::list values = { 1,2,3,4 };
+
+		tsor[0].replace(values.cbegin(), values.cend());
+		tsor[1].replace(values.cbegin(), values.cend());
+		tsor[2].replace(values.cbegin(), values.cend());
+
+		auto expected = { 1,2,3,4,1,2,3,4,1,2,3,4 };
+
+		auto it_1 = tsor.cbegin();
+		auto it_2 = expected.begin();
+
+		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.begin(), expected.end()))
+			throw std::runtime_error("TEST_8 in 'tensor_replace_testing_suit' failed!\n");
+
+		std::cout << "\tTEST 8 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor replace tests...\n\n";
@@ -209,6 +248,8 @@ namespace tensor_replace_testing_suit
 		TEST_4();
 		TEST_5();
 		TEST_6();
+		TEST_7();
+		TEST_8();
 
 		std::cout << "\n";
 	}

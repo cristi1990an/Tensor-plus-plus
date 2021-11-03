@@ -219,7 +219,7 @@ namespace tensor_lib
 		friend class const_subdimension<T, Rank, allocator_type>;
 
 		friend void swap<T, Rank, allocator_type>(tensor& left, tensor& right) noexcept;
-		friend void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept;
+		friend void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept; 
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -440,6 +440,19 @@ namespace tensor_lib
 			_assign_subdimensions<0, First, Args...>(first, tensors...);
 
 			return *this;
+		}
+
+		template<typename Iterator> requires(std::forward_iterator<Iterator> && std::is_convertible_v<typename std::iterator_traits<Iterator>::value_type, T>)
+		constexpr auto& replace(Iterator first, Iterator last)
+		{
+			const auto size = static_cast<size_t>(std::distance(first, last));
+
+			if (size != size_of_current_tensor())
+				throw std::runtime_error("Range different in size than tensor!");
+
+			std::copy_n(first, size, begin());
+
+			return (*this);
 		}
 
 		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 2u)
@@ -874,8 +887,8 @@ namespace tensor_lib
 		}
 
 		subdimension(tensor<T, Rank>& mat) noexcept
-			: _order_of_dimension{ mat._order_of_dimension.begin(),      mat._order_of_dimension.end() }
-			, _size_of_subdimension{ mat._size_of_subdimension.begin(),    mat._size_of_subdimension.end() }
+			: _order_of_dimension{ mat._order_of_dimension.begin(), mat._order_of_dimension.end() }
+			, _size_of_subdimension{ mat._size_of_subdimension.begin(), mat._size_of_subdimension.end() }
 			, _data{ mat.begin(), mat.end() }
 		{
 
@@ -886,6 +899,21 @@ namespace tensor_lib
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
 			_data = other._data;
+
+			return *this;
+		}
+
+		template<typename Iterator> requires (std::forward_iterator<Iterator> && std::is_constructible_v<typename std::iterator_traits<Iterator>::value_type, T>)
+		auto& replace(Iterator first, Iterator last)
+		{
+			const auto size = static_cast<size_t>(std::distance(first, last));
+
+			if (size != size_of_current_tensor())
+			{
+				throw std::runtime_error("Range differs in size with tensor!");
+			}
+
+			std::copy_n(first, size, begin());
 
 			return *this;
 		}
