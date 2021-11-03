@@ -229,9 +229,6 @@ namespace tensor_replace_testing_suit
 
 		auto expected = { 1,2,3,4,1,2,3,4,1,2,3,4 };
 
-		auto it_1 = tsor.cbegin();
-		auto it_2 = expected.begin();
-
 		if (!std::equal(tsor.cbegin(), tsor.cend(), expected.begin(), expected.end()))
 			throw std::runtime_error("TEST_8 in 'tensor_replace_testing_suit' failed!\n");
 
