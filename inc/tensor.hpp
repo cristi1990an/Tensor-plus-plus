@@ -160,9 +160,9 @@ namespace tensor_lib
 		}
 
 		template<size_t Rank_index, typename Last, typename ... Args> requires (std::integral<Last> && (Rank_index == 1u))
-		inline constexpr void _construct_order_array_and_forward_rest(const Last last, const Args& ... data) noexcept(TENSORLIB_RELEASE && std::is_nothrow_constructible_v<T, Args...>)
+		inline constexpr void _construct_order_array_and_forward_rest(const Last last, const Args& ... data) noexcept(!TENSORLIB_DEBUGGING && std::is_nothrow_constructible_v<T, Args...>)
 		{
-			if (TENSORLIB_DEBUGGING)
+			if constexpr (TENSORLIB_DEBUGGING)
 			{
 				if (last == 0)
 					throw std::runtime_error("Size of subdimension cannot be zero!");
@@ -183,7 +183,7 @@ namespace tensor_lib
 		template<size_t Rank_index, typename First, typename ... Args> requires (std::integral<First> && (Rank_index != 1u))
 		inline constexpr void _construct_order_array_and_forward_rest(const First first, const Args& ... args) noexcept(TENSORLIB_RELEASE&& std::is_nothrow_constructible_v<T, Args...>)
 		{
-			if (TENSORLIB_DEBUGGING)
+			if constexpr (TENSORLIB_DEBUGGING)
 			{
 				if (first == 0)
 					throw std::runtime_error("Size of subdimension cannot be zero!");
