@@ -67,7 +67,7 @@ namespace tensor_lib
 		|| std::same_as<U, const_subdimension<T, Rank, allocator_type>>;
 
 	template <typename T, size_t Rank, typename allocator_type> requires (Rank != 0u)
-	class tensor : public _tensor_common<T>
+	class tensor : public _tensor_common<T>, private allocator_type
 	{
 	private:
 		// Stores the size of each individual dimension of the tensor.
@@ -88,11 +88,10 @@ namespace tensor_lib
 		//
 		T* _data = nullptr;
 
-#ifdef _MSC_VER
-		[[msvc::no_unique_address]] allocator_type allocator_instance{};
-#else
-		[[no_unique_address]] allocator_type allocator_instance{};
-#endif
+		allocator_type& get_allocator() noexcept
+		{
+			return *static_cast<allocator_type*>(this);
+		}
 
 		using allocator_type_traits = std::allocator_traits<allocator_type>;
 
@@ -172,7 +171,7 @@ namespace tensor_lib
 
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			//std::uninitialized_fill_n(&_data[0], size_of_current_tensor(), T(data...));
 			for (size_t index = 0; index != size_of_current_tensor(); ++index) // this is apparently significantly faster in this case...
 			{
@@ -231,7 +230,7 @@ namespace tensor_lib
 		constexpr tensor() 
 			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
-			, _data(allocator_type_traits::allocate(allocator_instance, 1u))
+			, _data(allocator_type_traits::allocate(get_allocator(), 1u))
 		{
 			std::uninitialized_default_construct_n(&_data[0], 1u);
 		}
@@ -241,7 +240,7 @@ namespace tensor_lib
 		: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
@@ -259,7 +258,7 @@ namespace tensor_lib
 			_order_of_dimension = { static_cast<size_t>(sizes)... };
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
@@ -271,7 +270,7 @@ namespace tensor_lib
 			std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
 			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-			other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
+			other._data = allocator_type_traits::allocate(other.get_allocator(), 1u);
 			std::uninitialized_default_construct_n(&other._data[0], 1u);
 		}
 
@@ -281,7 +280,7 @@ namespace tensor_lib
 			_order_of_dimension[0] = data.size();
 			_size_of_subdimension[0] = data.size();
 
-			_data = allocator_type_traits::allocate(allocator_instance, data.size());
+			_data = allocator_type_traits::allocate(get_allocator(), data.size());
 			std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
 		}
 
@@ -290,7 +289,7 @@ namespace tensor_lib
 			_construct_order_array<Rank>(data);
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 
 			// need to find a way to optimize this in the future
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
@@ -300,13 +299,13 @@ namespace tensor_lib
 		constexpr tensor(const tensor& other)
 			: _order_of_dimension(other._order_of_dimension)
 			, _size_of_subdimension(other._size_of_subdimension)
-			, _data(allocator_type_traits::allocate(allocator_instance, size_of_current_tensor()))
+			, _data(allocator_type_traits::allocate(get_allocator(), size_of_current_tensor()))
 		{
 			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
 		constexpr tensor(const subdimension<T, Rank>& subdimension)
-			: _data(allocator_type_traits::allocate(allocator_instance, subdimension.size_of_current_tensor()))
+			: _data(allocator_type_traits::allocate(get_allocator(), subdimension.size_of_current_tensor()))
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
 			std::copy_n(subdimension._size_of_subdimension.begin(), Rank, _size_of_subdimension.begin());
@@ -332,7 +331,7 @@ namespace tensor_lib
 
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			
 			_assign_subdimensions<0, First, Args...>(first, tensors...);
 		}
@@ -344,12 +343,12 @@ namespace tensor_lib
 				std::destroy_n(_data, size_of_current_tensor());
 			}
 
-			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+			allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
 
 			_order_of_dimension = other.get_ranks();
 			_size_of_subdimension = other.get_sizes();
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 
 			return *this;
@@ -363,12 +362,12 @@ namespace tensor_lib
 				std::destroy_n(_data, size_of_current_tensor());
 			}
 
-			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+			allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
 
 			_order_of_dimension = other.get_ranks();
 			_size_of_subdimension = other.get_sizes();
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 
 			return *this;
@@ -383,7 +382,7 @@ namespace tensor_lib
 					std::destroy_n(_data, size_of_current_tensor());
 				}
 
-				allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+				allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
 
 				std::copy_n(other._order_of_dimension.cbegin(), Rank, _order_of_dimension.begin());
 				std::copy_n(other._size_of_subdimension.cbegin(), Rank, _size_of_subdimension.begin());
@@ -392,7 +391,7 @@ namespace tensor_lib
 				std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
 				std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-				other._data = allocator_type_traits::allocate(other.allocator_instance, 1u);
+				other._data = allocator_type_traits::allocate(other.get_allocator(), 1u);
 
 				std::uninitialized_default_construct_n(&other._data[0], 1u);
 			}
@@ -428,14 +427,14 @@ namespace tensor_lib
 				std::destroy_n(_data, size_of_current_tensor());
 			}
 
-			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+			allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
 
 			_order_of_dimension[0] = sizeof...(Args) + 1;
 			std::copy_n(first.get_ranks().begin(), Rank - 1, &_order_of_dimension[1]);
 
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 
 			_assign_subdimensions<0, First, Args...>(first, tensors...);
 
@@ -527,9 +526,9 @@ namespace tensor_lib
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
 
 			std::destroy_n(_data, old_size);
-			allocator_type_traits::deallocate(allocator_instance, _data, old_size);
+			allocator_type_traits::deallocate(get_allocator(), _data, old_size);
 
-			_data = allocator_type_traits::allocate(allocator_instance, size_of_current_tensor());
+			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
 		}
 
@@ -637,7 +636,7 @@ namespace tensor_lib
 		constexpr ~tensor()
 		{
 			std::destroy_n(_data, size_of_current_tensor());
-			allocator_type_traits::deallocate(allocator_instance, _data, size_of_current_tensor());
+			allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
 		}
 	};
 
