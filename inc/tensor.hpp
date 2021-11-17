@@ -227,8 +227,9 @@ namespace tensor_lib
 		// the sizes of each dimension, be it as an array or initializer_list.
 		//
 
-		constexpr tensor() 
-			: _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+		constexpr tensor(const allocator_type& allocator = allocator_type{})
+			: allocator_type { allocator }
+			, _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
 			, _data(allocator_type_traits::allocate(get_allocator(), 1u))
 		{
@@ -263,7 +264,8 @@ namespace tensor_lib
 		}
 
 		constexpr tensor(tensor&& other)
-			: _order_of_dimension(std::move(other._order_of_dimension))
+			: allocator_type { other.get_allocator() }
+			, _order_of_dimension(std::move(other._order_of_dimension))
 			, _size_of_subdimension(std::move(other._size_of_subdimension))
 			, _data(std::move(other._data))
 		{
@@ -275,7 +277,8 @@ namespace tensor_lib
 		}
 
 		template<typename U> requires ((Rank == 1u) && std::is_constructible_v<T, U>)
-		constexpr tensor(const std::initializer_list<U>& data)
+		constexpr tensor(const std::initializer_list<U>& data, const allocator_type& allocator = allocator_type{})
+			: allocator_type { allocator }
 		{
 			_order_of_dimension[0] = data.size();
 			_size_of_subdimension[0] = data.size();
@@ -284,7 +287,8 @@ namespace tensor_lib
 			std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 1u)		
+		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data, const allocator_type& allocator = allocator_type{} ) requires (Rank > 1u)
+			: allocator_type { allocator }
 		{
 			_construct_order_array<Rank>(data);
 			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
@@ -297,15 +301,17 @@ namespace tensor_lib
 		}
 
 		constexpr tensor(const tensor& other)
-			: _order_of_dimension(other._order_of_dimension)
+			: allocator_type { other.get_allocator() }
+			, _order_of_dimension(other._order_of_dimension)
 			, _size_of_subdimension(other._size_of_subdimension)
 			, _data(allocator_type_traits::allocate(get_allocator(), size_of_current_tensor()))
 		{
 			std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		constexpr tensor(const subdimension<T, Rank>& subdimension)
-			: _data(allocator_type_traits::allocate(get_allocator(), subdimension.size_of_current_tensor()))
+		constexpr tensor(const subdimension<T, Rank>& subdimension, const allocator_type& allocator = allocator_type{})
+			: allocator_type { allocator }
+			, _data(allocator_type_traits::allocate(get_allocator(), subdimension.size_of_current_tensor()))
 		{
 			std::copy_n(subdimension._order_of_dimension.begin(), Rank, _order_of_dimension.begin());
 			std::copy_n(subdimension._size_of_subdimension.begin(), Rank, _size_of_subdimension.begin());
