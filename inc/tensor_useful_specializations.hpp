@@ -22,61 +22,19 @@ namespace useful_specializations
 	template<typename T, size_t N>
 	struct nested_initializer_list_impl
 	{
-		using type = std::initializer_list< typename nested_initializer_list_impl<T, N - 1>::type >;
+		using type = std::initializer_list<typename nested_initializer_list_impl<T, N - 1>::type >;
 	};
 
 	template<typename T, size_t N>
-	using nested_initializer_list = typename nested_initializer_list_impl<T, N>::type;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template <typename ... Args>
-	constexpr bool contains_zero(Args&& ... values) noexcept
-	{
-		return !(... && values);
-	}
-
-	template <typename ... Args>
-	constexpr bool does_not_contain_zero(Args&& ... values) noexcept
-	{
-		return not contains_zero(std::forward<Args>(values)...);
-	}
+	using nested_initializer_list_t = typename nested_initializer_list_impl<T, N>::type;
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	template<typename T, size_t Size>
-	consteval std::array<T, Size> value_initialize_array(T value)
+	consteval std::array<T, Size> array_filled_with(const T& value)
 	{
-		std::array<T, Size> result{};
+		std::array<T, Size> result;
 		std::fill(result.begin(), result.end(), value);
 		return result;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	constexpr size_t exclude_zero(const size_t value) noexcept
-	{
-		if (value == 0)
-			return 1;
-		return value;
-	}
-
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template <typename Last>
-	constexpr bool constains_rvalue_references(Last&& last) noexcept
-	{
-		return (std::is_rvalue_reference_v<decltype(std::forward<Last>(last))>);
-	}
-
-	template <typename First, typename ... Args>
-	constexpr bool constains_rvalue_references(First&& first, Args&& ... args) noexcept
-	{
-		if constexpr (std::is_rvalue_reference_v<decltype(std::forward<First>(first))>)
-		{
-			return true;
-		}
-		else
-			return constains_rvalue_references(std::forward<Args>(args)...);
 	}
 }

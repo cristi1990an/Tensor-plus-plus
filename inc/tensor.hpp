@@ -101,7 +101,7 @@ namespace tensor_lib
 
 	private:
 		template <size_t Rank_index> requires (Rank_index > 2u)
-		inline constexpr void _construct_order_array(const useful_specializations::nested_initializer_list<T, Rank_index>& data) noexcept(TENSORLIB_RELEASE)
+		inline constexpr void _construct_order_array(const useful_specializations::nested_initializer_list_t<T, Rank_index>& data) noexcept(TENSORLIB_RELEASE)
 		{
 			const auto data_size = data.size();
 
@@ -229,14 +229,14 @@ namespace tensor_lib
 
 		constexpr tensor(const allocator_type& allocator = allocator_type{})
 			: allocator_type { allocator }
-			, _order_of_dimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
-			, _size_of_subdimension(useful_specializations::value_initialize_array<size_t, Rank>(1u))
+			, _order_of_dimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
+			, _size_of_subdimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
 			, _data(allocator_type_traits::allocate(get_allocator(), 1u))
 		{
 			std::uninitialized_default_construct_n(&_data[0], 1u);
 		}
 
-		template<typename... Sizes> requires useful_concepts::size_of_parameter_pack_equals<Rank, Sizes...> && useful_concepts::integrals<Sizes...>&& TENSORLIB_RELEASE
+		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_RELEASE
 		tensor(const Sizes ... sizes) 
 		: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
@@ -250,7 +250,9 @@ namespace tensor_lib
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
-				if (useful_specializations::contains_zero(sizes...))
+				const bool contains_zero = ((sizes == 0) || ...);
+
+				if (contains_zero)
 				{
 					throw std::runtime_error("Size of subdimension cannot be zero!");
 				}
@@ -287,7 +289,7 @@ namespace tensor_lib
 			std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
 		}
 
-		constexpr tensor(const useful_specializations::nested_initializer_list<T, Rank>& data, const allocator_type& allocator = allocator_type{} ) requires (Rank > 1u)
+		constexpr tensor(const useful_specializations::nested_initializer_list_t<T, Rank>& data, const allocator_type& allocator = allocator_type{} ) requires (Rank > 1u)
 			: allocator_type { allocator }
 		{
 			_construct_order_array<Rank>(data);
@@ -460,7 +462,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		constexpr auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) requires (Rank > 2u)
+		constexpr auto& operator=(const useful_specializations::nested_initializer_list_t<T, Rank>& data) requires (Rank > 2u)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
@@ -515,7 +517,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		template<typename... Sizes> requires ((sizeof...(Sizes) == Rank) && useful_concepts::constructable_from_common_type<size_t, Sizes...>)
+		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes>
 		constexpr void resize(const Sizes ... new_sizes) 
 		{
 			const auto old_size = size_of_current_tensor();
@@ -852,9 +854,9 @@ namespace tensor_lib
 	public:
 		friend class const_subdimension<T, Rank, allocator_type>;
 		friend class tensor<T, Rank, allocator_type>;
-		friend class tensor<T, Rank + 1, allocator_type>;
+		friend class tensor<T, Rank + 1u, allocator_type>;
 		friend class subdimension<T, Rank + 1, allocator_type>;
-		friend class tensor<T, useful_specializations::exclude_zero(Rank - 1), allocator_type>;
+		friend class tensor<T, (Rank > 1u) ? (Rank - 1u) : 1u, allocator_type>;
 
 		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&) noexcept;
 		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&) noexcept;
@@ -955,7 +957,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		auto& operator=(const useful_specializations::nested_initializer_list<T, Rank>& data) noexcept(TENSORLIB_RELEASE) requires (Rank > 2u)
+		auto& operator=(const useful_specializations::nested_initializer_list_t<T, Rank>& data) noexcept(TENSORLIB_RELEASE) requires (Rank > 2u)
 		{
 			if constexpr (TENSORLIB_DEBUGGING)
 			{
