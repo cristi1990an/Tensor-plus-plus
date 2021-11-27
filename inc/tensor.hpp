@@ -517,7 +517,7 @@ namespace tensor_lib
 			return (*this);
 		}
 
-		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes>
+		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...>
 		constexpr void resize(const Sizes ... new_sizes) 
 		{
 			const auto old_size = size_of_current_tensor();
