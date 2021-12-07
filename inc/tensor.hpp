@@ -73,7 +73,7 @@ namespace tensor_lib
 		// Stores the size of each individual dimension of the tensor.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, it means ours is a tensor of 3x4x5 with a total of 120 elements.
 		//
-		std::array<size_t, Rank> _order_of_dimension{};
+		std::array<size_t, Rank> _order_of_dimension;
 
 		// This is an optimization. Computed when the object is initialized, it contains the equivalent size for each subdimension.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, 
@@ -82,11 +82,11 @@ namespace tensor_lib
 		// This allows methods that rely on the size of our tensor (like "size()") to be O(1) and not have to call std::accumulate() on _order_of_dimension,
 		// each time we need the size of a certain dimension.
 		//
-		std::array<size_t, Rank> _size_of_subdimension{};
+		std::array<size_t, Rank> _size_of_subdimension;
 
 		// Dynamically allocated data buffer.
 		//
-		T* _data = nullptr;
+		T* _data;
 
 		allocator_type& get_allocator() noexcept
 		{
@@ -229,40 +229,29 @@ namespace tensor_lib
 
 		constexpr tensor(const allocator_type& allocator = allocator_type{})
 			: allocator_type { allocator }
-			, _order_of_dimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
-			, _size_of_subdimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
-			, _data(allocator_type_traits::allocate(get_allocator(), 1u))
+			, _order_of_dimension{ {} }
+			, _size_of_subdimension{ {} }
+			, _data { nullptr }
 		{
-			std::uninitialized_default_construct_n(&_data[0], 1u);
+
 		}
 
-		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_RELEASE
+		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...>
 		tensor(const Sizes ... sizes) 
-		: _order_of_dimension{ static_cast<size_t>(sizes)... }
 		{
-			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
-			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
-			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
-		}
-
-		template<typename... Sizes> requires ((sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_DEBUGGING)
-		constexpr tensor(const Sizes ... sizes) 
-		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (sizes == 0 || ...)
 			{
-				const bool contains_zero = ((sizes == 0) || ...);
-
-				if (contains_zero)
-				{
-					throw std::runtime_error("Size of subdimension cannot be zero!");
-				}
+				_data = nullptr;
+				std::fill_n(_order_of_dimension.begin(), Rank, 0);
+				std::fill_n(_size_of_subdimension.begin(), Rank, 0);
 			}
-
-			_order_of_dimension = { static_cast<size_t>(sizes)... };
-			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
-
-			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
-			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+			else
+			{
+				_order_of_dimension{ static_cast<size_t>(sizes)... }
+				std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
+				_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
+				std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+			}
 		}
 
 		constexpr tensor(tensor&& other)
