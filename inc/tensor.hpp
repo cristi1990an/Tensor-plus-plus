@@ -73,7 +73,7 @@ namespace tensor_lib
 		// Stores the size of each individual dimension of the tensor.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, it means ours is a tensor of 3x4x5 with a total of 120 elements.
 		//
-		std::array<size_t, Rank> _order_of_dimension{};
+		std::array<size_t, Rank> _order_of_dimension;
 
 		// This is an optimization. Computed when the object is initialized, it contains the equivalent size for each subdimension.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, 
@@ -82,11 +82,11 @@ namespace tensor_lib
 		// This allows methods that rely on the size of our tensor (like "size()") to be O(1) and not have to call std::accumulate() on _order_of_dimension,
 		// each time we need the size of a certain dimension.
 		//
-		std::array<size_t, Rank> _size_of_subdimension{};
+		std::array<size_t, Rank> _size_of_subdimension;
 
 		// Dynamically allocated data buffer.
 		//
-		T* _data = nullptr;
+		T* _data{};
 
 		allocator_type& get_allocator() noexcept
 		{
@@ -229,64 +229,87 @@ namespace tensor_lib
 
 		constexpr tensor(const allocator_type& allocator = allocator_type{})
 			: allocator_type { allocator }
-			, _order_of_dimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
-			, _size_of_subdimension(useful_specializations::array_filled_with<size_t, Rank>(1u))
-			, _data(allocator_type_traits::allocate(get_allocator(), 1u))
+			, _order_of_dimension{ {} }
+			, _size_of_subdimension{ {} }
+			, _data { nullptr }
 		{
-			std::uninitialized_default_construct_n(&_data[0], 1u);
+
 		}
 
-		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_RELEASE
-		tensor(const Sizes ... sizes) 
-		: _order_of_dimension{ static_cast<size_t>(sizes)... }
-		{
-			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
-			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
-			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
-		}
-
-		template<typename... Sizes> requires ((sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...> && TENSORLIB_DEBUGGING)
+		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...>
 		constexpr tensor(const Sizes ... sizes) 
 		{
-			if constexpr (TENSORLIB_DEBUGGING)
+			if (sizes == 0 || ...)
 			{
-				const bool contains_zero = ((sizes == 0) || ...);
-
-				if (contains_zero)
-				{
-					throw std::runtime_error("Size of subdimension cannot be zero!");
-				}
+				_data = nullptr;
+				std::fill_n(_order_of_dimension.begin(), Rank, 0);
+				std::fill_n(_size_of_subdimension.begin(), Rank, 0);
 			}
-
-			_order_of_dimension = { static_cast<size_t>(sizes)... };
-			std::partial_sum(_order_of_dimension.crbegin(), _order_of_dimension.crend(), _size_of_subdimension.rbegin(), std::multiplies<size_t>());
-
-			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
-			std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+			else
+			{
+				std::array<std::size_t, Rank> temp_order_of_dimension { static_cast<std::size_t>(sizes)... };
+				std::array<std::size_t, Rank> temp_size_of_subdimension;
+				std::partial_sum(temp_order_of_dimension.crbegin(), temp_order_of_dimension.crend(), temp_size_of_subdimension.rbegin(), std::multiplies<size_t>());
+				_data = allocator_type_traits::allocate(get_allocator(), temp_size_of_subdimension[0]);
+				std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+				std::copy_n(temp_order_of_dimension.cbegin(), Rank, _order_of_dimension.begin());
+				std::copy_n(temp_size_of_subdimension.cbegin(), Rank, _size_of_subdimension.begin());
+			}
 		}
 
-		constexpr tensor(tensor&& other)
+		constexpr tensor(tensor&& other) noexcept
 			: allocator_type { other.get_allocator() }
-			, _order_of_dimension(std::move(other._order_of_dimension))
-			, _size_of_subdimension(std::move(other._size_of_subdimension))
-			, _data(std::move(other._data))
+			, _order_of_dimension(std::exchange(other._order_of_dimension, {}))
+			, _size_of_subdimension(std::exchange(other._size_of_subdimension, {}))
+			, _data(std::exchange(other._data, nullptr))
 		{
-			std::fill_n(other._order_of_dimension.begin(), Rank, 1u);
-			std::fill_n(other._size_of_subdimension.begin(), Rank, 1u);
 
-			other._data = allocator_type_traits::allocate(other.get_allocator(), 1u);
-			std::uninitialized_default_construct_n(&other._data[0], 1u);
+		}
+
+		constexpr tensor(tensor&& other, const allocator_type& allocator)
+			: allocator_type { allocator }
+		{
+			if (get_allocator() == other.get_allocator())
+			{
+				_order_of_dimension = std::exchange(other._order_of_dimension, {});
+				_size_of_subdimension = std::exchange(other._size_of_subdimension, {});
+				_data = std::exchange(other._data, nullptr);
+			}
+			else
+			{
+				_order_of_dimension = other._order_of_dimension;
+				_size_of_subdimension = other._size_of_subdimension;
+				_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
+
+				try
+				{
+					std::uninitialized_copy_n(other.cbegin(), size_of_current_tensor(), _data);
+				}
+				catch (...)
+				{
+					allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
+					throw;
+				}
+			}
 		}
 
 		template<typename U> requires ((Rank == 1u) && std::is_constructible_v<T, U>)
 		constexpr tensor(const std::initializer_list<U>& data, const allocator_type& allocator = allocator_type{})
 			: allocator_type { allocator }
+			, _order_of_dimension { data.size() }
+			, _size_of_subdimension { data.size() }
 		{
-			_order_of_dimension[0] = data.size();
-			_size_of_subdimension[0] = data.size();
-
 			_data = allocator_type_traits::allocate(get_allocator(), data.size());
-			std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
+
+			try
+			{
+				std::uninitialized_copy_n(data.begin(), size_of_current_tensor(), &_data[0]);
+			}
+			catch (...)
+			{
+				allocator_type_traits::deallocate(get_allocator(), _data, other.size_of_current_tensor());
+				throw;
+			}
 		}
 
 		constexpr tensor(const useful_specializations::nested_initializer_list_t<T, Rank>& data, const allocator_type& allocator = allocator_type{} ) requires (Rank > 1u)
@@ -656,9 +679,9 @@ namespace tensor_lib
 		using ConstSourceDataSpan = std::span<const T>;
 
 	private:
-		ConstSourceSizeOfDimensionArraySpan              _order_of_dimension;
-		ConstSourceSizeOfSubdimensionArraySpan           _size_of_subdimension;
-		ConstSourceDataSpan                              _data;
+		ConstSourceSizeOfDimensionArraySpan	_order_of_dimension;
+		ConstSourceSizeOfSubdimensionArraySpan _size_of_subdimension;
+		ConstSourceDataSpan	_data;
 
 		static constexpr bool no_throw_default_construction = std::is_nothrow_default_constructible_v<T>;
 		static constexpr bool no_throw_destructible = std::is_nothrow_destructible_v<T>;
@@ -672,11 +695,11 @@ namespace tensor_lib
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
-		const_subdimension() = delete;
-		const_subdimension(const_subdimension&&) noexcept = default;
-		const_subdimension(const const_subdimension&) noexcept = default;
+		constexpr const_subdimension() = delete;
+		constexpr const_subdimension(const_subdimension&&) noexcept = default;
+		constexpr const_subdimension(const const_subdimension&) noexcept = default;
 
-		const_subdimension(const subdimension<T, Rank, allocator_type>& other) noexcept :
+		constexpr const_subdimension(const subdimension<T, Rank, allocator_type>& other) noexcept :
 			_order_of_dimension{ other._order_of_dimension },
 			_size_of_subdimension{ other._size_of_subdimension },
 			_data{ other._data }
@@ -685,10 +708,10 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3>
-		requires std::constructible_from<decltype(_order_of_dimension), T1>
+			requires std::constructible_from<decltype(_order_of_dimension), T1>
 			&& std::constructible_from<decltype(_size_of_subdimension), T2>
 			&& std::constructible_from<decltype(_data), T3>
-			const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
+		constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1))
 			, _size_of_subdimension(std::forward<T2>(param_2))
 			, _data(std::forward<T3>(param_3))
@@ -697,10 +720,10 @@ namespace tensor_lib
 		}
 
 		template<typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
-		requires std::constructible_from<decltype(_order_of_dimension), T1, T2>
+			requires std::constructible_from<decltype(_order_of_dimension), T1, T2>
 			&& std::constructible_from<decltype(_size_of_subdimension), T3, T4>
 			&& std::constructible_from<decltype(_data), T5, T6>
-			const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
+		constexpr const_subdimension(T1&& param_1, T2&& param_2, T3&& param_3, T4&& param_4, T5&& param_5, T6&& param_6) noexcept
 			: _order_of_dimension(std::forward<T1>(param_1), std::forward<T2>(param_2))
 			, _size_of_subdimension(std::forward<T3>(param_3), std::forward<T4>(param_4))
 			, _data(std::forward<T5>(param_5), std::forward<T6>(param_6))
@@ -709,8 +732,8 @@ namespace tensor_lib
 		}
 
 		template<typename Tensor>
-		requires std::is_same_v<Tensor, tensor<const T, Rank, allocator_type>>
-		const_subdimension(const Tensor& tsor) noexcept :
+			requires std::is_same_v<Tensor, tensor<const T, Rank, allocator_type>>
+		constexpr const_subdimension(const Tensor& tsor) noexcept :
 			_order_of_dimension{ tsor._order_of_dimension.begin(), tsor._order_of_dimension.end() },
 			_size_of_subdimension{ tsor._size_of_subdimension.begin(), tsor._size_of_subdimension.end() },
 			_data{ tsor.begin(), tsor.end() }
@@ -718,7 +741,7 @@ namespace tensor_lib
 
 		}
 
-		auto& operator=(const const_subdimension& other) noexcept
+		constexpr auto& operator=(const const_subdimension& other) noexcept
 		{
 			_order_of_dimension = other._order_of_dimension;
 			_size_of_subdimension = other._size_of_subdimension;
@@ -727,7 +750,7 @@ namespace tensor_lib
 			return *this;
 		}
 
-		auto operator[] (const size_t index) const noexcept requires (Rank > 1u)
+		constexpr auto operator[] (const size_t index) const noexcept requires (Rank > 1u)
 		{
 			return const_subdimension<T, Rank - 1>
 				(
@@ -740,52 +763,52 @@ namespace tensor_lib
 				);
 		}
 
-		const T& operator[] (const size_t index) const noexcept requires (Rank == 1u)
+		constexpr const T& operator[] (const size_t index) const noexcept requires (Rank == 1u)
 		{
 			return _data[index];
 		}
 
-		auto begin() const noexcept
+		constexpr auto begin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		auto end() const noexcept
+		constexpr auto end() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		auto cbegin() const noexcept
+		constexpr auto cbegin() const noexcept
 		{
 			return const_iterator(_data.data());
 		}
 
-		auto cend() const noexcept
+		constexpr auto cend() const noexcept
 		{
 			return const_iterator(std::to_address(_data.end()));
 		}
 
-		auto rank() const noexcept
+		constexpr auto rank() const noexcept
 		{
 			return _order_of_dimension;
 		}
 
-		size_t order_of_dimension(const size_t& index) const noexcept
+		constexpr size_t order_of_dimension(const size_t& index) const noexcept
 		{
 			return _order_of_dimension[index];
 		}
 
-		size_t size_of_subdimension(const size_t& index) const noexcept
+		constexpr size_t size_of_subdimension(const size_t& index) const noexcept
 		{
 			return _size_of_subdimension[index];
 		}
 
-		size_t order_of_current_dimension() const noexcept
+		constexpr size_t order_of_current_dimension() const noexcept
 		{
 			return _order_of_dimension[0];
 		}
 
-		size_t size_of_current_tensor() const noexcept
+		constexpr size_t size_of_current_tensor() const noexcept
 		{
 			return _size_of_subdimension[0];
 		}
