@@ -250,12 +250,13 @@ namespace tensor_lib
 
 		template<typename... Sizes> requires (sizeof...(Sizes) == Rank) && useful_concepts::integrals<Sizes...>
 		constexpr tensor(const Sizes ... sizes) 
+			: _data { nullptr }
+			, _order_of_dimension{ {} }
+			, _size_of_subdimension{ {} }
 		{
 			if (!(sizes && ...))
 			{
-				_data = nullptr;
-				std::fill_n(_order_of_dimension.begin(), Rank, 0);
-				std::fill_n(_size_of_subdimension.begin(), Rank, 0);
+				return;
 			}
 			else
 			{
