@@ -617,6 +617,34 @@ namespace tensor_initialization_testing_suit
 		std::cout << "\tTEST 27 PASSED.\n";
 	}
 
+	void TEST_28()
+	{
+		tensor<int, 100> empty_tsor;
+
+		for (const auto val : empty_tsor.get_ranks())
+		{
+			if (val != 0)
+			{
+				throw std::runtime_error("TEST_28 in 'tensor_initialization_testing_suit' failed!\n");
+			}
+		}
+
+		for (const auto val : empty_tsor.get_sizes())
+		{
+			if (val != 0)
+			{
+				throw std::runtime_error("TEST_28 in 'tensor_initialization_testing_suit' failed!\n");
+			}
+		}
+
+		if (empty_tsor.empty() == false)
+		{
+			throw std::runtime_error("TEST_28 in 'tensor_initialization_testing_suit' failed!\n");
+		}
+
+		std::cout << "\tTEST 28 PASSED.\n";
+	}
+
 	void RUN_ALL()
 	{
 		std::cout << "Running tensor initialization tests...\n\n";
@@ -648,6 +676,7 @@ namespace tensor_initialization_testing_suit
 		TEST_25();
 		TEST_26();
 		TEST_27();
+		TEST_28();
 
 		std::cout << "\n";
 	}

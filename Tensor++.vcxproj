@@ -25,6 +25,7 @@
     <ClInclude Include="introduction\tensor_introduction_helpers.hpp" />
     <ClInclude Include="testing suits\inc\benchmarks\benchmark.hpp" />
     <ClInclude Include="testing suits\inc\tests\tensor_const_testing_suit.hpp" />
+    <ClInclude Include="testing suits\inc\tests\tensor_exceptions_testing_suit.hpp" />
     <ClInclude Include="testing suits\inc\tests\tensor_initialization_testing_suit.hpp" />
     <ClInclude Include="testing suits\inc\tests\tensor_iteration_testing_suit.hpp" />
     <ClInclude Include="testing suits\inc\tests\tensor_move_semantics_testing_suit.hpp" />

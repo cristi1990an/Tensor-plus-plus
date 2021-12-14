@@ -60,6 +60,9 @@
     <ClInclude Include="inc\tensor_useful_specializations.hpp">
       <Filter>inc</Filter>
     </ClInclude>
+    <ClInclude Include="testing suits\inc\tests\tensor_exceptions_testing_suit.hpp">
+      <Filter>testing suits\inc\tests</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="introduction\tensor_introduction.cpp">
