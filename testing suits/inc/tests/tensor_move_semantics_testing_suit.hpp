@@ -15,16 +15,21 @@ namespace tensor_move_semantics_testing_suit
 
 		tensor result(std::move(tsor));
 
-		for (const auto& val : tsor.get_sizes())
+		for (const auto val : tsor.get_sizes())
 		{
-			if (val != 1)
+			if (val != 0)
 				throw std::runtime_error("TEST_1 in 'tensor_move_semantics_testing_suit' failed!\n");
 		}
 
-		for (size_t i = 0; i < 5; ++i)
+		for (const auto val : tsor.get_sizes())
 		{
-			if (result.get_ranks()[i] != i + 4)
+			if (val != 0)
 				throw std::runtime_error("TEST_1 in 'tensor_move_semantics_testing_suit' failed!\n");
+		}
+
+		if (tsor.empty() == false)
+		{
+			throw std::runtime_error("TEST_1 in 'tensor_move_semantics_testing_suit' failed!\n");
 		}
 
 		std::cout << "\tTEST 1 PASSED.\n";
@@ -38,7 +43,7 @@ namespace tensor_move_semantics_testing_suit
 
 		for (const auto& val : tsor.get_sizes())
 		{
-			if (val != 1)
+			if (val != 0)
 				throw std::runtime_error("TEST_2 in 'tensor_move_semantics_testing_suit' failed!\n");
 		}
 
