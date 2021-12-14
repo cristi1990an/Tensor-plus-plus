@@ -76,12 +76,8 @@ namespace tensor_resize_testing_suit
 
 		unsigned long long iterations;
 
-		if constexpr (TENSORLIB_DEBUGGING)
-		{
-			iterations = 10;
-		}
-		else
-			iterations = 100;
+		iterations = 10;
+		//iterations = 100;
 
 		for (unsigned long long i = 0; i < iterations; ++i) // check for memory leaks
 		{

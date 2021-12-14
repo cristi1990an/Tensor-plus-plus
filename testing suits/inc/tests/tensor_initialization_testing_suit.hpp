@@ -514,14 +514,15 @@ namespace tensor_initialization_testing_suit
 	void TEST_23()
 	{
 		tensor<int, 2> t1(2, 2), t2(2, 2), t3(2, 2);
-		t1 = { 1,2,3,4 };
-		t2 = { 5,6,7,8 };
+		t1 = { 1, 2, 3, 4 };
+		t2 = { 5, 6, 7, 8 };
 		t3 = { 9, 10, 11, 12 };
 
 		tensor<int, 3> combined;
 		combined.replace(t1, t2, t3);
 
 		int aux = 1;
+
 		for (const auto val : combined)
 		{
 			if (val != aux++)

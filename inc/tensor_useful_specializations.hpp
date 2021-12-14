@@ -27,14 +27,4 @@ namespace useful_specializations
 
 	template<typename T, size_t N>
 	using nested_initializer_list_t = typename nested_initializer_list_impl<T, N>::type;
-
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	template<typename T, size_t Size>
-	consteval std::array<T, Size> array_filled_with(const T& value)
-	{
-		std::array<T, Size> result;
-		std::fill(result.begin(), result.end(), value);
-		return result;
-	}
 }
