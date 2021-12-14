@@ -553,13 +553,12 @@ namespace tensor_lib
 
 			temp_data = allocator_type_traits::allocate(get_allocator(), temp_size_of_subdimension[0]);
 
-			size_t index = 0;
+			ptrdiff_t index = 0;
 
 			auto assign_from_tensor = [temp_data, &index](const auto& tensor)
 			{
 				for (const auto& val : tensor)
 				{
-					//std::cout << index << '\n';
 					std::construct_at(&temp_data[index], val);
 					++index;
 				}
