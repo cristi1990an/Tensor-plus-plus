@@ -61,7 +61,7 @@ namespace tensor_lib
 		// Stores the size of each individual dimension of the tensor.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, it means ours is a tensor of 3x4x5 with a total of 120 elements.
 		//
-		std::array<size_t, Rank> _order_of_dimension;
+		std::array<size_t, Rank> _order_of_dimension{};
 
 		// This is an optimization. Computed when the object is initialized, it contains the equivalent size for each subdimension.
 		// Ex: Consider tensor_3d<T>. If _order_of_dimension contains { 3u, 4u, 5u }, 
@@ -70,7 +70,7 @@ namespace tensor_lib
 		// This allows methods that rely on the size of our tensor (like "size()") to be O(1) and not have to call std::accumulate() on _order_of_dimension,
 		// each time we need the size of a certain dimension.
 		//
-		std::array<size_t, Rank> _size_of_subdimension;
+		std::array<size_t, Rank> _size_of_subdimension{};
 
 		// Dynamically allocated data buffer.
 		//
