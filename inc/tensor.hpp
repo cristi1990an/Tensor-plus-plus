@@ -25,7 +25,6 @@ namespace tensor_lib
 		template<class ForwardIt> requires std::forward_iterator<ForwardIt>
 		inline constexpr ForwardIt _constexpr_uninitialized_value_construct_n(ForwardIt first, std::size_t n)
 		{
-			using value_t = typename std::iterator_traits<ForwardIt>::value_type;
 			ForwardIt current = first;
 
 			try 
@@ -118,7 +117,7 @@ namespace tensor_lib
 		template<typename ForwardIt, typename ... Args> 
 			requires std::forward_iterator<ForwardIt> 
 			&& std::constructible_from<std::iter_value_t<ForwardIt>, Args...>
-		void uninitialized_fill(ForwardIt first, ForwardIt last, const Args& ... args)
+		inline constexpr void uninitialized_fill(ForwardIt first, ForwardIt last, const Args& ... args)
 		{
 			using V = std::iter_value_t<ForwardIt>;
 			ForwardIt current = first;
@@ -212,12 +211,13 @@ namespace tensor_lib
 			catch (...)
 			{
 				allocator_type_traits::deallocate(get_allocator(), _data, size_of_current_tensor());
+				throw;
 			}
 			
 		}
 
 		template<size_t Rank_index, typename First, typename ... Args> requires (std::integral<First> && (Rank_index != 1u))
-		inline constexpr void _construct_order_array_and_forward_rest(const First first, const Args& ... args) noexcept
+		inline constexpr void _construct_order_array_and_forward_rest(const First first, const Args& ... args)
 		{
 			if (first == 0)
 			{
