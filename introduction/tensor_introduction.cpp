@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <vector>
+#include <utility>
 
 using namespace tensor_lib;
 
@@ -25,11 +26,11 @@ int main()
 	/*
 		A syntax feature that a nested std::vector structure has and that was necessary to emulate from the get-go was the way it could interpret/initialize/assign from a nested initializer_list structure,
 		having each layer/rank in the structure have a constructor taking an std::initializer_list<T>, creating a perfect match between:
-						std::vector				<	std::vector				<	std::vector				<	int		>	>	>			and...
-						std::initializer_list	<	std::initializer_list	<	std::initializer_list	<	int		>	>	>
-	*/
+						std::vector				<	std::vector				<	std::vector				<	int		>	>	>			and...	
+						std::initializer_list	<	std::initializer_list	<	std::initializer_list	<	int		>	>	>					
+	*/ 
 
-	std::vector <std::vector <std::vector<int>>> nested_vec =
+	std::vector<std::vector<std::vector<int>>> nested_vec =
 	{
 		{
 			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
@@ -53,30 +54,41 @@ int main()
 
 	/*
 		tensor_lib::tensor offers the same functionality with faster performance.
+		The container is also constexpr enabled <3
 	*/
 
-	tensor<int, 3> three_dim_tensor =
+	auto constexpr_test = []()
 	{
+		tensor<int, 3> three_dim_tensor =
 		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-		}
+			{
+				{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+			},
+			{
+				{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+			},
+			{
+				{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+			},
+			{
+				{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+			}
+		};
+
+		three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+
+		return std::reduce(three_dim_tensor.cbegin(), three_dim_tensor.cend());
 	};
 
-	three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+	constexpr auto result = constexpr_test();
+
+	static_assert(result == 72);
 
 	/*
 		Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
 		Here we have a tensor with 3 dimension. Each of these dimensions has 4 subdimensions. Each of these subdimension has 5 sub-subdimensions and so on...
 	*/
+
 	tensor<int, 5> my_tensor(3, 4, 5, 2, 2); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 2 by 2
 
 	int new_val = 0;
@@ -87,9 +99,9 @@ int main()
 		{
 			for (size_t c = 0; c < my_tensor.order_of_dimension(2) /* returns 5 */; c++)
 			{
-				for (size_t d = 0; d < my_tensor.order_of_dimension(3) /* returns 6 */; d++)
+				for (size_t d = 0; d < my_tensor.order_of_dimension(3) /* returns 2 */; d++)
 				{
-					for (size_t e = 0; e < my_tensor.order_of_dimension(4) /* returns 7 */; e++)
+					for (size_t e = 0; e < my_tensor.order_of_dimension(4) /* returns 2 */; e++)
 
 						my_tensor[a][b][c][d][e] = new_val++;  // We can do this <3
 				}
@@ -133,11 +145,13 @@ int main()
 
 	destination.replace(my_tensor[0][0][0]);
 
+	// tensor<int, 2> destination(my_tensor[0][0][0]);
+
 	/*
 		Or swap() specialization:
 	*/
 
-	// swap(my_tensor[0][0][1], my_tensor[0][0][0]);
+	swap(my_tensor[0][0][1], my_tensor[0][0][0]);
 
 	/*
 		Template parameters
@@ -165,7 +179,7 @@ int main()
 		Tensor is also compatible with standard algorithms:
 	*/ 
 
-	std::fill(my_tensor[2][1].begin(), my_tensor[2][1].end(), 0);
+	std::fill(my_tensor[2][1].begin(), my_tensor[2][1].end(), 0); 
 	std::sort(my_tensor[2][1].begin(), my_tensor[2][1].end()); 
 
 	/*
@@ -176,30 +190,34 @@ int main()
 		const_subdimension will be returned by the operator[] of either 'tensor' or 'subdimension' when called in a const context.
 	*/
 
-	[]<typename T, size_t Rank>(const tensor<T, Rank>&my_tensor)
+	[]<typename T, size_t Rank>(const tensor<T, Rank>& my_tensor)
 	{
 		auto subdim = my_tensor[0];
 
-		std::cout << typeid(subdim).name() << "\n\n";
+		std::cout << typeid(subdim).name() << "\n\n";	// class tensor_lib::const_subdimension<int,4,class std::allocator<int>> on MSVC
 
-		// subdim[0][0][0][0] = 5;' won't work since it's a constant variable
+		// subdim[0][0][0][0] = 5;						// won't work since it's a constant variable
 
 	}(my_tensor);
 
-	//	display(my_tensor); // (un-comment me to display the result)
+	//	display(my_tensor);								// (un-comment me to display the result)
 
 
-	std::cout << "'my_tensor.order_of_dimension(2)' returns " << my_tensor.order_of_dimension(2) << '\n';		// return 5
-	std::cout << "'my_tensor.size_of_subdimension(2)' returns " << my_tensor.size_of_subdimension(2) << '\n';	// returns 5 * 6 * 7 = 210
+	std::cout << "'my_tensor.order_of_dimension(2)' returns " 
+		<< my_tensor.order_of_dimension(2) << '\n';		// returns 5
+	std::cout << "'my_tensor.size_of_subdimension(2)' returns " 
+		<< my_tensor.size_of_subdimension(2) << '\n';	// returns 5 * 6 * 7 = 210
 
-	my_tensor.order_of_current_dimension();	// is same as 'my_tensor.order_of_dimension(0)'
-	my_tensor.size_of_current_tensor();		// is same as 'my_tensor.size_of_subdimension(0)'
+	my_tensor.order_of_current_dimension();				// is same as 'my_tensor.order_of_dimension(0)'
+	my_tensor.size_of_current_tensor();					// is same as 'my_tensor.size_of_subdimension(0)'
 
 	tensor<float, 2> f_t = 
 	{
 		{ 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f },
 		{ 0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f  }
 	};
+
+	tensor<std::pair<const char*, float>, 2> p_t(4, 4, "Cristi", 22.0f);
 
 	//TEST
 

@@ -20,6 +20,31 @@ namespace tensor_lib
 	// of the tensor from entering invalid states (like having a subdimension of size zero). 
 	// Only disable it if you know what you're doing.
 
+	namespace tensor_lib_internal
+	{
+		template<class ForwardIt> requires std::forward_iterator<ForwardIt>
+		inline constexpr ForwardIt _constexpr_uninitialized_value_construct_n(ForwardIt first, std::size_t n)
+		{
+			using value_t = typename std::iterator_traits<ForwardIt>::value_type;
+			ForwardIt current = first;
+
+			try 
+			{
+				for (; n > 0; (void) ++current, --n) 
+				{
+					std::construct_at(std::addressof(*current));
+				}
+				return current;
+			}
+			catch (...) 
+			{
+				std::destroy(first, current);
+				throw;
+			}
+		}
+
+	}
+
 	template <typename T>
 	class _tensor_common
 	{
@@ -27,6 +52,7 @@ namespace tensor_lib
 		struct iterator;
 		struct const_iterator;
 	};
+	
 
 	template <typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>> requires (Rank != 0u)
 	class tensor;
@@ -38,16 +64,16 @@ namespace tensor_lib
 	class const_subdimension;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
+	constexpr void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept;
+	constexpr void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
+	constexpr void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
 
 	template<typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
+	constexpr void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
 
 	template <typename U, typename T, size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	concept is_tensor = std::same_as <U, tensor<T, Rank, allocator_type>>
@@ -76,7 +102,7 @@ namespace tensor_lib
 		//
 		T* _data = nullptr;
 
-		allocator_type& get_allocator() noexcept
+		constexpr allocator_type& get_allocator() noexcept
 		{
 			return *static_cast<allocator_type*>(this);
 		}
@@ -229,8 +255,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank, allocator_type>;
 		friend class const_subdimension<T, Rank, allocator_type>;
 
-		friend void swap<T, Rank, allocator_type>(tensor& left, tensor& right) noexcept;
-		friend void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept; 
+		friend constexpr void swap<T, Rank, allocator_type>(tensor& left, tensor& right) noexcept;
+		friend constexpr void swap<T, Rank, allocator_type>(tensor&& left, tensor&& right) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -266,7 +292,14 @@ namespace tensor_lib
 				_data = allocator_type_traits::allocate(get_allocator(), temp_size_of_subdimension[0]);
 				try
 				{
-					std::uninitialized_default_construct_n(&_data[0], temp_size_of_subdimension.front());
+					if (std::is_constant_evaluated())
+					{
+						tensor_lib_internal::_constexpr_uninitialized_value_construct_n(&_data[0], temp_size_of_subdimension.front());
+					}
+					else
+					{
+						std::uninitialized_default_construct_n(&_data[0], temp_size_of_subdimension.front());
+					}
 				}
 				catch (...)
 				{
@@ -342,7 +375,14 @@ namespace tensor_lib
 
 			try
 			{
-				std::uninitialized_default_construct_n(_data, size_of_current_tensor());
+				if (std::is_constant_evaluated())
+				{
+					tensor_lib_internal::_constexpr_uninitialized_value_construct_n(_data, size_of_current_tensor());
+				}
+				else
+				{
+					std::uninitialized_default_construct_n(_data, size_of_current_tensor());
+				}
 			}
 			catch (...)
 			{
@@ -660,7 +700,14 @@ namespace tensor_lib
 			_data = allocator_type_traits::allocate(get_allocator(), size_of_current_tensor());
 			try
 			{
-				std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+				if (std::is_constant_evaluated())
+				{
+					tensor_lib_internal::_constexpr_uninitialized_value_construct_n(&_data[0], size_of_current_tensor());
+				}
+				else
+				{
+					std::uninitialized_default_construct_n(&_data[0], size_of_current_tensor());
+				}
 			}
 			catch (...)
 			{
@@ -1010,8 +1057,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1, allocator_type>;
 		friend class tensor<T, (Rank > 1u) ? (Rank - 1u) : 1u, allocator_type>;
 
-		friend void swap<T, Rank, allocator_type>(subdimension&, subdimension&) noexcept;
-		friend void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&) noexcept;
+		friend constexpr void swap<T, Rank, allocator_type>(subdimension&, subdimension&) noexcept;
+		friend constexpr void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&) noexcept;
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1288,110 +1335,110 @@ namespace tensor_lib
 		using reference = T&;
 		using iterator_category = std::contiguous_iterator_tag;
 
-		iterator() noexcept : ptr{} {};
-		iterator(const iterator&) noexcept = default;
-		iterator(iterator&&) noexcept = default;
-		iterator(pointer other) noexcept : ptr{ other } {}
-		iterator(bool) = delete;
+		constexpr iterator() noexcept : ptr{} {};
+		constexpr iterator(const iterator&) noexcept = default;
+		constexpr iterator(iterator&&) noexcept = default;
+		constexpr iterator(pointer other) noexcept : ptr{ other } {}
+		constexpr iterator(bool) = delete;
 
-		explicit operator reference() const noexcept
+		constexpr explicit operator reference() const noexcept
 		{
 			return *ptr;
 		}
 
-		iterator& operator=(const iterator&) = default;
+		constexpr iterator& operator=(const iterator&) = default;
 
-		iterator& operator=(iterator&&) = default;
+		constexpr iterator& operator=(iterator&&) = default;
 
-		iterator& operator= (const pointer other) noexcept
+		constexpr iterator& operator= (const pointer other) noexcept
 		{
 			ptr = other;
 			return (*this);
 		}
 
-		reference operator* () const noexcept
+		constexpr reference operator* () const noexcept
 		{
 			return *ptr;
 		}
 
-		pointer operator-> () const noexcept
+		constexpr pointer operator-> () const noexcept
 		{
 			return ptr;
 		}
 
-		iterator& operator++ () noexcept
+		constexpr iterator& operator++ () noexcept
 		{
 			++ptr;
 			return *this;
 		}
 
-		iterator operator++(int) noexcept
+		constexpr iterator operator++(int) noexcept
 		{
 			return iterator(ptr++);
 		}
 
-		iterator& operator-- () noexcept
+		constexpr iterator& operator-- () noexcept
 		{
 			--ptr;
 			return *this;
 		}
 
-		iterator operator--(int) noexcept
+		constexpr iterator operator--(int) noexcept
 		{
 			return iterator(ptr--);
 		}
 
-		iterator& operator+=(const ptrdiff_t offset) noexcept
+		constexpr iterator& operator+=(const ptrdiff_t offset) noexcept
 		{
 			ptr += offset;
 			return *this;
 		}
 
-		iterator& operator-=(const ptrdiff_t offset) noexcept
+		constexpr iterator& operator-=(const ptrdiff_t offset) noexcept
 		{
 			ptr -= offset;
 			return *this;
 		}
 
-		reference operator[](const size_t offset) const noexcept
+		constexpr reference operator[](const size_t offset) const noexcept
 		{
 			return ptr[offset];
 		}
 
-		friend bool operator==(const iterator it_a, const iterator it_b) noexcept
+		constexpr friend bool operator==(const iterator it_a, const iterator it_b) noexcept
 		{
 			return it_a.ptr == it_b.ptr;
 		}
 
-		friend bool operator!=(const iterator it_a, const iterator it_b) noexcept
+		constexpr friend bool operator!=(const iterator it_a, const iterator it_b) noexcept
 		{
 			return it_a.ptr != it_b.ptr;
 		}
 
-		friend iterator operator+(const iterator it, const size_t offset) noexcept
+		constexpr friend iterator operator+(const iterator it, const size_t offset) noexcept
 		{
 			T* result = it.ptr + offset;
 			return iterator(result);
 		}
 
-		friend iterator operator+(const size_t offset, const iterator& it) noexcept
+		constexpr friend iterator operator+(const size_t offset, const iterator& it) noexcept
 		{
 			auto aux = offset + it.ptr;
 			return iterator(aux);
 		}
 
-		friend iterator operator-(const iterator it, const size_t offset) noexcept
+		constexpr friend iterator operator-(const iterator it, const size_t offset) noexcept
 		{
 			T* aux = it.ptr - offset;
 			return iterator(aux);
 		}
 
-		friend difference_type operator-(const iterator a, const iterator b) noexcept
+		constexpr friend difference_type operator-(const iterator a, const iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
 		}
 
-		friend auto operator<=>(const iterator a, const iterator b) noexcept
+		constexpr friend auto operator<=>(const iterator a, const iterator b) noexcept
 		{
 			return a.ptr <=> b.ptr;
 		}
@@ -1411,120 +1458,125 @@ namespace tensor_lib
 		using reference = const T&;
 		using iterator_category = std::contiguous_iterator_tag;
 
-		const_iterator() noexcept : ptr{} {};
-		const_iterator(const const_iterator&) noexcept = default;
-		const_iterator(const_iterator&&) noexcept = default;
-		const_iterator(pointer other) noexcept : ptr{ other } {}
+		constexpr const_iterator() noexcept : ptr{} {};
+		constexpr const_iterator(const const_iterator&) noexcept = default;
+		constexpr const_iterator(const_iterator&&) noexcept = default;
+		constexpr const_iterator(pointer other) noexcept : ptr{ other } {}
 
-		const_iterator(bool) = delete;
+		constexpr const_iterator(bool) = delete;
+		 
+		constexpr const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
 
-		const_iterator(const iterator other) noexcept : ptr{ other.ptr } {}
-
-		explicit operator reference() const noexcept
+		constexpr explicit operator reference() const noexcept
 		{
 			return *ptr;
 		}
 
-		const_iterator& operator=(const const_iterator&) noexcept = default;
+		constexpr const_iterator& operator=(const const_iterator&) noexcept = default;
 
-		const_iterator& operator=(const_iterator&&) noexcept = default;
+		constexpr const_iterator& operator=(const_iterator&&) noexcept = default;
 
-		const_iterator& operator= (const pointer other) noexcept
+		constexpr const_iterator& operator= (const pointer other) noexcept
 		{
 			ptr = other;
 			return (*this);
 		}
 
-		reference operator* () const noexcept
+		constexpr reference operator*() const noexcept
 		{
 			return *ptr;
 		}
 
-		pointer operator-> () const noexcept
+		constexpr pointer operator-> () const noexcept
 		{
 			return ptr;
 		}
 
-		const_iterator& operator++ () noexcept
+		constexpr const_iterator& operator++ () noexcept
 		{
 			++ptr;
 			return *this;
 		}
 
-		const_iterator operator++(int) noexcept
+		constexpr const_iterator operator++(int) noexcept
 		{
 			return const_iterator(ptr++);
 		}
 
-		const_iterator& operator-- () noexcept
+		constexpr const_iterator& operator-- () noexcept
 		{
 			--ptr;
 			return *this;
 		}
 
-		const_iterator operator--(int) noexcept
+		constexpr const_iterator operator--(int) noexcept
 		{
 			return const_iterator(ptr--);
 		}
 
-		const_iterator& operator+=(const size_t offset) noexcept
+		constexpr const_iterator& operator+=(const size_t offset) noexcept
 		{
 			ptr += offset;
 			return *this;
 		}
 
-		const_iterator& operator-=(const size_t offset) noexcept
+		constexpr const_iterator& operator-=(const size_t offset) noexcept
 		{
 			ptr -= offset;
 			return *this;
 		}
 
-		reference operator[](const size_t offset) const noexcept
+		constexpr reference operator[](const size_t offset) const noexcept
 		{
 			return ptr[offset];
 		}
 
-		friend bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
+		constexpr friend bool operator==(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr == it_b.ptr;
 		}
 
-		friend bool operator==(const const_iterator it, const pointer adr) noexcept
+		constexpr friend bool operator==(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr == adr;
 		}
 
-		friend bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
+		constexpr friend bool operator!=(const const_iterator it_a, const const_iterator it_b) noexcept
 		{
 			return it_a.ptr != it_b.ptr;
 		}
 
-		friend bool operator!=(const const_iterator it, const pointer adr) noexcept
+		constexpr friend bool operator!=(const const_iterator it, const pointer adr) noexcept
 		{
 			return it.ptr != adr;
 		}
 
-		friend const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
+		constexpr friend const_iterator operator+(const const_iterator a, const const_iterator b) noexcept
+		{
+			return const_iterator(a.ptr + b.ptr);
+		}
+
+		constexpr friend const_iterator operator+(const const_iterator& it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr + offset);
 		}
 
-		friend const_iterator operator+(const size_t offset, const const_iterator it) noexcept
+		constexpr friend const_iterator operator+(const size_t offset, const const_iterator it) noexcept
 		{
 			return const_iterator(offset + it.ptr);
 		}
 
-		friend const_iterator operator-(const const_iterator it, const size_t offset) noexcept
+		constexpr friend const_iterator operator-(const const_iterator it, const size_t offset) noexcept
 		{
 			return const_iterator(it.ptr - offset);
 		}
 
-		friend difference_type operator-(const const_iterator a, const const_iterator b) noexcept
+		constexpr friend difference_type operator-(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr - b.ptr;
 		}
 
-		friend auto operator<=>(const const_iterator a, const const_iterator b) noexcept
+		constexpr friend auto operator<=>(const const_iterator a, const const_iterator b) noexcept
 		{
 			return a.ptr <=> b.ptr;
 		}
@@ -1535,7 +1587,7 @@ namespace tensor_lib
 	};
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept
+	constexpr void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept
 	{
 		std::swap(left._order_of_dimension, right._order_of_dimension);
 		std::swap(left._size_of_subdimension, right._size_of_subdimension);
@@ -1543,7 +1595,7 @@ namespace tensor_lib
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept
+	constexpr void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept
 	{
 		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin(), right._order_of_dimension.end()))
 		{
@@ -1558,13 +1610,13 @@ namespace tensor_lib
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
+	constexpr void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept
 	{
 		swap(left, right);
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
-	void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept
+	constexpr void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept
 	{
 		swap(left, right);
 	}
