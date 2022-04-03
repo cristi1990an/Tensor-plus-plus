@@ -57,6 +57,24 @@ int main()
 		The container is also constexpr enabled <3
 	*/
 
+	tensor<int, 3> three_dim_tensor =
+	{
+		{
+			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+		},
+		{
+			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+		},
+		{
+			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+		},
+		{
+			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+		}
+	};
+
+	three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+
 	auto constexpr_test = []()
 	{
 		tensor<int, 3> three_dim_tensor =

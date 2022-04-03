@@ -12,6 +12,8 @@
 #include <utility>
 #include <functional>
 
+#define TENSOR_LIB_ENABLE_STATIC_ASSERTS
+
 namespace tensor_lib
 {
 	// The TENSORLIB_DEBUGGING constant expression indicates wheather the algorithms 
@@ -863,7 +865,7 @@ namespace tensor_lib
 		friend class subdimension<T, Rank, allocator_type>;
 		friend class tensor<T, Rank, allocator_type>;
 
-		using iterator = typename _tensor_common<T>::iterator;
+		using iterator = typename _tensor_common<T>::const_iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
 
 		constexpr const_subdimension() = delete;
@@ -1452,7 +1454,7 @@ namespace tensor_lib
 	struct _tensor_common<T>::const_iterator
 	{
 		using difference_type = ptrdiff_t;
-		using value_type = T;
+		using value_type = const T;
 		using element_type = T;
 		using pointer = const T*;
 		using reference = const T&;
