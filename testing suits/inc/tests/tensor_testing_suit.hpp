@@ -47,15 +47,31 @@ namespace tensor_testing_suit
 			}
 		}
 
-		template<typename Container>
+		template<typename Container, bool ForceConst = false>
 		consteval void BEGIN_END_ASSERTS() noexcept
 		{
-			constexpr bool IS_CONST_CONTAINER = std::is_const_v<Container>;
+			constexpr bool IS_CONST_CONTAINER = std::is_const_v<Container> || ForceConst;
 
 			using begin_result_t = METHOD_RESULT_TYPE(Container, begin);
 			using cbegin_result_t = METHOD_RESULT_TYPE(Container, cbegin);
 			using end_result_t = METHOD_RESULT_TYPE(Container, end);
 			using cend_result_t = METHOD_RESULT_TYPE(Container, cend);
+
+			constexpr bool begin_value_t_is_const = std::is_const_v<DEREFERENCE_TYPE(begin_result_t)>;
+			constexpr bool cbegin_value_t_is_const = std::is_const_v<DEREFERENCE_TYPE(cbegin_result_t)>;
+			constexpr bool end_value_t_is_const = std::is_const_v<DEREFERENCE_TYPE(end_result_t)>;
+			constexpr bool cend_value_t_is_const = std::is_const_v<DEREFERENCE_TYPE(cend_result_t)>;
+
+			static_assert(cbegin_value_t_is_const && cend_value_t_is_const);
+
+			if constexpr (IS_CONST_CONTAINER)
+			{
+				static_assert(begin_value_t_is_const && end_value_t_is_const);
+			}
+			else
+			{
+				static_assert(!begin_value_t_is_const && !end_value_t_is_const);
+			}
 
 			ITERATOR_ASSERTS<begin_result_t, DEREFERENCE_TYPE(begin_result_t)>();
 			ITERATOR_ASSERTS<cbegin_result_t, DEREFERENCE_TYPE(cbegin_result_t)>();
@@ -77,7 +93,7 @@ namespace tensor_testing_suit
 		#ifdef TENSOR_LIB_ENABLE_STATIC_ASSERTS
 			BEGIN_END_ASSERTS<tensor_lib::tensor<int, 10>>();
 			BEGIN_END_ASSERTS<tensor_lib::subdimension<int, 10>>();
-			BEGIN_END_ASSERTS<tensor_lib::const_subdimension<int, 10>>();
+			BEGIN_END_ASSERTS<tensor_lib::const_subdimension<int, 10>, true>();
 			BEGIN_END_ASSERTS<const tensor_lib::tensor<int, 10>>();
 			BEGIN_END_ASSERTS<const tensor_lib::subdimension<int, 10>>();
 			BEGIN_END_ASSERTS<const tensor_lib::const_subdimension<int, 10>>();
