@@ -12,16 +12,8 @@
 #include <utility>
 #include <functional>
 
-#define TENSOR_LIB_ENABLE_STATIC_ASSERTS
-
 namespace tensor_lib
 {
-	// The TENSORLIB_DEBUGGING constant expression indicates wheather the algorithms 
-	// will do extra range checks. Set it to 'false' manually for slightly better performance.
-	// Keep in mind though that this will disable certain range checks that keep an instance 
-	// of the tensor from entering invalid states (like having a subdimension of size zero). 
-	// Only disable it if you know what you're doing.
-
 	namespace tensor_lib_internal
 	{
 		template<class ForwardIt> requires std::forward_iterator<ForwardIt>
