@@ -78,13 +78,13 @@ namespace tensor_lib
 	template <typename T, std::size_t Rank, typename allocator_type> requires (Rank != 0u)
 	class tensor : public _tensor_common<T>, private allocator_type
 	{
-		static_assert(not std::same_as<T, void>,					"T cannot be void.");
-		static_assert(not std::is_const_v<T>,						"T cannot be const qualified.");
-		static_assert(not std::is_volatile_v<T>,					"T cannot be volatile qualified.");
-		static_assert(not std::is_reference_v<T>,					"T cannot be a reference.");
-		static_assert(std::is_copy_constructible_v<T>,				"T must be copy constructible.");
-		static_assert(std::is_copy_assignable_v<T>,					"T must be copy assignable.");
-		static_assert(std::same_as<T, allocator_type::value_type>,	"allocator_type::value_type must match T.");
+		static_assert(not std::same_as<T, void>,							"T cannot be void.");
+		static_assert(not std::is_const_v<T>,								"T cannot be const qualified.");
+		static_assert(not std::is_volatile_v<T>,							"T cannot be volatile qualified.");
+		static_assert(not std::is_reference_v<T>,							"T cannot be a reference.");
+		static_assert(std::is_copy_constructible_v<T>,						"T must be copy constructible.");
+		static_assert(std::is_copy_assignable_v<T>,							"T must be copy assignable.");
+		static_assert(std::same_as<T, typename allocator_type::value_type>,	"allocator_type::value_type must match T.");
 
 	private:
 		// Stores the size of each individual dimension of the tensor.
