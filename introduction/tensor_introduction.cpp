@@ -10,8 +10,21 @@
 
 using namespace tensor_lib;
 
+constexpr auto tensor_elements_count(auto&& ... sizes)
+{
+	constexpr auto dimensions = sizeof...(sizes);
+
+	tensor<int, dimensions> tsor(sizes...);
+
+	return tsor.size_of_current_tensor();
+}
+
 int main()
 {
+	static_assert(840 == tensor_elements_count(4, 5, 6, 7));
+
+
+
 	/*
 		tensor_lib::tensor is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative
 		to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the
@@ -121,7 +134,7 @@ int main()
 				{
 					for (size_t e = 0; e < my_tensor.order_of_dimension(4) /* returns 2 */; e++)
 
-						my_tensor[a][b][c][d][e] = new_val++;  // We can do this <3
+						my_tensor[a][b][c][d][e] = new_val++;  // We can do this <3 yes we can <3
 				}
 			}
 		}
