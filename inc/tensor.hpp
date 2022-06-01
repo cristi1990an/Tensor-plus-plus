@@ -269,8 +269,8 @@ namespace tensor_lib
 		using difference_type = std::ptrdiff_t;
 		using reference = T&;
 		using const_reference = const T&;
-		using pointer = allocator_type_traits::pointer;
-		using const_pointer = allocator_type_traits::const_pointer;
+		using pointer = typename allocator_type_traits::pointer;
+		using const_pointer = typename allocator_type_traits::const_pointer;
 		using subdimension_type = std::conditional_t <(Rank > 1), subdimension<T, (Rank <= 1) ? 1 : Rank - 1, allocator_type>, T&>;
 		using const_subdimension_type = std::conditional_t <(Rank > 1), const_subdimension<T, (Rank <= 1) ? 1 : Rank - 1, allocator_type>, const T&>;
 
