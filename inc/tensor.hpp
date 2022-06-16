@@ -18,7 +18,7 @@ namespace tensor_lib
 {
 	namespace tensor_lib_internal
 	{
-		template<class ForwardIt> requires std::forward_iterator<ForwardIt>
+		template<typename ForwardIt> requires std::forward_iterator<ForwardIt>
 		inline constexpr ForwardIt _constexpr_uninitialized_value_construct_n(ForwardIt first, std::size_t n)
 		{
 			ForwardIt current = first;
@@ -35,6 +35,23 @@ namespace tensor_lib
 			{
 				std::destroy(first, current);
 				throw;
+			}
+		}
+
+		template<typename LhsForwardIt, typename RhsForwardIt>
+		requires std::forward_iterator<LhsForwardIt>
+		&& std::forward_iterator<RhsForwardIt>
+		inline constexpr void _swap_ranges(LhsForwardIt lhs_first, LhsForwardIt lhs_last, RhsForwardIt rhs_first)
+		noexcept (noexcept(
+			std::same_as<std::iter_value_t<LhsForwardIt>, std::iter_value_t<RhsForwardIt>> &&
+			std::is_nothrow_swappable_v<std::iter_value_t<LhsForwardIt>>
+			))
+		{
+			while (lhs_first != lhs_last)
+			{
+				std::swap(*lhs_first, *rhs_first);
+				++lhs_first;
+				++rhs_first;
 			}
 		}
 
@@ -61,14 +78,14 @@ namespace tensor_lib
 	template<typename T, std::size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	inline constexpr void swap(tensor<T, Rank, allocator_type>& left, tensor<T, Rank, allocator_type>& right) noexcept;
 
-	template<typename T, std::size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	inline constexpr void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept;
+	template <typename T, size_t Rank, typename lhs_allocator_type, typename rhs_allocator_type>
+	inline constexpr void swap(subdimension<T, Rank, lhs_allocator_type>& left, subdimension<T, Rank, rhs_allocator_type>& right);
 
 	template<typename T, std::size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	inline constexpr void swap(tensor<T, Rank, allocator_type>&& left, tensor<T, Rank, allocator_type>&& right) noexcept;
 
-	template<typename T, std::size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
-	inline constexpr void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept;
+	template <typename T, size_t Rank, typename lhs_allocator_type, typename rhs_allocator_type>
+	inline constexpr void swap(subdimension<T, Rank, lhs_allocator_type>&& left, subdimension<T, Rank, rhs_allocator_type>&& right);
 
 	template <typename U, typename T, std::size_t Rank, typename allocator_type = std::allocator<std::remove_cv_t<T>>>
 	concept is_tensor = std::same_as <U, tensor<T, Rank, allocator_type>>
@@ -1071,8 +1088,8 @@ namespace tensor_lib
 		friend class subdimension<T, Rank + 1, allocator_type>;
 		friend class tensor<T, (Rank > 1u) ? (Rank - 1u) : 1u, allocator_type>;
 
-		friend constexpr void swap<T, Rank, allocator_type>(subdimension&, subdimension&) noexcept;
-		friend constexpr void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&) noexcept;
+		friend constexpr void swap<T, Rank, allocator_type>(subdimension&, subdimension&);
+		friend constexpr void swap<T, Rank, allocator_type>(subdimension&&, subdimension&&);
 
 		using iterator = typename _tensor_common<T>::iterator;
 		using const_iterator = typename _tensor_common<T>::const_iterator;
@@ -1608,19 +1625,15 @@ namespace tensor_lib
 		std::swap(left._data, right._data);
 	}
 
-	template <typename T, size_t Rank, typename allocator_type>
-	inline constexpr void swap(subdimension<T, Rank, allocator_type>& left, subdimension<T, Rank, allocator_type>& right) noexcept
+	template <typename T, size_t Rank, typename lhs_allocator_type, typename rhs_allocator_type>
+	inline constexpr void swap(subdimension<T, Rank, lhs_allocator_type>& left, subdimension<T, Rank, rhs_allocator_type>& right)
 	{
 		if (!std::equal(left._order_of_dimension.begin(), left._order_of_dimension.end(), right._order_of_dimension.begin(), right._order_of_dimension.end()))
 		{
-			std::exit(-1);
+			throw std::runtime_error("Unswappable elements");
 		}
 
-		std::unique_ptr<T[]> aux = std::make_unique<T[]>(left.size_of_current_tensor());
-
-		std::copy(left.cbegin(), left.cend(), &aux[0]);
-		std::copy(right.cbegin(), right.cend(), left.begin());
-		std::copy(&aux[0], &aux[left.size_of_current_tensor()], right.begin());
+		tensor_lib_internal::_swap_ranges(left.begin(), left.end(), right.begin());
 	}
 
 	template <typename T, size_t Rank, typename allocator_type>
@@ -1629,8 +1642,8 @@ namespace tensor_lib
 		swap(left, right);
 	}
 
-	template <typename T, size_t Rank, typename allocator_type>
-	inline constexpr void swap(subdimension<T, Rank, allocator_type>&& left, subdimension<T, Rank, allocator_type>&& right) noexcept
+	template <typename T, size_t Rank, typename lhs_allocator_type, typename rhs_allocator_type>
+	inline constexpr void swap(subdimension<T, Rank, lhs_allocator_type>&& left, subdimension<T, Rank, rhs_allocator_type>&& right)
 	{
 		swap(left, right);
 	}

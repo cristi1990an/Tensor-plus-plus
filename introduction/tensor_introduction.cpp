@@ -70,7 +70,7 @@ int main()
 		The container is also constexpr enabled <3
 	*/
 
-	tensor<int, 3> three_dim_tensor =
+	tensor<int, 3> three_dim_tensor
 	{
 		{
 			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
@@ -86,7 +86,7 @@ int main()
 		}
 	};
 
-	three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+	tensor my_copy_1 = three_dim_tensor[1];
 
 	auto constexpr_test = []()
 	{
