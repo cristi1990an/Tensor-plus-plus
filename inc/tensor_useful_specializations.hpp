@@ -4,7 +4,6 @@
 
 #include <type_traits>
 #include <initializer_list>
-#include <array>
 
 namespace useful_specializations
 {

@@ -4,8 +4,6 @@
 #include "tensor_useful_specializations.hpp"
 
 #include <array>
-#include <chrono>
-#include <cstring>
 #include <memory>
 #include <numeric>
 #include <span>
@@ -91,6 +89,24 @@ namespace tensor_lib
 	concept is_tensor = std::same_as <U, tensor<T, Rank, allocator_type>>
 		|| std::same_as<U, subdimension<T, Rank, allocator_type>>
 		|| std::same_as<U, const_subdimension<T, Rank, allocator_type>>;
+
+	template<typename T>
+	struct is_tensor_object : std::false_type {};
+
+	template<typename U, std::size_t Rank, typename Allocator>
+	struct is_tensor_object <tensor<U, Rank, Allocator>> : std::true_type {};
+
+	template<typename U, std::size_t Rank, typename Allocator>
+	struct is_tensor_object <subdimension<U, Rank, Allocator>> : std::true_type {};
+
+	template<typename U, std::size_t Rank, typename Allocator>
+	struct is_tensor_object <const_subdimension<U, Rank, Allocator>> : std::true_type {};
+
+	template<typename T>
+	static constexpr bool is_tensor_object_v = is_tensor_object<T>::value;
+
+	template <typename T>
+	concept tensor_object = is_tensor_object_v<std::decay_t<T>>;
 
 	template <typename T, std::size_t Rank, typename allocator_type> requires (Rank != 0u)
 	class tensor : public _tensor_common<T>, private allocator_type

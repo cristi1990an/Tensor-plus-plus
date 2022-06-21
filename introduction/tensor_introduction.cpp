@@ -1,257 +1,87 @@
 #include "../inc/tensor.hpp"
-#include "tensor_introduction_helpers.hpp"
-#include "../testing suits/inc/tests/tensor_testing_suit.hpp"
-#include "../testing suits/inc/benchmarks/benchmark.hpp"
 
 #include <algorithm>
-#include <iostream>
-#include <vector>
-#include <utility>
 
 using namespace tensor_lib;
 
-constexpr auto tensor_elements_count(auto&& ... sizes)
+void print_tensor(tensor_object auto&& tsor)
 {
-	constexpr auto dimensions = sizeof...(sizes);
+	static int C = 3;
 
-	tensor<int, dimensions> tsor(sizes...);
+	std::cout << '[' << C++ << "]\n\n";
 
-	return tsor.size_of_current_tensor();
+	for (std::size_t i = 0; i < tsor.order_of_dimension(0); i++)
+	{
+		for (std::size_t j = 0; j < tsor.order_of_dimension(1); j++)
+		{
+			std::cout << "{ ";
+
+			for (std::size_t k = 0; k < tsor.order_of_dimension(2); k++)
+			{
+				std::cout << tsor[i][j][k] << ' ';
+			}
+
+			std::cout << "}, ";
+		}
+		std::cout << '\n';
+	}
+	std::cout << '\n';
 }
 
 int main()
 {
-	static_assert(840 == tensor_elements_count(4, 5, 6, 7));
-
-
-
-	/*
-		tensor_lib::tensor is a class template that describes a mathematical tensor, implemented as a heap allocated array. It is build as an alternative
-		to structures such as std::vector<std::vector<std::vector<...>>>, replicating its behaviour and syntax almost entirely. The improvements (and the implementational challenges) come from the
-		fact that our tensor's underlyting data is contiguous in memory as oppossed to the "all over the place" allocated data in a nested vector structure. Having the whole data allocated
-		contiguously is a no-brainer, allowing for fast and easy allocation, accessing, copying, moving etc.
-
-		Rational: Open-source alternatives to nested vector already exist, both in the form of 2d matrices and multi-dimensional tensors such as ours. One major caveat they all share and reason why
-		developers have still inclined to keep to nested vector structures, even in modern neural-network projects, has always been the "syntactic sugar" they provided and that we'll explore and explain
-		in-depth below.
-	*/
-
-	/*
-		A syntax feature that a nested std::vector structure has and that was necessary to emulate from the get-go was the way it could interpret/initialize/assign from a nested initializer_list structure,
-		having each layer/rank in the structure have a constructor taking an std::initializer_list<T>, creating a perfect match between:
-						std::vector				<	std::vector				<	std::vector				<	int		>	>	>			and...	
-						std::initializer_list	<	std::initializer_list	<	std::initializer_list	<	int		>	>	>					
-	*/ 
-
-	std::vector<std::vector<std::vector<int>>> nested_vec =
+	tensor<int, 3> tsor =
 	{
 		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+			{ 10, 11, 12, 13, 14 }, { 15, 16, 17, 18, 19 }, { 20, 21, 22, 23, 24 }
 		},
 		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+			{ 10, 11, 12, 13, 14 }, { 15, 16, 17, 18, 19 }, { 20, 21, 22, 23, 24 }
+
 		},
 		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
+			{ 10, 11, 12, 13, 14 }, { 15, 16, 17, 18, 19 }, { 20, 21, 22, 23, 24 }
 		},
 		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
+			{ 10, 11, 12, 13, 14 }, { 15, 16, 17, 18, 19 }, { 20, 21, 22, 23, 24 }
 		}
 	};
 
-	/*
-		Particularly useful being the copy assignment operator working on a per-dimension basis...
-	*/
+	/* [1] Dublam toate valorile din a doua subdimensiune de ordinul 2 */
 
-	nested_vec[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
+	auto subdimensiune = tsor[1];
 
-	/*
-		tensor_lib::tensor offers the same functionality with faster performance.
-		The container is also constexpr enabled <3
-	*/
-
-	tensor<int, 3> three_dim_tensor
+	for (auto& valoare : subdimensiune)
 	{
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-		},
-		{
-			{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-		}
-	};
-
-	tensor my_copy_1 = three_dim_tensor[1];
-
-	auto constexpr_test = []()
-	{
-		tensor<int, 3> three_dim_tensor =
-		{
-			{
-				{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-			},
-			{
-				{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-			},
-			{
-				{1, 2, 3}, {1, 2, 3}, {1, 2, 3},
-			},
-			{
-				{1, 2, 3}, {1, 2, 3}, {1, 2, 3}
-			}
-		};
-
-		three_dim_tensor[1] = { { 1, 2, 3 }, { 1, 2, 3 }, { 1, 2, 3 } };
-
-		return std::reduce(three_dim_tensor.cbegin(), three_dim_tensor.cend());
-	};
-
-	constexpr auto result = constexpr_test();
-
-	static_assert(result == 72);
-
-	/*
-		Another feature tensor implements is being able to stack calls of the '[]' operator relative to each dimension.
-		Here we have a tensor with 3 dimension. Each of these dimensions has 4 subdimensions. Each of these subdimension has 5 sub-subdimensions and so on...
-	*/
-
-	tensor<int, 5> my_tensor(3, 4, 5, 2, 2); // Explicitly creating a 5-dimensional tensor of sizes 3 by 4 by 5 by 2 by 2
-
-	int new_val = 0;
-
-	for (size_t a = 0; a < my_tensor.order_of_dimension(0) /* returns 3 */; a++)
-	{
-		for (size_t b = 0; b < my_tensor.order_of_dimension(1) /* returns 4 */; b++)
-		{
-			for (size_t c = 0; c < my_tensor.order_of_dimension(2) /* returns 5 */; c++)
-			{
-				for (size_t d = 0; d < my_tensor.order_of_dimension(3) /* returns 2 */; d++)
-				{
-					for (size_t e = 0; e < my_tensor.order_of_dimension(4) /* returns 2 */; e++)
-
-						my_tensor[a][b][c][d][e] = new_val++;  // We can do this <3 yes we can <3
-				}
-			}
-		}
+		valoare = valoare * 2;
 	}
 
-	/*
-		tensor_lib::tensor also supports a number of ways to manipulate subdimensions. For example, we can easily delimit a subdimension, no matter the rank, and change its value
-		explicitly to something else. In the case below, we delimitate the first of the "deepest" 2x2 subdimensions in our 'my_tensor' variable and change their value to something else.
+	/* [2] Din acea subdimensiune, afisam a doua subdimensiune de ordinul 1 */
 
-		We can do this through a nested initializer_list that reflects its structure:
-	*/
-
-	my_tensor[0][0][0] =
+	std::cout << "[2]\n\n{ ";
+	for (const auto valoare : subdimensiune[1])
 	{
-		{ 1, 2 },
-		{ 3, 4 }
+		std::cout << valoare << ' ';
+	}
+	std::cout << "}\n\n";
+
+	/* [3] Umplem ultimele doua subdimensiuni de ordinul 2 din tensor cu 42 */
+
+	std::fill(tsor[2].begin(), tsor[3].end(), 42);
+
+	print_tensor(tsor);
+
+	/* [4] Interschimbam prima si ultima subdimensiune de ordinul 2 */
+
+	swap(tsor[0], tsor[3]);
+
+	print_tensor(tsor);
+
+	/* [5] Asignam valori noi celei de a treia subdimensiuni */
+
+	tsor[2] = {
+		{ 77, 77, 77, 77, 77 }, { 88, 88, 88, 88, 88 }, { 99, 99, 99, 99, 99 }
 	};
 
-	/*
-		A simple, one-dimensional initializer_list when we only want to focus on the values:
-	*/
-
-	my_tensor[0][0][0] = { 1, 2, 3, 4 };
-
-	/*
-		Through iterators:
-	*/
-
-	int aux = 1;
-
-	for (auto& val : my_tensor[0][0][0])
-		val = aux++;
-
-	/*
-		Through the dedicated replace() method:
-	*/
-
-	tensor<int, 2> destination(2, 2);
-
-	destination.replace(my_tensor[0][0][0]);
-
-	// tensor<int, 2> destination(my_tensor[0][0][0]);
-
-	/*
-		Or swap() specialization:
-	*/
-
-	swap(my_tensor[0][0][1], my_tensor[0][0][0]);
-
-	/*
-		Template parameters
-
-		T		-	type of the elements
-		Rank	-	the rank of the tensor, aka the number of dimensions
-
-		One specific feature of the tensor class is the ability of having intuitive syntax when stacking calls to the operator[] and being able to interpret nested initializer_list
-		structures like in the examples above.
-		The way it works is that operator[] returns an instance of "subdimension<Rank - 1>", a lightweight instance of an object that referes to the data owned by the parent
-		tensor. It's implemented using a dynamic span of the original data it covers, a static span of the sizes it needs and a static span of the array with precomputed sizes
-		of the submatrices at each dimension, which in turn returns the same and so on. sizeof(subdimension) being always the size of 4 pointers.
-	*/
-
-	std::cout << "Size of the subdimension instance: " << sizeof(my_tensor[0]) << '\n';
-	std::cout << "Size of 4 pointers: " << 4 * sizeof(void*) << "\n \n";
-
-	/*
-		There are no copies involved, though random access calls using this method (when not using an iterator on the whole data) is slower than
-		the pointer dereferencing done by a nested vector structure because operator[] calculates the resulting range in the _data buffer and constructs an instance of
-		subdimension. On the bright side, we're providing standard iteration capabilities, not only through the whole tensor, but through each subdimension at any of the ranks.
-		A tensor's memory is contiguous in memory and we can take advantage of far greater performance when iterating through our data this way. Preferably, users can
-		use the square paranthesis operator to calculate the value range representing their desired subdimension and then access its value like a normal array.
-
-		Tensor is also compatible with standard algorithms:
-	*/ 
-
-	std::fill(my_tensor[2][1].begin(), my_tensor[2][1].end(), 0); 
-	std::sort(my_tensor[2][1].begin(), my_tensor[2][1].end()); 
-
-	/*
-		The design of the complementary non-owning subdimension class template requires however the implementation of a const_subdimension class template in order to maintain
-		const correctness. This is similar to the behaviour of std::iterator and std::const_iterator. const_subdimension being forbidden from changing the data of the parent
-		tensor object, while a const subdimension only restricting its own reassignment to a different range (which is normally possible).
-
-		const_subdimension will be returned by the operator[] of either 'tensor' or 'subdimension' when called in a const context.
-	*/
-
-	[]<typename T, size_t Rank>(const tensor<T, Rank>& my_tensor)
-	{
-		auto subdim = my_tensor[0];
-
-		std::cout << typeid(subdim).name() << "\n\n";	// class tensor_lib::const_subdimension<int,4,class std::allocator<int>> on MSVC
-
-		// subdim[0][0][0][0] = 5;						// won't work since it's a constant variable
-
-	}(my_tensor);
-
-	//	display(my_tensor);								// (un-comment me to display the result)
-
-
-	std::cout << "'my_tensor.order_of_dimension(2)' returns " 
-		<< my_tensor.order_of_dimension(2) << '\n';		// returns 5
-	std::cout << "'my_tensor.size_of_subdimension(2)' returns " 
-		<< my_tensor.size_of_subdimension(2) << '\n';	// returns 5 * 6 * 7 = 210
-
-	my_tensor.order_of_current_dimension();				// is same as 'my_tensor.order_of_dimension(0)'
-	my_tensor.size_of_current_tensor();					// is same as 'my_tensor.size_of_subdimension(0)'
-
-	tensor<float, 2> f_t = 
-	{
-		{ 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 7.0f, 8.0f, 9.0f, 10.0f },
-		{ 0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f  }
-	};
-
-	tensor<std::pair<const char*, float>, 2> p_t(4, 4, "Cristi", 22.0f);
-
-	//TEST
-
-	tensor_testing_suit::RUN_ALL_TESTS();
-	benchmark::RUN_ALL();
+	print_tensor(tsor);
 }
